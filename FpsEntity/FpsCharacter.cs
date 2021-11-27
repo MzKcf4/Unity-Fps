@@ -23,8 +23,11 @@ public abstract class FpsCharacter : FpsEntity
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
     
     protected Transform weaponRootTransform;
-    private Vector3 lastFrameVelocity = Vector3.zero;
-    private MovementDirection prevMoveDir = MovementDirection.None;
+    protected MovementDirection currMoveDir = MovementDirection.None;
+    
+    private ClipTransition currentPlayingClip;
+    
+    [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     
     public TeamEnum team = TeamEnum.None;
     
@@ -58,36 +61,42 @@ public abstract class FpsCharacter : FpsEntity
     protected override void Update()
     {
         base.Update();
+        if(IsDead())    return;
+
+        UpdateMovementDir();
         HandleMovementAnimation();
     }
-    
-    private void HandleMovementAnimation()
+
+    protected virtual void UpdateMovementDir()
     {
-        
-        if(charRes == null) return;
-        
         if(CanPlayIdleAnimation())
         {
             currState = CharacterStateEnum.Idle;
-            prevMoveDir = MovementDirection.None;
-            PlayAnimation(charRes.idleClip);
+            currMoveDir = MovementDirection.None;
         } 
         else if (CanPlayRunAnimation())
         {
             currState = CharacterStateEnum.Run;
-            MovementDirection dir = GetMovementDirection();
-            if(prevMoveDir != dir)
-            {
-                prevMoveDir = dir;
-                if(dir == MovementDirection.Front)
-                    PlayAnimation(charRes.runClip);
-                else if(dir == MovementDirection.Back)
-                    PlayAnimation(charRes.runClipBack);
-                else if(dir == MovementDirection.Left)
-                    PlayAnimation(charRes.runClipLeft);
-                else if(dir == MovementDirection.Right)
-                    PlayAnimation(charRes.runClipRight);
-            }
+            currMoveDir = GetMovementDirection();
+        }
+    }
+    
+    protected virtual void HandleMovementAnimation()
+    {
+        if(charRes == null) return;
+        
+        if(currState == CharacterStateEnum.Idle)
+            PlayAnimation(charRes.idleClip);
+        else if(currState == CharacterStateEnum.Run)
+        {
+            if(currMoveDir == MovementDirection.Front)
+                PlayAnimation(charRes.runClip);
+            else if(currMoveDir == MovementDirection.Back)
+                PlayAnimation(charRes.runClipBack);
+            else if(currMoveDir == MovementDirection.Left)
+                PlayAnimation(charRes.runClipLeft);
+            else if(currMoveDir == MovementDirection.Right)
+                PlayAnimation(charRes.runClipRight);
         }
     }
     
@@ -108,6 +117,18 @@ public abstract class FpsCharacter : FpsEntity
     
     protected void PlayAnimation(ClipTransition clip)
     {
+        if(currentPlayingClip == clip)
+            return;
+            
+        
+        currentPlayingClip = clip;
+        modelAnimancer.Play(clip , 0.1f , FadeMode.FromStart);
+    }
+    
+    [ClientRpc]
+    protected void RpcPlayAnimation(ClipTransition clip)
+    {
+        currentPlayingClip = clip;
         modelAnimancer.Play(clip , 0.1f , FadeMode.FromStart);
     }
     
@@ -206,7 +227,12 @@ public abstract class FpsCharacter : FpsEntity
     
     public abstract Vector3 GetMovementVelocity();
     
-
+    [Command]
+    protected void CmdSetVelocity(Vector3 velocity)
+    {
+        currentVelocity = velocity;
+    }
+    
     protected void OnDestroy()
     {
         SharedContext.Instance.RemoveCharacter(this);

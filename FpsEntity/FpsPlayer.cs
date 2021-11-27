@@ -64,9 +64,6 @@ public class FpsPlayer : FpsCharacter
 	    }
 	    else
 	    {
-	    	//modelObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
-		    //foreach (Transform child in modelObject.GetComponentsInChildren<Transform>(true))  
-		    //    child.gameObject.layer = LayerMask.NameToLayer (Constants.LAYER_DEFAULT);
             
 	    }
         
@@ -95,12 +92,10 @@ public class FpsPlayer : FpsCharacter
                 if(playerController.movementSpeed != moveSpeed)
                     playerController.movementSpeed = moveSpeed;               
             }
-
+            LerpHandView();
         }
-	    LerpHandView();
-        
     }
-    
+        
 	private void LerpHandView()
 	{
 		if(playerController == null || playerController.GetMovementVelocity() == Vector3.zero)
@@ -252,33 +247,33 @@ public class FpsPlayer : FpsCharacter
     protected override void SetRagdollState(bool isRagdollState)
     {
         base.SetRagdollState(isRagdollState);
-        
-        // Switch back to character model so can see ourselves
-        if(isRagdollState)
-            fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_CHARACTER_MODEL);
-        //  Utils.ChangeLayerRecursively(modelObject , Constants.LAYER_CHARACTER_MODEL, true);
-        else
-            fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
-        // Utils.ChangeLayerRecursively(modelObject , Constants.LAYER_LOCAL_PLAYER_MODEL, true);
-        
+                
         // Also disable the Mover's collider so it won't fly to sky
         GetComponent<CapsuleCollider>().enabled = isRagdollState ? false : true;
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         
-        if(isRagdollState)
+        // Local player only settings  e.g MainCamera , LocalPlayerModel layer for cullingMask
+        if(isLocalPlayer)
         {
-            // Then we attach view camera to tpView 
-            viewCamera.transform.SetParent(tpCameraContainer.transform);
-            viewCamera.transform.localEulerAngles = Vector3.zero;
-            viewCamera.transform.localPosition = Vector3.zero;
-        }
-        else
-        {
-            viewCamera.transform.SetParent(fpCameraContainer.transform);
-            viewCamera.transform.localEulerAngles = Vector3.zero;
-            viewCamera.transform.localPosition = Vector3.zero;
-            // Reset the lerp
-            isMoveLerpDone = true;
+            if(isRagdollState)
+            {
+                // Change layer to show the body from camera
+                fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_CHARACTER_MODEL);
+                // Then we attach view camera to tpView 
+                viewCamera.transform.SetParent(tpCameraContainer.transform);
+                viewCamera.transform.localEulerAngles = Vector3.zero;
+                viewCamera.transform.localPosition = Vector3.zero;
+            }
+            else
+            {
+                // Change layer to hide the body from camera
+                fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
+                viewCamera.transform.SetParent(fpCameraContainer.transform);
+                viewCamera.transform.localEulerAngles = Vector3.zero;
+                viewCamera.transform.localPosition = Vector3.zero;
+                // Reset the lerp
+                isMoveLerpDone = true;
+            }
         }
     }
     
@@ -290,10 +285,19 @@ public class FpsPlayer : FpsCharacter
 		{
 			ServerContext.Instance.playerList.Remove(this);
 		}
+        ServerContext.Instance.characterList.Remove(this);
 	}
-    
+        
     public override Vector3 GetMovementVelocity()
     {
-        return playerController.GetMovementVelocity();
+        if(isLocalPlayer)
+        {
+            Vector3 controllerVelocity = playerController.GetMovementVelocity();
+            CmdSetVelocity(controllerVelocity);
+            currentVelocity = controllerVelocity;
+        }
+        return currentVelocity;
+        
+        // return playerController.GetMovementVelocity();
     }
 }

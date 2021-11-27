@@ -210,11 +210,17 @@ public class FpsBot : FpsCharacter
         this.weaponShotCooldown.interval = fpsWeapon.shootInterval;
     }
     
+
     public override Vector3 GetMovementVelocity()
     {
-        if(ai == null)
-            return Vector3.zero;
-        return ai.velocity;
+        if(isServer)
+        {
+            if(ai == null)
+                currentVelocity = Vector3.zero;
+            else
+                currentVelocity = ai.velocity;
+        }
+        return currentVelocity;
     }
 
     /*

@@ -24,6 +24,17 @@ public class FpsModel : MonoBehaviour
         bodyRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
     }
     
+    void Start()
+    {
+        if(!controllerEntity.isLocalPlayer)
+        {
+            if(finalIkAimController != null)
+                finalIkAimController.enabled = false;
+            if(finalIkAimIk != null)
+                finalIkAimIk.enabled = false;
+        }
+    }
+    
     public void SetLookAtTransform(Transform transform)
     {
         lookAtTransform = transform;
