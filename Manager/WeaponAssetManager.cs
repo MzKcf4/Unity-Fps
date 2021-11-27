@@ -15,7 +15,6 @@ public class WeaponAssetManager : MonoBehaviour
     public GameObject sawoffViewPrefab;
     public GameObject sawoffWeaponPrefab;
     
-    
     void Awake()
     {
         Instance = this;

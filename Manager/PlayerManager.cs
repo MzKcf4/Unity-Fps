@@ -9,31 +9,67 @@ public class PlayerManager : NetworkBehaviour
     
     public List<Transform> teamASpawns = new List<Transform>();
     public List<Transform> teamBSpawns = new List<Transform>();
-	
+    	
+    [SerializeField] GameObject botPrefab;
+    
 	void Awake()
 	{
 		Instance = this;
 	}
 	
-    // Start is called before the first frame update
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         
     }
     
+    [Server]
+    public void AddBot(TeamEnum team)
+    {
+        Transform spawn = GetSpawnTransform(team);
+        
+        GameObject botObj = Instantiate(botPrefab , spawn.position , Quaternion.identity);
+        NetworkServer.Spawn(botObj);
+        
+        FpsBot fpsBot = botObj.GetComponent<FpsBot>();
+        fpsBot.team = team;
+        
+        RespawnAndTeleport(fpsBot);
+    }
+    
+    [Server]
+    public void KickAllBot()
+    {
+        List<FpsCharacter> charListClone =  new List<FpsCharacter>(SharedContext.Instance.characterList);
+        
+        foreach(FpsCharacter fpsCharacter in charListClone)
+        {
+            if(fpsCharacter is FpsBot)
+            {
+                NetworkServer.Destroy(fpsCharacter.gameObject);
+            }
+        }
+    }
+    
 	[Server]
 	public void TeleportToSpawnPoint(FpsPlayer player)
 	{
-        
 		Transform spawn = Utils.GetRandomElement<Transform>(teamASpawns);
 		player.transform.position = spawn.position + transform.up;
 	}
+    
+    [Server]
+    public void RespawnAndTeleport(FpsCharacter fpsCharacter)
+    {
+        Transform spawn = GetSpawnTransform(fpsCharacter.team);
+        
+        fpsCharacter.Respawn();
+        fpsCharacter.transform.position = spawn.position + transform.up;
+    }
     
     [Server]
     public void QueueRespawn(FpsCharacter fpsCharacter)
@@ -43,16 +79,16 @@ public class PlayerManager : NetworkBehaviour
     
     IEnumerator RespawnCoroutine(FpsCharacter fpsCharacter)
     {
-
         yield return new WaitForSeconds(5);
         
-        Transform spawn;
-        if(fpsCharacter.team == TeamEnum.TeamA)
-            spawn = Utils.GetRandomElement<Transform>(teamASpawns);
+        RespawnAndTeleport(fpsCharacter);
+    }
+    
+    private Transform GetSpawnTransform(TeamEnum team)
+    {
+        if(team == TeamEnum.TeamA)
+            return Utils.GetRandomElement<Transform>(teamASpawns);
         else
-            spawn = Utils.GetRandomElement<Transform>(teamBSpawns);
-        
-        fpsCharacter.Respawn();
-        fpsCharacter.transform.position = spawn.position + transform.up;
+            return Utils.GetRandomElement<Transform>(teamBSpawns);
     }
 }

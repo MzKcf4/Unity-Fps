@@ -13,6 +13,7 @@ public class NameOverlayOnCamera: MonoBehaviour
     {
         ownerPlayer = GetComponentInParent<FpsPlayer>();
         SharedContext.Instance.characterJoinEvent.AddListener(OnCharacterJoin);
+        SharedContext.Instance.characterRemoveEvent.AddListener(OnCharacterRemove);
         SyncAllWithContext();
     }
     
@@ -52,6 +53,15 @@ public class NameOverlayOnCamera: MonoBehaviour
         textMesh.SetText(fpsCharacter.characterName);
         
         dictCharToNameText.Add(fpsCharacter , textMesh);
+    }
+    
+    public void OnCharacterRemove(FpsCharacter fpsCharacter)
+    {
+        if(dictCharToNameText.ContainsKey(fpsCharacter))
+        {
+            Destroy(dictCharToNameText[fpsCharacter]);
+            dictCharToNameText.Remove(fpsCharacter);
+        }
     }
         
     public void SyncAllWithContext()

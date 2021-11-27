@@ -160,7 +160,6 @@ public class FpsBot : FpsCharacter
                 continue;
             }
             
-    
             // Else should expect hitting hitbox
             FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
             FpsEntity hitEntity = enemyHitBox.fpsEntity;
@@ -179,14 +178,7 @@ public class FpsBot : FpsCharacter
             }
         }        
     }
-    
-    private float GetHitChanceByDistance(Vector3 targetPosition)
-    {
-        float distance = Vector3.Distance(transform.position , targetPosition);
-        float multiplier = hitChanceDistanceBase/distance;
-        return multiplier;
-    }
-            
+                
     [Server]
     public override void TakeDamage(DamageInfo damageInfo)
     {
@@ -224,10 +216,7 @@ public class FpsBot : FpsCharacter
             return Vector3.zero;
         return ai.velocity;
     }
-    
-    
-    
-    
+
     /*
     private void RotateModelTowardsDirection(Vector3 dir)
     {

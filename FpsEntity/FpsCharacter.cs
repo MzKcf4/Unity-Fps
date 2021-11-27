@@ -205,4 +205,10 @@ public abstract class FpsCharacter : FpsEntity
     }
     
     public abstract Vector3 GetMovementVelocity();
+    
+
+    protected void OnDestroy()
+    {
+        SharedContext.Instance.RemoveCharacter(this);
+    }
 }

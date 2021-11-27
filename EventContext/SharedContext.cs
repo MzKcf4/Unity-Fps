@@ -23,7 +23,6 @@ public class SharedContext : NetworkBehaviour
             characterList.Add(fpsCharacter);
             characterJoinEvent.Invoke(fpsCharacter);
         }
-            
     }
     
     public void RemoveCharacter(FpsCharacter fpsCharacter)
@@ -33,7 +32,12 @@ public class SharedContext : NetworkBehaviour
             characterList.Remove(fpsCharacter);
             characterRemoveEvent.Invoke(fpsCharacter);
         }
-            
+    }
+    
+    [ClientRpc]
+    public void RpcRemoveCharacter(FpsCharacter fpsCharacter)
+    {
+        RemoveCharacter(fpsCharacter);
     }
     
 }
