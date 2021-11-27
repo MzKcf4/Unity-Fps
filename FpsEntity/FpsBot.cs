@@ -10,17 +10,10 @@ using RootMotion.FinalIK;
 
 public class FpsBot : FpsCharacter
 {
-    // private BotStateEnum currBotState = BotStateEnum.Default;
-    
-    // When distance = hitChanceDistanceBase , the multiplier is 1
-    private float hitChanceDistanceBase = 15f;
-    
     public bool aiEnabled = true;
-    [SerializeField]
+    public bool aiIgnoreEnemy = false;
+    
     protected TriggerSensor visionSensor;
-    public FpsModel aimAtFpsModel;
-    public Transform shootAtTransform;
-    public ActionCooldown reactionCooldown = new ActionCooldown() {interval = 1f};
     
     private IAstarAI ai;
     private Seeker seeker;
@@ -32,26 +25,18 @@ public class FpsBot : FpsCharacter
     public float speedRecoverElapsed = 0f;
     // --------------------------------- //
     
-    ActionCooldown scanCooldown = new ActionCooldown() { interval = 1f};
     ActionCooldown weaponShotCooldown = new ActionCooldown();
-    ActionCooldown alertStateCooldown = new ActionCooldown { interval = 2f};
     private FpsBotFsm botFsm = new FpsBotFsm();
     
     // Assume bot can only hold 1 weapon at the moment
-    public FpsWeapon fpsWeapon;
+    [HideInInspector] public FpsWeapon fpsWeapon;
     
-    private Vector3 lookAtTransformOffset;
-    [SerializeField] private Transform lookAtRotationTransform;
-    
-    private Vector3 lookAtDirection = Vector3.zero;
-    private Quaternion alertLookRotation = Quaternion.identity;
-    private Vector3 alertLookDirection = Vector3.zero;
+    public GameObject objAttachToModel;
     
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
-        lookAtTransformOffset = lookAtTransform.localPosition;
         
         if(isServer)
         {
@@ -61,8 +46,12 @@ public class FpsBot : FpsCharacter
             aiDest = GetComponent<AIDestinationSetter>();
             SetupFsm();
         }
+        if(objAttachToModel != null)
+        {
+            objAttachToModel.transform.parent = fpsModel.transform;
+        }
         fpsModel.SetLookAtTransform(lookAtTransform);
-        GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 0);
+        GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
     }
     
     private void SetupFsm()
@@ -79,78 +68,21 @@ public class FpsBot : FpsCharacter
         
         botFsm.ManualUpdate();
         
-        if(botFsm.botState == BotStateEnum.Aiming)
-        {
-            lookAtDirection = Utils.GetDirection(modelObjectParent.transform.position, botFsm.aimAtFpsModel.transform.position);
-        }
-        else if (botFsm.botState == BotStateEnum.Shooting)
+        if (botFsm.botState == BotStateEnum.Shooting)
         {
             if(weaponShotCooldown.CanExecuteAfterDeltaTime(true))
             {
                 botFsm.ScanVisibleLosFromShootTarget();
                 if(botFsm.aimAtHitboxTransform != null)
-                    ShootAtTarget(botFsm.aimAtFpsModel , botFsm.aimAtHitboxTransform);
+                    ShootAtTarget();
                 
             }
         }
         
-        
         UpdateMovementDestination();
-        RotateTowardsTargetDirection();
-        // RotateTowardsMoveDirection();
-        
-        
-        /*
-        if(aimAtFpsModel != null)
-        {
-            LookAtTarget();
-            if(!reactionCooldown.IsOnCooldown(true))
-            {
-                if(weaponShotCooldown.CanExecuteAfterDeltaTime())
-                {
-                    Transform aimTransform = GetVisibleTransformFromTarget(aimAtFpsModel);
-                    if(aimTransform != null)
-                        ShootAtTarget();
-                    else
-                        SetAimTarget(null);         // Lost sight during shooting.
-                }
-            }
-        }
-        else
-        {
-            if (currBotState == BotStateEnum.Alert)
-            {
-                if(alertStateCooldown.IsOnCooldown())
-                {
-                    alertStateCooldown.ReduceCooldown(Time.deltaTime);
-                    RotateTowardsAlertRotation();
-                }
-                else
-                {
-                    currBotState = BotStateEnum.Default;
-                }
-            }
-        }
-        
-        if(scanCooldown.IsOnCooldown())
-            scanCooldown.ReduceCooldown(Time.deltaTime);
-        else
-        {
-            FindTargetInSight();
-            HandleMovementDestination();
-            scanCooldown.StartCooldown();
-        }
-        
-        if(currBotState != BotStateEnum.Alert)
-        RotateTowardsMoveDirection();
-        */
+        UpdateLookAt();
     }
-    
-    private void RotateTowardsTargetDirection()
-    {
-        RotateModelTowardsDirection(botFsm.targetLookAtDirection);
-    }
-    
+        
     private void RecoverSpeed()
     {
         if(ai == null || ai.maxSpeed >= moveSpeed)  return;
@@ -168,11 +100,14 @@ public class FpsBot : FpsCharacter
     
     private void UpdateLookAt()
     {
-        if(botFsm.botState == BotStateEnum.Default)
-            lookAtDirection = GetMovementVelocity().normalized;
-        else if (botFsm.botState == BotStateEnum.Alert)
-            lookAtDirection = botFsm.targetLookAtDirection;
-        
+        if(botFsm.targetLookAtPosition == Vector3.zero)
+        {
+            Vector3 moveVec = GetMovementVelocity().normalized * 2f;
+            if(moveVec != Vector3.zero)
+                lookAtTransform.localPosition = new Vector3(moveVec.x , 1.3f + moveVec.y , moveVec.z);            
+        }
+        else
+            lookAtTransform.position = botFsm.targetLookAtPosition;
     }
     
     private void UpdateMovementDestination()
@@ -197,167 +132,52 @@ public class FpsBot : FpsCharacter
         }
     }
     
-    private void RotateTowardsMoveDirection()
-    {
-        if(aimAtFpsModel != null)   return;
-        
-        Vector3 dir = GetMovementVelocity().normalized;
-        RotateModelTowardsDirection(dir);
-    }
-    
-    private void RotateTowardsAlertRotation()
-    {
-        RotateModelTowardsDirection(alertLookDirection);
-    }
-    
-    private void RotateModelTowardsDirection(Vector3 dir)
-    {
-        if(dir == Vector3.zero)   return;
-        
-        
-        Quaternion lookAtTargetRotation = Quaternion.LookRotation(dir);
-        lookAtRotationTransform.rotation = Quaternion.RotateTowards(lookAtRotationTransform.rotation , lookAtTargetRotation , 200f * Time.deltaTime);
-        // Offset y to 0 so model doesn't rotate up/down
-        Quaternion targetDir = Quaternion.LookRotation(new Vector3(dir.x , 0f , dir.z));
-        
-        modelObjectParent.transform.rotation = Quaternion.RotateTowards(modelObjectParent.transform.rotation , targetDir , 200f * Time.deltaTime);
-        
-    }
-
-    /*
-    private void FindTargetInSight()
-    {
-        if(!isServer || visionSensor == null)    return;
-        
-        FpsModel target = GetTargetAimModelFromSensor();
-        if(target != null)
-        {            
-            SetAimTarget(target);
-            Transform t = GetVisibleTransformFromTarget(target);
-            if(t != null)
-                SetShootTransform(t);
-        }
-        else
-        {
-            SetAimTarget(null);
-            SetShootTransform(null);
-        }
-    }
-    */
-    
-    /*
-    private FpsModel GetTargetAimModelFromSensor()
-    {
-        // Should detect "FpsModel" attached in the ModelRoot , because it contains the LOS Target.
-        List<FpsModel> detectedModels = visionSensor.GetDetectedByComponent<FpsModel>();
-        if(detectedModels != null && detectedModels.Count > 0)
-        {
-            foreach(FpsModel detectedModel in detectedModels)
-            {
-                if (!(detectedModel.controllerEntity is FpsCharacter))
-                    continue;
-                    
-                FpsCharacter detectedCharacter = (FpsCharacter)detectedModel.controllerEntity;
-                if(!detectedModel.controllerEntity.IsDead() && !(detectedCharacter.team == team))
-                {
-                    return detectedModel;
-                }
-            }
-        }
-        return null;
-    }
-    */
-    
-    /*
-    private Transform GetVisibleTransformFromTarget(FpsModel targetFpsModel)
-    {
-        if(targetFpsModel.controllerEntity.IsDead())    return null;
-        
-        // Let's just assume all aim target is FpsCharacter first.
-        visionSensor.Pulse();
-        List<Transform> tList = visionSensor.GetVisibleTransforms(targetFpsModel.gameObject);
-        if(tList != null && tList.Count > 0)
-        {
-            Transform t = Utils.GetRandomElement<Transform>(tList);
-            return t;
-        }
-        return null;
-    }
-    */
-    
-    private void LookAtTarget()
-    {
-        RotateModelTowardsDirection(Utils.GetDirection(modelObjectParent.transform.position, aimAtFpsModel.transform.position));
-    }
-    
     [Server]
-    private void ShootAtTarget(FpsModel targetModel , Transform targetTransform)
+    private void ShootAtTarget()
     {
-        if(fpsWeapon != null && targetTransform != null)
+        if(fpsWeapon == null)
+            return;
+        
+        float spreadMultiplier = fpsWeapon.spread;
+        if(fpsWeapon.weaponCategory != WeaponCategory.Shotgun)
         {
-            if(fpsWeapon.weaponCategory == WeaponCategory.Shotgun)
-            {
-                for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
-                {
-                    RayHitInfo rayHitInfo = Utils.CastRayAndGetHitInfo(lookAtRotationTransform , LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX), fpsWeapon.spread);
-                    if(rayHitInfo == null)
-                        continue;
-                    
-                    fpsWeapon.FireWeapon(rayHitInfo.hitPoint);
-                    GameObject objOnHit = rayHitInfo.hitObject;
-                    
-                    // Hits wall
-                    if( (1 << objOnHit.layer) == LayerMask.GetMask(Constants.LAYER_GROUND))
-                    {
-                        LocalSpawnManager.Instance.SpawnBulletDecalFx(rayHitInfo.hitPoint , rayHitInfo.normal);
-                        continue;
-                    }
-                    
-            
-                    // Else should expect hitting hitbox
-                    FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
-                    FpsEntity hitEntity = enemyHitBox.fpsEntity;
-                
-                    if(hitEntity is FpsCharacter)
-                    {
-                        TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
-                        if(hitTeam == this.team)   continue;
-                    }
-                
-                    if(hitEntity != null)
-                    {
-                        DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon , enemyHitBox , enemyHitBox.transform.position);
-                        hitEntity.TakeDamage(dmgInfo);
-                        continue;
-                    }
-                }
-            }
-            else
-            {
-                float hitChanceByVisibility = visionSensor.GetVisibility(targetModel.gameObject);
-                float hitChanceByDifficulty = 0.4f;
-                float hitChanceByDistance = GetHitChanceByDistance(targetModel.transform.position);
-                float finalHitChance = hitChanceByVisibility * hitChanceByDifficulty * hitChanceByDistance;
-                // Debug.Log("Final hit chance = " + finalHitChance);
-                bool isHit = Utils.WithinChance(finalHitChance);
-                if(isHit)
-                {
-                    // shootAtTransform should be a FpsHitbox
-                    FpsHitbox hitbox = shootAtTransform.GetComponent<FpsHitbox>();
-                    FpsEntity fpsEntity = hitbox.fpsEntity;
-                
-                    DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon , hitbox , hitbox.transform.position);
-                
-                    fpsEntity.TakeDamage(dmgInfo);
-                    fpsWeapon.FireWeapon(shootAtTransform.position);
-                }
-                else
-                {
-                    Vector3 positionOffset = shootAtTransform.position + Random.insideUnitSphere * 0.5f;
-                    fpsWeapon.FireWeapon(positionOffset);
-                }
-            }
+            spreadMultiplier *= 5f;
         }
+        
+        for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
+        {
+            RayHitInfo rayHitInfo = Utils.CastRayAndGetHitInfo(visionSensor.transform , LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX), fpsWeapon.spread);
+            if(rayHitInfo == null)
+                continue;
+            
+            fpsWeapon.FireWeapon(rayHitInfo.hitPoint);
+            GameObject objOnHit = rayHitInfo.hitObject;
+            
+            // Hits wall
+            if( (1 << objOnHit.layer) == LayerMask.GetMask(Constants.LAYER_GROUND))
+            {
+                LocalSpawnManager.Instance.SpawnBulletDecalFx(rayHitInfo.hitPoint , rayHitInfo.normal);
+                continue;
+            }
+            
+    
+            // Else should expect hitting hitbox
+            FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
+            FpsEntity hitEntity = enemyHitBox.fpsEntity;
+        
+            if(hitEntity is FpsCharacter)
+            {
+                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
+                if(hitTeam == this.team)   continue;
+            }
+        
+            if(hitEntity != null)
+            {
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon , enemyHitBox , enemyHitBox.transform.position);
+                hitEntity.TakeDamage(dmgInfo);
+                continue;
+            }
+        }        
     }
     
     private float GetHitChanceByDistance(Vector3 targetPosition)
@@ -366,12 +186,7 @@ public class FpsBot : FpsCharacter
         float multiplier = hitChanceDistanceBase/distance;
         return multiplier;
     }
-        
-    private void SetShootTransform(Transform t)
-    {
-        shootAtTransform = t;
-    }
-    
+            
     [Server]
     public override void TakeDamage(DamageInfo damageInfo)
     {
@@ -384,18 +199,6 @@ public class FpsBot : FpsCharacter
         }
         
         botFsm.OnTakeHit(damageInfo);
-        
-        /*
-        if(damageInfo.damageSourcePosition == Vector3.zero) return;
-        
-        if(currBotState != BotStateEnum.Aiming)
-        {
-            currBotState = BotStateEnum.Alert;
-            alertStateCooldown.StartCooldown();
-            
-            alertLookDirection = (damageInfo.damageSourcePosition - transform.position).normalized;
-        }
-        */
     }
                     
     [Server]
@@ -421,4 +224,22 @@ public class FpsBot : FpsCharacter
             return Vector3.zero;
         return ai.velocity;
     }
+    
+    
+    
+    
+    /*
+    private void RotateModelTowardsDirection(Vector3 dir)
+    {
+        if(dir == Vector3.zero)   return;
+        
+        
+        Quaternion lookAtTargetRotation = Quaternion.LookRotation(dir);
+        lookAtRotationTransform.rotation = Quaternion.RotateTowards(lookAtRotationTransform.rotation , lookAtTargetRotation , 200f * Time.deltaTime);
+        // Offset y to 0 so model doesn't rotate up/down
+        Quaternion targetDir = Quaternion.LookRotation(new Vector3(dir.x , 0f , dir.z));
+        
+        modelObjectParent.transform.rotation = Quaternion.RotateTowards(modelObjectParent.transform.rotation , targetDir , 200f * Time.deltaTime);
+    }
+    */
 }

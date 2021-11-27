@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SensorToolkit;
 
+[System.Serializable]
 public class FpsBotFsm
 {
     public BotStateEnum botState = BotStateEnum.Default;
@@ -20,7 +21,6 @@ public class FpsBotFsm
     public float reactionTime;
     
     public Vector3 targetLookAtPosition;
-    public Vector3 targetLookAtDirection;
     
     public FpsModel aimAtFpsModel;
     public Transform aimAtHitboxTransform;
@@ -34,7 +34,8 @@ public class FpsBotFsm
     // Should be placed in MonoBehaviour's Update() method , to replicate update() behavior
     public void ManualUpdate()
     {
-        if(fpsBot == null)  return;
+        if(fpsBot == null || fpsBot.aiIgnoreEnemy)  return;
+        
         
         if(botState == BotStateEnum.Alert)
         {
@@ -48,7 +49,9 @@ public class FpsBotFsm
                 botState = BotStateEnum.Shooting;
             }
         }
-        else if (botState == BotStateEnum.Alert || botState == BotStateEnum.Default)
+        
+        
+        if (botState == BotStateEnum.Alert || botState == BotStateEnum.Default)
         {
             if(scanCooldown.CanExecuteAfterDeltaTime(true))
             {
@@ -68,13 +71,16 @@ public class FpsBotFsm
     
     private void UpdateLookAt()
     {
-        if(botState == BotStateEnum.Default)
-            targetLookAtDirection = fpsBot.GetMovementVelocity().normalized;
-        else if(botState == BotStateEnum.Aiming)
-            targetLookAtDirection = Utils.GetDirection(visionSensor.transform.position , aimAtFpsModel.transform.position);
-        else if (botState == BotStateEnum.Shooting && aimAtHitboxTransform != null)
-            targetLookAtDirection = Utils.GetDirection(visionSensor.transform.position , aimAtHitboxTransform.position);
-        // Alert is set by OnTakeHit()
+        if(botState == BotStateEnum.Aiming)
+            targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
+        else if (botState == BotStateEnum.Shooting)
+        {
+            if(aimAtHitboxTransform == null)
+                targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
+            else
+                targetLookAtPosition = aimAtHitboxTransform.position;
+        } else if (botState != BotStateEnum.Alert)
+            targetLookAtPosition = Vector3.zero;
     }
     
     
@@ -141,7 +147,7 @@ public class FpsBotFsm
             botState = BotStateEnum.Alert;
             alertStateCooldown.StartCooldown();
             
-            targetLookAtDirection = (damageInfo.damageSourcePosition - fpsBot.transform.position).normalized;
+            targetLookAtPosition = damageInfo.damageSourcePosition;
         }
     }
     
