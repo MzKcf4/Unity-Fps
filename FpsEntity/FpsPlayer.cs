@@ -38,14 +38,17 @@ public class FpsPlayer : FpsCharacter
 	private AnimationClip viewLeftMoveClip;
 	// ------------------------------------- //
     
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        
+    }
+    
 	protected override void Start()
 	{
 		base.Start();
         painShockCooldown.interval = 0.06f;
-		if(isServer)
-		{
-			ServerContext.Instance.playerList.Add(this);
-		}
+        team = TeamEnum.TeamA;
     	
 	    if(isLocalPlayer)
 	    {
@@ -68,19 +71,22 @@ public class FpsPlayer : FpsCharacter
             
 	    }
         
+        if(isServer)
+        {
+            ServerContext.Instance.playerList.Add(this);
+            // *ToFix* Teleport only , since 'Respawn' will cause null on client side 
+            PlayerManager.Instance.TeleportToSpawnPoint(this);
+        }
+        
         fpsModel.SetLookAtTransform(lookAtTransform);
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
         weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
         GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
         GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 1);
+        
+        
 	}
     
-	public override void OnStartServer()
-	{
-		base.OnStartServer();
-		PlayerManager.Instance.TeleportToSpawnPoint(this);
-	}
-
 	protected override void Update()
     {
 	    base.Update();
@@ -152,7 +158,6 @@ public class FpsPlayer : FpsCharacter
         {
             // Change the local weapon model to camera's culling mask too !
             Utils.ChangeLayerRecursively(weaponModelObj , Constants.LAYER_LOCAL_PLAYER_MODEL, true); 
-            
         }
     }
 	
@@ -231,7 +236,6 @@ public class FpsPlayer : FpsCharacter
     
     private void OnWeaponEventUpdate(WeaponEvent evt)
     {
-        Debug.Log(evt);
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
     }
@@ -255,7 +259,6 @@ public class FpsPlayer : FpsCharacter
     [Command]
     public void CmdFireWeapon(Vector3 fromPos , Vector3 forwardVec)
     {
-        Debug.Log("CmdFireWeapon");
         CoreGameManager.Instance.DoWeaponRaycast(this , activeWeapon , fromPos , forwardVec);
         RpcFireWeapon();
     }
@@ -280,11 +283,10 @@ public class FpsPlayer : FpsCharacter
         base.RpcKilled(damageInfo);
     }
     
-    [Server]
-    protected override void Killed(DamageInfo damageInfo)
+    [TargetRpc]
+    public void TargetDoTeleport(NetworkConnection nc, Vector3 position)
     {
-        base.Killed(damageInfo);
-        PlayerManager.Instance.QueueRespawn(this);
+        transform.position = position;
     }
     
     protected override void SetRagdollState(bool isRagdollState)

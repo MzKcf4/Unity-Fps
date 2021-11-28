@@ -44,14 +44,16 @@ public class FpsWeaponWorldModel : MonoBehaviour
         if(muzzleFeedbacks)
             muzzleFeedbacks.PlayFeedbacks();
         
-        PlayWeaponSound(Constants.WEAPON_SOUND_FIRE);
         
+        PlayWeaponSound(Constants.WEAPON_SOUND_FIRE);
+        /*
         Vector3 direction = Utils.GetDirection(muzzleTransform.position , dest);
         GameObject projectileObj = Instantiate(bulletPrefab , muzzleTransform.position , Quaternion.identity);
         NetworkServer.Spawn(projectileObj);
         FpsProjectile projectile = projectileObj.GetComponent<FpsProjectile>();
         projectile.speed = 120f;
         projectile.Setup(direction);
+        */
     }
     
     public void PlayWeaponSound(string name)

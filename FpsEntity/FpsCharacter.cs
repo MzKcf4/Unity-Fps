@@ -31,8 +31,7 @@ public abstract class FpsCharacter : FpsEntity
     private ClipTransition currentPlayingClip;
     
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
-    
-    public TeamEnum team = TeamEnum.None;
+    [SyncVar] public TeamEnum team = TeamEnum.None;
     
     protected override void Start()
     {
@@ -53,11 +52,20 @@ public abstract class FpsCharacter : FpsEntity
         modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
     }
     
+    [Server]
     public virtual void Respawn()
     {
         currState = CharacterStateEnum.None;
         SetHealth(maxHealth);
         SetControllableState(true);
+        RpcRespawn();
+    }
+    
+    [ClientRpc]
+    public void RpcRespawn()
+    {
+        SetControllableState(true);
+        SetupComponentsByNetworkSetting();
     }
 
     // Update is called once per frame
@@ -141,6 +149,13 @@ public abstract class FpsCharacter : FpsEntity
         LocalSpawnManager.Instance.SpawnBloodFx(damageInfo.hitPoint);
     }
     
+    [Server]
+    protected override void Killed(DamageInfo damageInfo)
+    {
+        base.Killed(damageInfo);
+        PlayerManager.Instance.QueueRespawn(this);
+    }
+    
     [ClientRpc]
     protected override void RpcKilled(DamageInfo damageInfo)
     {
@@ -149,8 +164,6 @@ public abstract class FpsCharacter : FpsEntity
         SetControllableState(false);
         FpsUiManager.Instance.AddNewKillListing(damageInfo.damageSource , characterName);
     }
-    
-    
     
     protected void SetControllableState(bool controllable)
     {

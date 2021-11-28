@@ -55,20 +55,29 @@ public class PlayerManager : NetworkBehaviour
         }
     }
     
+    
 	[Server]
 	public void TeleportToSpawnPoint(FpsPlayer player)
 	{
 		Transform spawn = Utils.GetRandomElement<Transform>(teamASpawns);
-		player.transform.position = spawn.position + transform.up;
+        player.TargetDoTeleport(player.netIdentity.connectionToClient, spawn.position + transform.up);
 	}
     
+        
     [Server]
     public void RespawnAndTeleport(FpsCharacter fpsCharacter)
     {
         Transform spawn = GetSpawnTransform(fpsCharacter.team);
+        Vector3 spawnPos = spawn.position + transform.up;
         
         fpsCharacter.Respawn();
-        fpsCharacter.transform.position = spawn.position + transform.up;
+        if(fpsCharacter is FpsPlayer)
+            ((FpsPlayer)fpsCharacter).TargetDoTeleport(fpsCharacter.netIdentity.connectionToClient, spawnPos);
+        else
+        {
+            fpsCharacter.transform.position = spawnPos;
+        }
+            
     }
     
     [Server]

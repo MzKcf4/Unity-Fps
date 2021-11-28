@@ -33,7 +33,6 @@ public class FpsWeaponViewModel : MonoBehaviour
     
     public void HandleWeaponEvent(WeaponEvent evt)
     {
-        Debug.Log("Received event : " + evt);
         if(evt == WeaponEvent.Draw)
             animancer.Play(weaponResources.drawClip , 0f , FadeMode.FromStart);
         else if (evt == WeaponEvent.Reload)

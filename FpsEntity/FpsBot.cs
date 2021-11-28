@@ -192,13 +192,6 @@ public class FpsBot : FpsCharacter
         
         botFsm.OnTakeHit(damageInfo);
     }
-                    
-    [Server]
-    protected override void Killed(DamageInfo damageInfo)
-    {
-        base.Killed(damageInfo);
-        PlayerManager.Instance.QueueRespawn(this);
-    }
     
     public void GetWeapon(GameObject weaponModelPrefab , int slot)
     {

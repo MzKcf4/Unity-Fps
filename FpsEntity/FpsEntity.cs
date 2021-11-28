@@ -22,27 +22,32 @@ public class FpsEntity : NetworkBehaviour
     // Start is called before the first frame update
 	protected virtual void Start()
     {
-	    if(!isLocalPlayer)
-	    {
-	    	foreach(Behaviour b in localPlayerBehaviours)
-	    		b.enabled = false;
-	    	foreach(GameObject o in localPlayerGameObjects)
-	    		o.SetActive(false);
-	    }
-	    
-	    if(!isServer)
-	    {
-	    	foreach(Behaviour b in serverBehaviours)
-	    		b.enabled = false;
-	    	foreach(GameObject o in serverGameObjects)
-	    		o.SetActive(false);
-	    }
+        SetupComponentsByNetworkSetting();
     }
 
     // Update is called once per frame
 	protected virtual void Update()
     {
         
+    }
+    
+    protected void SetupComponentsByNetworkSetting()
+    {
+        if(!isLocalPlayer)
+        {
+            foreach(Behaviour b in localPlayerBehaviours)
+                b.enabled = false;
+            foreach(GameObject o in localPlayerGameObjects)
+                o.SetActive(false);
+        }
+        
+        if(!isServer)
+        {
+            foreach(Behaviour b in serverBehaviours)
+                b.enabled = false;
+            foreach(GameObject o in serverGameObjects)
+                o.SetActive(false);
+        }
     }
     
 	public bool IsDead()
