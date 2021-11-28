@@ -95,14 +95,19 @@ public class Utils
     
     public static RayHitInfo CastRayAndGetHitInfo(Transform origin, int mask , float spread)
     {
+        return CastRayAndGetHitInfo(origin.position , origin.forward , mask , spread);
+    }
+    
+    public static RayHitInfo CastRayAndGetHitInfo(Vector3 fromPos, Vector3 forwardVec, int mask , float spread)
+    {
         // random vector within circle
         float rad = Random.Range(0.0f , 360.0f) * Mathf.Rad2Deg;
         float spreadX = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
         float spreadY = Random.Range(0.0f , spread/2.0f) * Mathf.Sin(rad);
         float spreadZ = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
         Vector3 spreadVec = new Vector3(spreadX , spreadY , spreadZ);
-        Vector3 direction = origin.forward + spreadVec;
-        Vector3 originPos = origin.position;
+        Vector3 direction = forwardVec + spreadVec;
+        Vector3 originPos = fromPos;
         
         RaycastHit hit;
         if(Physics.Raycast(originPos ,direction, out hit , 1000.0f , mask))

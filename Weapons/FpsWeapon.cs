@@ -9,16 +9,8 @@ using Animancer;
 
 public class FpsWeapon : MonoBehaviour
 {
-	private static LayerMask MASK_HITBOX;
-    private static LayerMask MASK_WALL;
-    private static LayerMask MASK_HITBOX_AND_WALL;
     [SerializeField] public GameObject weaponViewPrefab;
-
-	private RaycastHelper raycastHelper;
-	// ---------- Custom events --------------- //
-	// FpsPlayer listens to this event , weapon tells its owner that it hits something
-	public DamageInfoEvent hitTargetEvent = new DamageInfoEvent();
-	// ---------------------------------------- //    
+    
     private ActionCooldown cooldownUntilIdle = new ActionCooldown();
 	private WeaponState weaponState = WeaponState.Idle;
     public WeaponReloadType reloadType = WeaponReloadType.Clip;
@@ -57,10 +49,6 @@ public class FpsWeapon : MonoBehaviour
         FetchDataFromDb();
 		muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
         weaponWorldModel = GetComponent<FpsWeaponWorldModel>();
-        if(Camera.main)
-        {
-            raycastHelper = Camera.main.GetComponent<RaycastHelper>();
-        }
         currentClip = clipSize;
 	}
     
@@ -84,12 +72,7 @@ public class FpsWeapon : MonoBehaviour
     
 	void Start()
 	{
-		MASK_HITBOX = LayerMask.GetMask(Constants.LAYER_HITBOX);
-        MASK_WALL = LayerMask.GetMask(Constants.LAYER_GROUND);
-        MASK_HITBOX_AND_WALL = (1 << MASK_HITBOX.value) | (1 << MASK_WALL.value);
-        
-        if(raycastHelper != null)
-		    raycastHelper.m_LayerMask = MASK_HITBOX;
+
 	}
 
 	void Update()
@@ -148,7 +131,6 @@ public class FpsWeapon : MonoBehaviour
             }
             else if (weaponState == WeaponState.Reloading_PalletInsert)
             {
-                Debug.Log(owner);
                 currentClip++;
                 UpdateAmmoDisplay();
                 if(currentClip != clipSize)
@@ -212,94 +194,21 @@ public class FpsWeapon : MonoBehaviour
 		if(!isMelee)
 		{
             EmitWeaponViewEvent(WeaponEvent.Shoot);
-            PlayerFireWeapon();
-            for(int i = 0 ; i < palletPerShot ; i++)
-            {
-                CheckWeaponRaycastHit();    
-            }
+            
+            currentClip--;
+            weaponState = WeaponState.Shooting;
+            cooldownUntilIdle.StartCooldown(shootInterval);
+            
 			ApplyRecoil();
 			FpsUiManager.Instance.OnWeaponAmmoUpdate(currentClip);
 		}
 	}
     
-    public void PlayerFireWeapon()
-    {
-        if(owner is FpsPlayer)
-        {
-            Vector3 aim = Utils.GetMouseAim();
-            FireWeapon(aim);
-        }
-    }
-    
     public void FireWeapon(Vector3 dest)
     {
-        currentClip--;
-        weaponState = WeaponState.Shooting;
-        cooldownUntilIdle.StartCooldown(shootInterval);
         weaponWorldModel.ShootProjectile(dest);
     }
-        
-    // Should be used by Local Player only
-	private void CheckWeaponRaycastHit()
-	{
-		if(!isMelee)
-		{
-            RayHitInfo rayHitInfo = Utils.GetMouseAimHitInfo(LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND), spread);
-            if(rayHitInfo == null)
-                return;
             
-            GameObject objOnHit = rayHitInfo.hitObject;
-            // Hits wall
-            if( (1 << objOnHit.layer) == MASK_WALL.value)
-            {
-                LocalSpawnManager.Instance.SpawnBulletDecalFx(rayHitInfo.hitPoint , rayHitInfo.normal);
-                return;
-            }
-            
-            // Else should expect hitting hitbox
-            FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
-            FpsEntity hitEntity = enemyHitBox.fpsEntity;
-                
-            if(hitEntity is FpsCharacter)
-            {
-                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
-                if(hitTeam == owner.team)   return;
-            }
-                
-            if(hitEntity != null)
-            {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(this, enemyHitBox , rayHitInfo.hitPoint);    
-                if(owner is FpsPlayer && owner.isLocalPlayer)
-                    UiHitMarker.Instance.ShowHitMarker();
-                    
-                hitTargetEvent.Invoke(hitEntity.gameObject, dmgInfo);
-                return;
-            }
-		}
-		else
-		{
-			// ToDo: Single hit count on single enemy
-			raycastHelper.m_LocalPosition = raycastSetting.localPosition;
-			raycastHelper.m_HalfExtends = raycastSetting.halfExtends;
-			raycastHelper.CheckPhysic();
-			IEnumerable<Collider> colliders = raycastHelper.GetOverlapColliders();
-			foreach(Collider c in colliders)
-			{
-				if(c.CompareTag(Constants.TAG_ENEMY))
-				{
-					FpsEnemy fpsEnemy = c.GetComponent<FpsEnemy>();
-					DamageInfo dmgInfo = new DamageInfo(){
-						damage = 10,
-						bodyPart = BodyPart.Chest,
-						hitPoint = c.transform.position
-					};
-					
-					hitTargetEvent.Invoke(fpsEnemy.gameObject, dmgInfo);
-				}
-			}
-		}
-	}
-    
     private void UpdateAmmoDisplay()
     {
         if(owner is FpsPlayer && owner.isLocalPlayer)
@@ -351,4 +260,34 @@ public class FpsWeapon : MonoBehaviour
             PlayerContext.Instance.weaponReloadInputEvent.RemoveListener(DoWeaponReload);
         }
 	}
+    
+    
+    // ----------------- Archived melee raycast ---------------------- //
+    /*
+    private void CheckWeaponRaycastHit()
+    {
+        if(isMelee)
+        {
+            // ToDo: Single hit count on single enemy
+            raycastHelper.m_LocalPosition = raycastSetting.localPosition;
+            raycastHelper.m_HalfExtends = raycastSetting.halfExtends;
+            raycastHelper.CheckPhysic();
+            IEnumerable<Collider> colliders = raycastHelper.GetOverlapColliders();
+            foreach(Collider c in colliders)
+            {
+                if(c.CompareTag(Constants.TAG_ENEMY))
+                {
+                    FpsEnemy fpsEnemy = c.GetComponent<FpsEnemy>();
+                    DamageInfo dmgInfo = new DamageInfo(){
+                        damage = 10,
+                        bodyPart = BodyPart.Chest,
+                        hitPoint = c.transform.position
+                    };
+                    
+                    hitTargetEvent.Invoke(fpsEnemy.gameObject, dmgInfo);
+                }
+            }
+        }
+    }
+    */
 }

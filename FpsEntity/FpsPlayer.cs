@@ -52,6 +52,7 @@ public class FpsPlayer : FpsCharacter
 	    	progressionWeaponConfig.InitializeWeaponList();
 	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(SwitchWeapon);
 	    	PlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
+            PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             
@@ -151,6 +152,7 @@ public class FpsPlayer : FpsCharacter
         {
             // Change the local weapon model to camera's culling mask too !
             Utils.ChangeLayerRecursively(weaponModelObj , Constants.LAYER_LOCAL_PLAYER_MODEL, true); 
+            
         }
     }
 	
@@ -161,13 +163,11 @@ public class FpsPlayer : FpsCharacter
 		
 		if(activeWeapon != null)
 		{
-			activeWeapon.hitTargetEvent.RemoveListener(OnWeaponHitTarget);
 			activeWeapon.gameObject.SetActive(false);
 		}
 		
 		activeWeapon = weaponSlots[slot];
 		activeWeapon.gameObject.SetActive(true);
-		activeWeapon.hitTargetEvent.AddListener(OnWeaponHitTarget);
         fpsWeaponView.SwitchWeapon(slot);
 		activeWeapon.DoWeaponDraw();
 	}
@@ -211,8 +211,6 @@ public class FpsPlayer : FpsCharacter
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
         }
-		
-        
 	}
     
 	[Client]
@@ -230,6 +228,51 @@ public class FpsPlayer : FpsCharacter
 		if(fpsEntity != null)
 			fpsEntity.TakeDamage(dmgInfo);
 	}
+    
+    private void OnWeaponEventUpdate(WeaponEvent evt)
+    {
+        Debug.Log(evt);
+        if(evt == WeaponEvent.Shoot)
+            OnWeaponFireEvent();
+    }
+    
+    // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
+    //   notify the server to do corresponding actions
+    private void OnWeaponFireEvent()
+    {
+        if(!isLocalPlayer)  return;
+        
+        Transform fromTransform = Camera.main.transform;
+        
+        Vector3 fromPos = Camera.main.transform.position;
+        Vector3 forwardVec = Camera.main.transform.forward;
+        
+        CmdFireWeapon(fromPos , forwardVec);
+    }
+    
+    // Server then do Raycast to check if it hits
+    //    and tells other clients to create weapon fire effects (e.g  muzzleFlash , audio )
+    [Command]
+    public void CmdFireWeapon(Vector3 fromPos , Vector3 forwardVec)
+    {
+        Debug.Log("CmdFireWeapon");
+        CoreGameManager.Instance.DoWeaponRaycast(this , activeWeapon , fromPos , forwardVec);
+        RpcFireWeapon();
+    }
+    
+    // 
+    [ClientRpc]
+    public void RpcFireWeapon()
+    {
+        
+    }
+    
+    [TargetRpc]
+    public void TargetOnWeaponHitEnemy(NetworkConnection target)
+    {
+        if(isLocalPlayer)
+            UiHitMarker.Instance.ShowHitMarker();
+    }
     
     [ClientRpc]
     protected override void RpcKilled(DamageInfo damageInfo)
@@ -297,7 +340,5 @@ public class FpsPlayer : FpsCharacter
             currentVelocity = controllerVelocity;
         }
         return currentVelocity;
-        
-        // return playerController.GetMovementVelocity();
     }
 }

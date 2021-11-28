@@ -4,7 +4,10 @@ using UnityEngine;
 using Mirror;
 using Animancer;
 
-// A FpsCharacter should have a Humanoid model , with weaponRoot component defined in hand for weapon world model
+// A FpsCharacter should 
+// -  have a Humanoid model , with weaponRoot component defined in hand for weapon world model
+// -  be able to hold FpsWeapon
+// -  perform weapon action with FpsWeapon
 
 public abstract class FpsCharacter : FpsEntity
 {
