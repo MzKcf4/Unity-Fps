@@ -17,7 +17,9 @@ public class PlayerContext : MonoBehaviour
 	// ---------------
 	public UnityEvent onWeaponShootEvent = new UnityEvent();
 	public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
-	
+	public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
+    
+    
 	public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	
@@ -87,6 +89,11 @@ public class PlayerContext : MonoBehaviour
 	{
 		mouseLookInputEvent.Invoke(value);
 	}	
+    
+    public void OnJump(InputAction.CallbackContext value)
+    {
+        jumpEvent.Invoke(value);
+    }
 	
 	public void OnHealthUpdate(int newHealth , int maxHealth)
 	{

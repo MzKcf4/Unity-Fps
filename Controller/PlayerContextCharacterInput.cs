@@ -8,11 +8,12 @@ public class PlayerContextCharacterInput : CharacterInput
 {
 	private Vector3 rawInputMovement = Vector3.zero;
 	public bool CanMove = true;
+    public bool isJumpKeyPressed = false;
 	
 	void Start()
 	{
 		PlayerContext.Instance.movementInputEvent.AddListener(OnMovement);
-		// PlayerContext.Instance
+        PlayerContext.Instance.jumpEvent.AddListener(OnJump);
 	}
 	
 	public void OnMovement(InputAction.CallbackContext value)
@@ -21,6 +22,11 @@ public class PlayerContextCharacterInput : CharacterInput
 		rawInputMovement = new Vector3(input.x, 0 , input.y);
 	}
 	
+    public void OnJump(InputAction.CallbackContext value)
+    {
+        isJumpKeyPressed = !value.canceled;
+    }
+    
 	public override float GetHorizontalMovementInput()
 	{
 		if(CanMove)
@@ -37,6 +43,6 @@ public class PlayerContextCharacterInput : CharacterInput
 	}
 	public override bool IsJumpKeyPressed()
 	{
-		return false;
+		return isJumpKeyPressed;
 	}
 }
