@@ -180,9 +180,8 @@ public class FpsWeapon : MonoBehaviour
 	
 	public void DoWeaponDraw()
 	{
-		FpsUiManager.Instance.OnWeaponAmmoUpdate(currentClip);
         EmitWeaponViewEvent(WeaponEvent.Draw);
-        
+        UpdateAmmoDisplay();
         weaponState = WeaponState.Drawing;
         cooldownUntilIdle.StartCooldown(drawTime);
 	}
@@ -200,7 +199,7 @@ public class FpsWeapon : MonoBehaviour
             cooldownUntilIdle.StartCooldown(shootInterval);
             
 			ApplyRecoil();
-			FpsUiManager.Instance.OnWeaponAmmoUpdate(currentClip);
+            UpdateAmmoDisplay();
 		}
 	}
     

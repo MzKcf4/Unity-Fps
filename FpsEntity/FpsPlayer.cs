@@ -48,12 +48,11 @@ public class FpsPlayer : FpsCharacter
 	{
 		base.Start();
         painShockCooldown.interval = 0.06f;
-        team = TeamEnum.TeamA;
-    	
+
 	    if(isLocalPlayer)
 	    {
 	    	progressionWeaponConfig.InitializeWeaponList();
-	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(SwitchWeapon);
+	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	PlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
@@ -73,6 +72,7 @@ public class FpsPlayer : FpsCharacter
         
         if(isServer)
         {
+            team = TeamEnum.TeamA;
             ServerContext.Instance.playerList.Add(this);
             // *ToFix* Teleport only , since 'Respawn' will cause null on client side 
             PlayerManager.Instance.TeleportToSpawnPoint(this);
@@ -83,8 +83,6 @@ public class FpsPlayer : FpsCharacter
         weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
         GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
         GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 1);
-        
-        
 	}
     
 	protected override void Update()
@@ -129,7 +127,12 @@ public class FpsPlayer : FpsCharacter
 			};
 		}
 	}
-	
+    
+	[Command]
+    public void CmdGetWeapon()
+    {
+        
+    }
 
 	[ClientRpc]
 	public void RpcGetWeapon(string weaponName , int slot)
@@ -158,24 +161,46 @@ public class FpsPlayer : FpsCharacter
         {
             // Change the local weapon model to camera's culling mask too !
             Utils.ChangeLayerRecursively(weaponModelObj , Constants.LAYER_LOCAL_PLAYER_MODEL, true); 
+            
+            fpsWeaponView.SwitchWeapon(slot);
+            activeWeapon.DoWeaponDraw();
         }
     }
-	
-	protected void SwitchWeapon(int slot)
+    
+	protected void LocalSwitchWeapon(int slot)
 	{        
 		if(weaponSlots[slot] == null)
 			return;
-		
-		if(activeWeapon != null)
-		{
-			activeWeapon.gameObject.SetActive(false);
-		}
-		
-		activeWeapon = weaponSlots[slot];
-		activeWeapon.gameObject.SetActive(true);
+            
+		CmdSwitchWeapon(slot);
+        SwitchWeapon(slot);
         fpsWeaponView.SwitchWeapon(slot);
 		activeWeapon.DoWeaponDraw();
 	}
+    
+    [Command]
+    protected void CmdSwitchWeapon(int slot)
+    {
+        SwitchWeapon(slot);
+        RpcSwitchWeapon(slot);
+    }
+    
+    [ClientRpc]
+    protected void RpcSwitchWeapon(int slot)
+    {
+        SwitchWeapon(slot);
+    }
+    
+    protected void SwitchWeapon(int slot)
+    {
+        if(activeWeapon != null)
+        {
+            activeWeapon.gameObject.SetActive(false);
+        }
+        
+        activeWeapon = weaponSlots[slot];
+        activeWeapon.gameObject.SetActive(true);
+    }
     
     #region hit_dmg
     

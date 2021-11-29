@@ -5,14 +5,15 @@ using UnityEngine;
 public class WeaponAssetManager : MonoBehaviour
 {
     public static WeaponAssetManager Instance;
+    public WeaponNameToPrefabConfig weaponNameToPrefabConfig;
     
-    public GameObject ak47ViewPrefab;
+    // public GameObject ak47ViewPrefab;
     public GameObject ak47WeaponPrefab;
     
-    public GameObject r8ViewPrefab;
+    // public GameObject r8ViewPrefab;
     public GameObject r8WeaponPrefab;
     
-    public GameObject sawoffViewPrefab;
+    // public GameObject sawoffViewPrefab;
     public GameObject sawoffWeaponPrefab;
     
     void Awake()
@@ -20,15 +21,8 @@ public class WeaponAssetManager : MonoBehaviour
         Instance = this;
     }
     
-    // Start is called before the first frame update
-    void Start()
+    public GameObject GetWeaponPrefab(string weaponName)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        return weaponNameToPrefabConfig.GetPrefab(weaponName);
     }
 }
