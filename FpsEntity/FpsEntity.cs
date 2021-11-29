@@ -59,6 +59,13 @@ public class FpsEntity : NetworkBehaviour
     public virtual void SetHealth(int newHealth)
     {
         health = newHealth;
+        RpcHealthUpdate();
+    }
+    
+    [ClientRpc]
+    public virtual void RpcHealthUpdate()
+    {
+        
     }
 	    
 	[Server]

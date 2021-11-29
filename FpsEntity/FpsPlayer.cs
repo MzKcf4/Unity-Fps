@@ -212,7 +212,6 @@ public class FpsPlayer : FpsCharacter
 		base.RpcTakeDamage(damageInfo);
         if(isLocalPlayer)
         {
-            PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
         }
@@ -342,5 +341,12 @@ public class FpsPlayer : FpsCharacter
             currentVelocity = controllerVelocity;
         }
         return currentVelocity;
+    }
+    
+    public override void RpcHealthUpdate()
+    {
+        base.RpcHealthUpdate();
+        if(isLocalPlayer)
+            PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
     }
 }
