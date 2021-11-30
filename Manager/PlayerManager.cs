@@ -90,7 +90,8 @@ public class PlayerManager : NetworkBehaviour
     {
         yield return new WaitForSeconds(5);
         
-        RespawnAndTeleport(fpsCharacter);
+        if(fpsCharacter != null)
+            RespawnAndTeleport(fpsCharacter);
     }
     
     private Transform GetSpawnTransform(TeamEnum team)

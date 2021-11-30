@@ -83,6 +83,7 @@ public class FpsPlayer : FpsCharacter
         weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
         GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
         GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 1);
+        GetWeapon(WeaponAssetManager.Instance.GetWeaponPrefab("csgo_awp") , 2);
 	}
     
 	protected override void Update()
@@ -350,11 +351,9 @@ public class FpsPlayer : FpsCharacter
 	
 	void OnDestroy()
 	{
+        base.OnDestroy();
 		if(isServer)
-		{
 			ServerContext.Instance.playerList.Remove(this);
-		}
-        ServerContext.Instance.characterList.Remove(this);
 	}
         
     public override Vector3 GetMovementVelocity()
