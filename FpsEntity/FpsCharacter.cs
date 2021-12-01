@@ -131,7 +131,6 @@ public abstract class FpsCharacter : FpsEntity
         if(currentPlayingClip == clip)
             return;
             
-        
         currentPlayingClip = clip;
         modelAnimancer.Play(clip , 0.1f , FadeMode.FromStart);
     }

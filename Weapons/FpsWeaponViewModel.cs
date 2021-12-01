@@ -11,7 +11,7 @@ public class FpsWeaponViewModel : MonoBehaviour
     private MMFeedbacks muzzleFeedbacks;
     private AnimancerComponent animancer;
     // Use parent's audio source
-    public AudioSource audioSource;
+    [HideInInspector] public AudioSource audioSource;
     
     void Awake()
     {

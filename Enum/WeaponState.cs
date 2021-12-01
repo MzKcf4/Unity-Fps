@@ -12,3 +12,10 @@ public enum WeaponState
     Reloading_PalletEnd,
     Shooting
 }
+
+public enum WeaponSecondaryState
+{
+    None,
+    Scoped,
+    ScopedExtra
+}

@@ -12,7 +12,12 @@ public class FpsWeapon : MonoBehaviour
     [SerializeField] public GameObject weaponViewPrefab;
     
     private ActionCooldown cooldownUntilIdle = new ActionCooldown();
+    private float secondaryActionInterval = 0.2f;
+    private ActionCooldown secondaryActionCooldown = new ActionCooldown();
+    
 	private WeaponState weaponState = WeaponState.Idle;
+    private WeaponSecondaryState weaponSecondaryState = WeaponSecondaryState.None;
+    
     public WeaponReloadType reloadType = WeaponReloadType.Clip;
     public WeaponCategory weaponCategory = WeaponCategory.Rifle;
 	
@@ -22,10 +27,11 @@ public class FpsWeapon : MonoBehaviour
 	
 	private MMFeedbacks muzzleFeedbacks;
 	private KeyPressState primaryActionState = KeyPressState.Released;
+    private KeyPressState secondaryActionState = KeyPressState.Released;
 	
     public bool isFirstPersonView = true;
     
-    public FpsWeaponWorldModel weaponWorldModel;
+    [HideInInspector] public FpsWeaponWorldModel weaponWorldModel;
 	
     public string weaponName;
     private int currentClip;
@@ -37,12 +43,14 @@ public class FpsWeapon : MonoBehaviour
     private float reloadTime_PalletInsert = 0.2f;
     private float reloadTime_PalletEnd = 0.2f;
     private float drawTime = 2f;
+    
     [HideInInspector] public float shootInterval = 0.1f;
+    
     
     [HideInInspector] public int palletPerShot = 1;
     [HideInInspector] public float spread = 0.1f;
     
-    public FpsCharacter owner;
+    [HideInInspector] public FpsCharacter owner;
     
 	void Awake()
 	{
@@ -50,6 +58,7 @@ public class FpsWeapon : MonoBehaviour
 		muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
         weaponWorldModel = GetComponent<FpsWeaponWorldModel>();
         currentClip = clipSize;
+        secondaryActionCooldown.interval = secondaryActionInterval;
 	}
     
     private void FetchDataFromDb()
@@ -78,6 +87,7 @@ public class FpsWeapon : MonoBehaviour
 	void Update()
 	{
         if(owner.IsDead())  return;
+        // cooldown with secondary action
         HandleCooldownInterrupt();
         HandleCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
@@ -86,6 +96,10 @@ public class FpsWeapon : MonoBehaviour
     		{
     			DoWeaponPrimaryAction();
     		}
+            if(weaponState == WeaponState.Idle && secondaryActionState != KeyPressState.Released)
+            {
+                DoWeaponSecondaryAction();
+            }
         }
 	}
     
@@ -105,6 +119,8 @@ public class FpsWeapon : MonoBehaviour
     
     private void HandleCooldown()
     {
+        secondaryActionCooldown.ReduceCooldown();
+        
         if(weaponState == WeaponState.Idle) return;
         
         if(cooldownUntilIdle.IsOnCooldown())
@@ -158,12 +174,49 @@ public class FpsWeapon : MonoBehaviour
         primaryActionState = keyPressState;
     }
     
+    public void OnWeaponSecondaryAction(KeyPressState keyPressState)
+    {
+        secondaryActionState = keyPressState;
+    }
+    
+    public void DoWeaponSecondaryAction()
+    {
+        if(weaponCategory == WeaponCategory.Sniper)
+        {
+            if(!secondaryActionCooldown.IsOnCooldown() && secondaryActionState == KeyPressState.Holding)
+            {
+                secondaryActionCooldown.StartCooldown();
+                
+                if(weaponSecondaryState == WeaponSecondaryState.None)
+                {
+                    weaponSecondaryState = WeaponSecondaryState.Scoped;
+                    EmitWeaponViewEvent(WeaponEvent.Scope);
+                }
+                else if(weaponSecondaryState == WeaponSecondaryState.Scoped)
+                {
+                    weaponSecondaryState = WeaponSecondaryState.None;
+                    EmitWeaponViewEvent(WeaponEvent.UnScope);
+                }
+            }
+        }
+    }
+    
+    private void ResetWeaponSecondaryState()
+    {
+        Debug.Log(weaponSecondaryState);
+        if(weaponSecondaryState == WeaponSecondaryState.Scoped)
+        {
+            weaponSecondaryState = WeaponSecondaryState.None;
+            EmitWeaponViewEvent(WeaponEvent.UnScope);
+        }
+    }
 	
 	public void DoWeaponReload()
 	{
 		if(weaponState != WeaponState.Idle || currentClip == clipSize)
 			return;
         
+        ResetWeaponSecondaryState();
         if(reloadType == WeaponReloadType.Clip)
         {
             EmitWeaponViewEvent(WeaponEvent.Reload);
@@ -180,6 +233,7 @@ public class FpsWeapon : MonoBehaviour
 	
 	public void DoWeaponDraw()
 	{
+        ResetWeaponSecondaryState();
         EmitWeaponViewEvent(WeaponEvent.Draw);
         UpdateAmmoDisplay();
         weaponState = WeaponState.Drawing;
@@ -193,7 +247,7 @@ public class FpsWeapon : MonoBehaviour
 		if(!isMelee)
 		{
             EmitWeaponViewEvent(WeaponEvent.Shoot);
-            
+            ResetWeaponSecondaryState();
             currentClip--;
             weaponState = WeaponState.Shooting;
             cooldownUntilIdle.StartCooldown(shootInterval);
@@ -237,7 +291,8 @@ public class FpsWeapon : MonoBehaviour
 	{
         if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
         {
-		    PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponSecondaryActionInputEvent.RemoveListener(OnWeaponSecondaryAction);
             PlayerContext.Instance.weaponReloadInputEvent.RemoveListener(DoWeaponReload);
         }
 	}
@@ -246,7 +301,8 @@ public class FpsWeapon : MonoBehaviour
 	{
         if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
         {
-		    PlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
             PlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
         }
 	}
@@ -255,7 +311,8 @@ public class FpsWeapon : MonoBehaviour
 	{
         if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
         {
-		    PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
+            PlayerContext.Instance.weaponSecondaryActionInputEvent.RemoveListener(OnWeaponSecondaryAction);
             PlayerContext.Instance.weaponReloadInputEvent.RemoveListener(DoWeaponReload);
         }
 	}

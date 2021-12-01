@@ -18,6 +18,11 @@ public class FpsUiManager : MonoBehaviour
     private GameObject killFeedPanel;
     [SerializeField]
     private GameObject killListingPrefab;
+    
+    [SerializeField]
+    private GameObject scopeContainer;
+    [SerializeField]
+    private GameObject crosshairContainer;
 	
 	void Awake()
 	{
@@ -88,4 +93,14 @@ public class FpsUiManager : MonoBehaviour
 			progressText.text = "";
 		}
 	}
+    
+    public void ToggleScope(bool enable)
+    {
+        scopeContainer.SetActive(enable);
+    }
+    
+    public void ToggleCrosshair(bool enable)
+    {
+        crosshairContainer.SetActive(enable);
+    }
 }

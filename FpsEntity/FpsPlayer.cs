@@ -26,6 +26,7 @@ public class FpsPlayer : FpsCharacter
     public GameObject viewCamera;
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
+    private CMF.CameraController cameraController;
 	
     // ----------- View Layer ------------- //
 	[SerializeField]
@@ -57,6 +58,7 @@ public class FpsPlayer : FpsCharacter
             PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
+            cameraController = GetComponentInChildren<CMF.CameraController>();
             
             // For reset the layer for non-local player so that we can see other players.
             //   as our camera has culling mask for LOCAL_PLAYER_MODEL
@@ -224,14 +226,7 @@ public class FpsPlayer : FpsCharacter
 		
 		TakeDamage(dmgInfo);
 	}
-    
-    [Server]
-    public override void TakeDamage(DamageInfo damageInfo)
-    {
-        base.TakeDamage(damageInfo);
-        
-    }
-	
+    	
 	[ClientRpc]
 	protected override void RpcTakeDamage(DamageInfo damageInfo)
 	{
@@ -261,16 +256,37 @@ public class FpsPlayer : FpsCharacter
     
     private void OnWeaponEventUpdate(WeaponEvent evt)
     {
+        if(!isLocalPlayer)  return;
+        Debug.Log(evt);
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
+        else if (evt == WeaponEvent.Scope)
+            OnWeaponScopeEvent();
+        else if (evt == WeaponEvent.UnScope)
+            OnWeaponUnScopeEvent();
+    }
+    
+    private void OnWeaponScopeEvent()
+    {
+        FpsUiManager.Instance.ToggleCrosshair(false);
+        FpsUiManager.Instance.ToggleScope(true);
+        PlayerContext.Instance.ToggleScope(true);
+        cameraController.cameraSpeed = cameraController.cameraSpeed / 3;
+        // Camera.main.fieldOfView
+    }
+    
+    private void OnWeaponUnScopeEvent()
+    {
+        FpsUiManager.Instance.ToggleCrosshair(true);
+        FpsUiManager.Instance.ToggleScope(false);
+        PlayerContext.Instance.ToggleScope(false);
+        cameraController.cameraSpeed = cameraController.cameraSpeed * 3;
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
     //   notify the server to do corresponding actions
     private void OnWeaponFireEvent()
     {
-        if(!isLocalPlayer)  return;
-        
         Transform fromTransform = Camera.main.transform;
         
         Vector3 fromPos = Camera.main.transform.position;

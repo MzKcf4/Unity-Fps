@@ -10,7 +10,9 @@ public class PlayerContext : MonoBehaviour
 	public static PlayerContext Instance;
 	// ----- Input events : events fired when corresponding input key pressed -----
 	public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
-	public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
+    public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
+    
+    public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
 	public InputActionContextEvent mouseLookInputEvent = new InputActionContextEvent();
 	public UnityEvent weaponReloadInputEvent = new UnityEvent();
 	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();	
@@ -22,7 +24,8 @@ public class PlayerContext : MonoBehaviour
     
 	public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
-	
+	private CinemachineVirtualCamera virtualCamera;
+    
 	void Awake()
 	{
 		Instance = this;
@@ -32,6 +35,8 @@ public class PlayerContext : MonoBehaviour
 	{
 		this.player = fpsPlayer;
 		cameraShake = fpsPlayer.GetComponentInChildren<CinemachineImpulseSource>();
+        virtualCamera = fpsPlayer.GetComponentInChildren<CinemachineVirtualCamera>();
+        
 	}
 	
 	public void ShakeCamera()
@@ -39,6 +44,11 @@ public class PlayerContext : MonoBehaviour
 		if(cameraShake == null)	return;
 		cameraShake.GenerateImpulse(Camera.main.transform.forward);
 	}
+    
+    public void ToggleScope(bool scoped)
+    {
+        virtualCamera.m_Lens.FieldOfView = scoped ? 15f : 60f;
+    }
 	
 	public void OnWeaponPrimaryActionInput(InputAction.CallbackContext value)
 	{
@@ -50,6 +60,17 @@ public class PlayerContext : MonoBehaviour
 			weaponPrimaryActionInputEvent.Invoke(KeyPressState.Released);
 		}
 	}
+    
+    public void OnWeaponSecondaryActionInputEvent(InputAction.CallbackContext value)
+    {
+        if(value.started){
+            weaponSecondaryActionInputEvent.Invoke(KeyPressState.Pressed);
+        } else if (value.performed){
+            weaponSecondaryActionInputEvent.Invoke(KeyPressState.Holding);
+        } else if (value.canceled){
+            weaponSecondaryActionInputEvent.Invoke(KeyPressState.Released);
+        }
+    }
 	
 	public void OnSwitchWeaponSlot1(InputAction.CallbackContext value)
 	{

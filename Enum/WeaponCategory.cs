@@ -6,5 +6,6 @@ public enum WeaponCategory
 {
     Rifle,
     Shotgun,
-    Pistol
+    Pistol,
+    Sniper
 }

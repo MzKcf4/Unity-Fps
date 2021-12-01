@@ -89,7 +89,7 @@ public class FpsEntity : NetworkBehaviour
 	
 	private void ProcessDamageByBodyPart(DamageInfo damageInfo)
 	{
-		if(damageInfo.bodyPart == BodyPart.Arm || damageInfo.bodyPart == BodyPart.Leg)
+		if(damageInfo.bodyPart == BodyPart.Leg)
 			damageInfo.damage = Mathf.RoundToInt(damageInfo.damage * 0.7f);
 		else if (damageInfo.bodyPart == BodyPart.Head)
 			damageInfo.damage *= 2;

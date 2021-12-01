@@ -10,4 +10,7 @@ public enum WeaponEvent
     Reload_PalletStart,
     Reload_PalletInsertStart,
     Reload_PalletEnd,
+    Scope,
+    ScopeExtra,
+    UnScope
 }
