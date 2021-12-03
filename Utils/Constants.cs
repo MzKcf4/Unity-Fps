@@ -21,4 +21,6 @@ public class Constants
 	public static readonly int WEAPON_SLOT_2 = 1;
 	public static readonly int WEAPON_SLOT_3 = 2;
 	public static readonly int WEAPON_SLOT_MAX = 3;
+    
+    public static readonly string SETTING_KEY_AUDIO_MASTER_VOLUME = "AudioMasterVolume";
 }

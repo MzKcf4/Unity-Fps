@@ -37,7 +37,6 @@ public class CoreGameManager : NetworkBehaviour
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
             RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(fromPos , forwardVec , mask , spread);
-            Debug.Log(hitInfo);
             if(hitInfo == null)
                 continue;
             

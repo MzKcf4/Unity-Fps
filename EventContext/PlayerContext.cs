@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using Cinemachine;
+using UnityEngine.Audio;
 
 public class PlayerContext : MonoBehaviour
 {
@@ -20,15 +21,21 @@ public class PlayerContext : MonoBehaviour
 	public UnityEvent onWeaponShootEvent = new UnityEvent();
 	public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
 	public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
+    public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
     
     
 	public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
     
+    public PlayerSettingDto playerSettingDto;
+    public AudioMixer audioMixerMaster;
+    
 	void Awake()
 	{
 		Instance = this;
+        playerSettingDto = new PlayerSettingDto();
+        LoadPlayerSettings();
 	}
 	
 	public void InitalizeFieldsOnFirstSpawn(FpsPlayer fpsPlayer)
@@ -120,6 +127,35 @@ public class PlayerContext : MonoBehaviour
 	{
 		onHealthUpdateEvent.Invoke(newHealth, maxHealth);
 	}
+    
+    
 	
+    public void OnOptionMenuToggleInput(InputAction.CallbackContext value)
+    {
+        if(value.started)
+            onOptionMenuToggleEvent.Invoke();
+    }
+    
+    public void OnAudioVolumeChanged(float newVolumn)
+    {
+        audioMixerMaster.SetFloat("volume" , newVolumn);
+        playerSettingDto.audioMasterVolume = newVolumn;
+    }
+
+    public void LoadPlayerSettings()
+    {
+        Debug.Log("Loading");
+        float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
+        
+        playerSettingDto.audioMasterVolume = masterVolume;
+        
+        OnAudioVolumeChanged(masterVolume);
+    }
+    
+    public void SavePlayerSettings()
+    {
+        Debug.Log("Saving");
+        ES3.Save<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, playerSettingDto.audioMasterVolume);
+    }
 	
 }

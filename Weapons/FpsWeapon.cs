@@ -203,7 +203,6 @@ public class FpsWeapon : MonoBehaviour
     
     private void ResetWeaponSecondaryState()
     {
-        Debug.Log(weaponSecondaryState);
         if(weaponSecondaryState == WeaponSecondaryState.Scoped)
         {
             weaponSecondaryState = WeaponSecondaryState.None;

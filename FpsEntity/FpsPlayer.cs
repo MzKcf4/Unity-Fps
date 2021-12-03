@@ -257,7 +257,6 @@ public class FpsPlayer : FpsCharacter
     private void OnWeaponEventUpdate(WeaponEvent evt)
     {
         if(!isLocalPlayer)  return;
-        Debug.Log(evt);
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
         else if (evt == WeaponEvent.Scope)
