@@ -15,7 +15,7 @@ public class Constants
     public static readonly string LAYER_LOCAL_PLAYER_HITBOX = "LocalPlayerHitbox";
     public static readonly string LAYER_CHARACTER_MODEL = "CharacterModel";
     
-	public static readonly string WEAPON_SOUND_FIRE = "Fire";
+	public static readonly string WEAPON_SOUND_FIRE = "fire";
     
 	public static readonly int WEAPON_SLOT_1 = 0;
 	public static readonly int WEAPON_SLOT_2 = 1;

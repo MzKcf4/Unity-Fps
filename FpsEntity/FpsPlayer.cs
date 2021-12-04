@@ -315,7 +315,7 @@ public class FpsPlayer : FpsCharacter
     [ClientRpc]
     public void RpcFireWeapon()
     {
-        
+        AudioManager.Instance.PlaySoundAtPosition(activeWeapon.GetShootSound() , activeWeapon.GetMuzzlePosition());
     }
     
     [TargetRpc]

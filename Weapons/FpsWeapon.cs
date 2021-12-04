@@ -10,6 +10,7 @@ using Animancer;
 public class FpsWeapon : MonoBehaviour
 {
     [SerializeField] public GameObject weaponViewPrefab;
+    [SerializeField] private WeaponResources weaponResouces;
     
     private ActionCooldown cooldownUntilIdle = new ActionCooldown();
     private float secondaryActionInterval = 0.2f;
@@ -284,6 +285,16 @@ public class FpsWeapon : MonoBehaviour
         {
             PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
         }
+    }
+    
+    public AudioClip GetShootSound()
+    {
+        return weaponResouces.dictWeaponSounds[Constants.WEAPON_SOUND_FIRE];
+    }
+    
+    public Vector3 GetMuzzlePosition()
+    {
+        return weaponWorldModel.muzzleTransform.position;
     }
     
 	void OnDestroy()

@@ -9,16 +9,12 @@ using MoreMountains.Feedbacks;
 
 public class FpsWeaponWorldModel : MonoBehaviour
 {
-    [SerializeField] private WeaponResources weaponResources;
     private MMFeedbacks muzzleFeedbacks;
-    private AudioSource audioSource;
     public Transform muzzleTransform;
     public GameObject bulletPrefab;
     
-    
     void Awake()
     {
-        audioSource = GetComponentInParent<AudioSource>();
         muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
     }
     
@@ -43,28 +39,5 @@ public class FpsWeaponWorldModel : MonoBehaviour
     {
         if(muzzleFeedbacks)
             muzzleFeedbacks.PlayFeedbacks();
-        
-        
-        PlayWeaponSound(Constants.WEAPON_SOUND_FIRE);
-        /*
-        Vector3 direction = Utils.GetDirection(muzzleTransform.position , dest);
-        GameObject projectileObj = Instantiate(bulletPrefab , muzzleTransform.position , Quaternion.identity);
-        NetworkServer.Spawn(projectileObj);
-        FpsProjectile projectile = projectileObj.GetComponent<FpsProjectile>();
-        projectile.speed = 120f;
-        projectile.Setup(direction);
-        */
-    }
-    
-    public void PlayWeaponSound(string name)
-    {
-        name = name.ToLower();
-        if(weaponResources == null || weaponResources.dictWeaponSounds == null)
-            return;
-        
-        if(!weaponResources.dictWeaponSounds.ContainsKey(name))
-            Debug.Log("Sound resource key not found : " + name);
-        
-        audioSource.PlayOneShot(weaponResources.dictWeaponSounds[name]);
     }
 }
