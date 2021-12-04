@@ -7,7 +7,6 @@ using MoreMountains.Feedbacks;
 public class FpsWeaponView : MonoBehaviour
 {
     private AnimancerComponent animancer;
-    private AudioSource audioSource;
     private MMFeedbacks muzzleFeedbacks;
     
     [SerializeField] private ArmBoneToWeaponBone arm;
@@ -18,7 +17,6 @@ public class FpsWeaponView : MonoBehaviour
     void Awake()
     {
         arm = GetComponentInChildren<ArmBoneToWeaponBone>();
-        audioSource = GetComponent<AudioSource>();
         PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
     }
     
@@ -53,7 +51,6 @@ public class FpsWeaponView : MonoBehaviour
         fpsWeaponViewModel.transform.localPosition = fpsWeaponViewModel.offsetFromView;
         fpsWeaponViewModel.gameObject.SetActive(false);
         weaponViewModelSlots[slot] = fpsWeaponViewModel;
-        weaponViewModelSlots[slot].audioSource = this.audioSource;
     }
     
     public void SwitchWeapon(int slot)

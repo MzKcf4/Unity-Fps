@@ -95,6 +95,9 @@ public class FpsPlayer : FpsCharacter
     public void LoadLocalPlayerSettings()
     {
         cameraController.cameraSpeed = localPlayerSettingDto.mouseSpeed;
+        
+        AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraController.transform);
+        AudioManager.Instance.localPlayerAudioSource.transform.localPosition = Vector3.zero;
     }
     
 	protected override void Update()

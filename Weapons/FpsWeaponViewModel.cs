@@ -10,8 +10,7 @@ public class FpsWeaponViewModel : MonoBehaviour
     [SerializeField] WeaponResources weaponResources;
     private MMFeedbacks muzzleFeedbacks;
     private AnimancerComponent animancer;
-    // Use parent's audio source
-    [HideInInspector] public AudioSource audioSource;
+    private AudioSource audioSource;
     
     void Awake()
     {
@@ -22,7 +21,7 @@ public class FpsWeaponViewModel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        audioSource = AudioManager.Instance.localPlayerAudioSource;
     }
 
     // Update is called once per frame

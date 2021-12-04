@@ -30,19 +30,25 @@ public class PlayerContext : MonoBehaviour
     
     public PlayerSettingDto playerSettingDto;
     public AudioMixer audioMixerMaster;
+    public AudioMixerGroup audioMixerGroup;
     
 	void Awake()
 	{
 		Instance = this;
         playerSettingDto = new PlayerSettingDto();
-        LoadPlayerSettings();
 	}
+    
+    void Start()
+    {
+        LoadPlayerSettings();
+    }
 	
 	public void InitalizeFieldsOnFirstSpawn(FpsPlayer fpsPlayer)
 	{
 		this.player = fpsPlayer;
 		cameraShake = fpsPlayer.GetComponentInChildren<CinemachineImpulseSource>();
         virtualCamera = fpsPlayer.GetComponentInChildren<CinemachineVirtualCamera>();
+        
         
 	}
 	
@@ -140,7 +146,7 @@ public class PlayerContext : MonoBehaviour
         playerSettingDto.mouseSpeed = mouseSpeed;
         playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
         
-        OnAudioVolumeChanged(masterVolume);
+        audioMixerMaster.SetFloat("volume" , masterVolume);
     }
     
     public void SavePlayerSettings()
