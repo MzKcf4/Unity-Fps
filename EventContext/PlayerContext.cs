@@ -133,8 +133,8 @@ public class PlayerContext : MonoBehaviour
     public void LoadPlayerSettings()
     {
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
-        int mouseSpeed = ES3.Load<int>(Constants.SETTING_KEY_MOUSE_SPEED, 250);
-        int mouseSpeedZoomed = ES3.Load<int>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 83);
+        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 250);
+        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 83);
         
         playerSettingDto.audioMasterVolume = masterVolume;
         playerSettingDto.mouseSpeed = mouseSpeed;

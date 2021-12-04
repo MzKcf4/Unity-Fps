@@ -70,7 +70,7 @@ public class FpsUiOptionMenu : MonoBehaviour
         mouseSpeedSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.mouseSpeed);
         mouseSpeedSlider.UpdateUI();
         
-        mouseSpeedScopedSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.mouseSpeed);
+        mouseSpeedScopedSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.mouseSpeedZoomed);
         mouseSpeedScopedSlider.UpdateUI();
     }
 }
