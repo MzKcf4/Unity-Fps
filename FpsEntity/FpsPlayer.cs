@@ -39,6 +39,8 @@ public class FpsPlayer : FpsCharacter
 	private AnimationClip viewLeftMoveClip;
 	// ------------------------------------- //
     
+    private PlayerSettingDto localPlayerSettingDto;
+    
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -66,6 +68,8 @@ public class FpsPlayer : FpsCharacter
             fpsModel.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
             // The children are LocalPlayerHitBox , so that bot can raycast on them
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
+            localPlayerSettingDto = PlayerContext.Instance.playerSettingDto;
+            LoadLocalPlayerSettings();
 	    }
 	    else
 	    {
@@ -87,6 +91,11 @@ public class FpsPlayer : FpsCharacter
         GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 1);
         GetWeapon(WeaponAssetManager.Instance.GetWeaponPrefab("csgo_awp") , 2);
 	}
+    
+    public void LoadLocalPlayerSettings()
+    {
+        cameraController.cameraSpeed = localPlayerSettingDto.mouseSpeed;
+    }
     
 	protected override void Update()
     {
@@ -270,8 +279,7 @@ public class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
         PlayerContext.Instance.ToggleScope(true);
-        cameraController.cameraSpeed = cameraController.cameraSpeed / 3;
-        // Camera.main.fieldOfView
+        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
     }
     
     private void OnWeaponUnScopeEvent()
@@ -279,7 +287,7 @@ public class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
         PlayerContext.Instance.ToggleScope(false);
-        cameraController.cameraSpeed = cameraController.cameraSpeed * 3;
+        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 

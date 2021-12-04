@@ -128,7 +128,32 @@ public class PlayerContext : MonoBehaviour
 		onHealthUpdateEvent.Invoke(newHealth, maxHealth);
 	}
     
+    // ============================================================================================
     
+    public void LoadPlayerSettings()
+    {
+        float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
+        int mouseSpeed = ES3.Load<int>(Constants.SETTING_KEY_MOUSE_SPEED, 250);
+        int mouseSpeedZoomed = ES3.Load<int>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 83);
+        
+        playerSettingDto.audioMasterVolume = masterVolume;
+        playerSettingDto.mouseSpeed = mouseSpeed;
+        playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
+        
+        OnAudioVolumeChanged(masterVolume);
+    }
+    
+    public void SavePlayerSettings()
+    {
+        ES3.Save<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, playerSettingDto.audioMasterVolume);
+        ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED, playerSettingDto.mouseSpeed);
+        ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, playerSettingDto.mouseSpeedZoomed);
+        
+        // A fast way to apply settings , when already in game
+        if(player != null)
+            player.LoadLocalPlayerSettings();
+        
+    }
 	
     public void OnOptionMenuToggleInput(InputAction.CallbackContext value)
     {
@@ -142,20 +167,14 @@ public class PlayerContext : MonoBehaviour
         playerSettingDto.audioMasterVolume = newVolumn;
     }
 
-    public void LoadPlayerSettings()
+    public void OnMouseSpeedChanged(float newSpeed)
     {
-        Debug.Log("Loading");
-        float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
-        
-        playerSettingDto.audioMasterVolume = masterVolume;
-        
-        OnAudioVolumeChanged(masterVolume);
+        playerSettingDto.mouseSpeed =newSpeed;
     }
     
-    public void SavePlayerSettings()
+    public void OnMouseSpeedZoomedChanged(float newSpeed)
     {
-        Debug.Log("Saving");
-        ES3.Save<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, playerSettingDto.audioMasterVolume);
+        playerSettingDto.mouseSpeedZoomed = newSpeed;
     }
 	
 }
