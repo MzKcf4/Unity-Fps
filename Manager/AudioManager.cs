@@ -24,7 +24,8 @@ public class AudioManager : MonoBehaviour
         {
             audioSource.outputAudioMixerGroup = audioMixerMasterGroup;
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f;
+            audioSource.spatialBlend = 0.5f;
+            audioSource.spread = 1f;
         }
         localPlayerAudioSource.outputAudioMixerGroup = audioMixerMasterGroup;
     }
