@@ -9,11 +9,7 @@ public class FpsPlayer : FpsCharacter
 {
 	[SerializeField]
 	private ProgressionWeaponConfig progressionWeaponConfig;
-	
-	public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
-	public FpsWeapon activeWeapon;
-    [SerializeField] private FpsWeaponView fpsWeaponView;
-    
+
 	[SerializeField]
 	private Transform weaponViewParent;
     
@@ -26,7 +22,7 @@ public class FpsPlayer : FpsCharacter
     public GameObject viewCamera;
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
-    private CMF.CameraController cameraController;
+    public CMF.CameraController cameraController;
 	
     // ----------- View Layer ------------- //
 	[SerializeField]
@@ -40,13 +36,9 @@ public class FpsPlayer : FpsCharacter
 	// ------------------------------------- //
     
     private PlayerSettingDto localPlayerSettingDto;
-    
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
+    private FpsWeaponEventHandler weaponEventHandler;
+    private FpsWeaponPlayerInputHandler weaponInputHandler;
         
-    }
-    
 	protected override void Start()
 	{
 		base.Start();
@@ -55,6 +47,7 @@ public class FpsPlayer : FpsCharacter
 	    if(isLocalPlayer)
 	    {
 	    	progressionWeaponConfig.InitializeWeaponList();
+            
 	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	PlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
@@ -68,8 +61,15 @@ public class FpsPlayer : FpsCharacter
             fpsModel.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
             // The children are LocalPlayerHitBox , so that bot can raycast on them
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
+            
             localPlayerSettingDto = PlayerContext.Instance.playerSettingDto;
+            weaponEventHandler = new FpsWeaponEventHandler(this);
+            weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
+            
             LoadLocalPlayerSettings();
+            
+            CmdGetWeapon("csgo_awp" , 0);
+            CmdGetWeapon("csgo_ak47" , 1);
 	    }
 	    else
 	    {
@@ -86,11 +86,37 @@ public class FpsPlayer : FpsCharacter
         
         fpsModel.SetLookAtTransform(lookAtTransform);
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
-        weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
-        GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
-        GetWeapon(WeaponAssetManager.Instance.sawoffWeaponPrefab , 1);
-        GetWeapon(WeaponAssetManager.Instance.GetWeaponPrefab("csgo_awp") , 2);
 	}
+    
+    [Command]
+    public void CmdGetWeapon(string weaponName , int slot)
+    {
+        weaponHandler.CmdGetWeapon(weaponName, slot);
+        RpcGetWeapon(weaponName, slot);
+    }
+    
+    [ClientRpc]
+    public void RpcGetWeapon(string weaponName, int slot)
+    {
+        weaponHandler.GetWeapon(weaponName, slot);
+        
+        // Force switch weapon if it's main slot
+        if((isServer || isLocalPlayer) && slot == 0)
+            CmdSwitchWeapon(slot);
+    }
+    
+    [Command]
+    public void CmdSwitchWeapon(int slot)
+    {
+        weaponHandler.SwitchWeapon(slot);
+        RpcSwitchWeapon(slot);
+    }
+    
+    [ClientRpc]
+    protected void RpcSwitchWeapon(int slot)
+    {
+        weaponHandler.SwitchWeapon(slot);
+    }
     
     public void LoadLocalPlayerSettings()
     {
@@ -98,6 +124,8 @@ public class FpsPlayer : FpsCharacter
         
         AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraController.transform);
         AudioManager.Instance.localPlayerAudioSource.transform.localPosition = Vector3.zero;
+        
+        
     }
     
 	protected override void Update()
@@ -142,81 +170,7 @@ public class FpsPlayer : FpsCharacter
 			};
 		}
 	}
-    
-	[Command]
-    public void CmdGetWeapon()
-    {
         
-    }
-
-	[ClientRpc]
-	public void RpcGetWeapon(string weaponName , int slot)
-	{
-		if(!isLocalPlayer)	return;
-		
-		GameObject weaponPrefab = progressionWeaponConfig.dictNameToWeaponPrefab[weaponName];
-		GetWeapon(weaponPrefab , slot);
-	}
-	
-    public void GetWeapon(GameObject weaponModelPrefab , int slot)
-    {
-        GameObject weaponModelObj = Instantiate(weaponModelPrefab , weaponRootTransform);
-        weaponModelObj.transform.localPosition = Vector3.zero;
-        FpsWeapon fpsWeapon = weaponModelObj.GetComponent<FpsWeapon>();
-        fpsWeapon.owner = this;
-        fpsWeapon.gameObject.SetActive(false);
-        fpsWeaponView.AddViewWeapon(fpsWeapon, slot);
-        
-        weaponSlots[slot] = fpsWeapon;
-        
-        if(slot == 0)
-            SwitchWeapon(slot);
-        
-        if(isLocalPlayer)
-        {
-            // Change the local weapon model to camera's culling mask too !
-            Utils.ChangeLayerRecursively(weaponModelObj , Constants.LAYER_LOCAL_PLAYER_MODEL, true); 
-            
-            fpsWeaponView.SwitchWeapon(slot);
-            activeWeapon.DoWeaponDraw();
-        }
-    }
-    
-	protected void LocalSwitchWeapon(int slot)
-	{        
-		if(weaponSlots[slot] == null)
-			return;
-            
-		CmdSwitchWeapon(slot);
-        SwitchWeapon(slot);
-        fpsWeaponView.SwitchWeapon(slot);
-		activeWeapon.DoWeaponDraw();
-	}
-    
-    [Command]
-    protected void CmdSwitchWeapon(int slot)
-    {
-        SwitchWeapon(slot);
-        RpcSwitchWeapon(slot);
-    }
-    
-    [ClientRpc]
-    protected void RpcSwitchWeapon(int slot)
-    {
-        SwitchWeapon(slot);
-    }
-    
-    protected void SwitchWeapon(int slot)
-    {
-        if(activeWeapon != null)
-        {
-            activeWeapon.gameObject.SetActive(false);
-        }
-        
-        activeWeapon = weaponSlots[slot];
-        activeWeapon.gameObject.SetActive(true);
-    }
-    
     #region hit_dmg
     
 	[Client]
@@ -269,6 +223,7 @@ public class FpsPlayer : FpsCharacter
     private void OnWeaponEventUpdate(WeaponEvent evt)
     {
         if(!isLocalPlayer)  return;
+        
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
         else if (evt == WeaponEvent.Scope)
@@ -310,7 +265,7 @@ public class FpsPlayer : FpsCharacter
     [Command]
     public void CmdFireWeapon(Vector3 fromPos , Vector3 forwardVec)
     {
-        CoreGameManager.Instance.DoWeaponRaycast(this , activeWeapon , fromPos , forwardVec);
+        CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
         RpcFireWeapon();
     }
     
@@ -318,7 +273,7 @@ public class FpsPlayer : FpsCharacter
     [ClientRpc]
     public void RpcFireWeapon()
     {
-        AudioManager.Instance.PlaySoundAtPosition(activeWeapon.GetShootSound() , activeWeapon.GetMuzzlePosition());
+        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , GetActiveWeapon().GetMuzzlePosition());
     }
     
     [TargetRpc]
@@ -399,4 +354,85 @@ public class FpsPlayer : FpsCharacter
         if(isLocalPlayer)
             PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
     }
+    
+    protected void LocalSwitchWeapon(int slot)
+    {        
+        if(weaponSlots[slot] == null)
+            return;
+        
+        CmdSwitchWeapon(slot);
+        /*
+        CmdSwitchWeapon(slot);
+        SwitchWeapon(slot);
+        fpsWeaponView.SwitchWeapon(slot);
+        activeWeapon.DoWeaponDraw();
+        */
+    }
+    
+    
+    /*
+    [Command]
+    public void CmdGetWeapon()
+    {
+        
+    }
+
+    [ClientRpc]
+    public void RpcGetWeapon(string weaponName , int slot)
+    {
+        if(!isLocalPlayer)  return;
+        
+        GameObject weaponPrefab = progressionWeaponConfig.dictNameToWeaponPrefab[weaponName];
+        GetWeapon(weaponPrefab , slot);
+    }
+    
+    public void GetWeapon(GameObject weaponModelPrefab , int slot)
+    {
+        GameObject weaponModelObj = Instantiate(weaponModelPrefab , weaponRootTransform);
+        weaponModelObj.transform.localPosition = Vector3.zero;
+        FpsWeapon fpsWeapon = weaponModelObj.GetComponent<FpsWeapon>();
+        fpsWeapon.owner = this;
+        fpsWeapon.gameObject.SetActive(false);
+        fpsWeaponView.AddViewWeapon(fpsWeapon, slot);
+        
+        weaponSlots[slot] = fpsWeapon;
+        
+        if(slot == 0)
+            SwitchWeapon(slot);
+        
+        if(isLocalPlayer)
+        {
+            // Change the local weapon model to camera's culling mask too !
+            Utils.ChangeLayerRecursively(weaponModelObj , Constants.LAYER_LOCAL_PLAYER_MODEL, true); 
+            
+            fpsWeaponView.SwitchWeapon(slot);
+            activeWeapon.DoWeaponDraw();
+        }
+    }
+    
+
+    [Command]
+    protected void CmdSwitchWeapon(int slot)
+    {
+        SwitchWeapon(slot);
+        RpcSwitchWeapon(slot);
+    }
+    
+    [ClientRpc]
+    protected void RpcSwitchWeapon(int slot)
+    {
+        SwitchWeapon(slot);
+    }
+    
+    protected void SwitchWeapon(int slot)
+    {
+        if(activeWeapon != null)
+        {
+            activeWeapon.gameObject.SetActive(false);
+        }
+        
+        activeWeapon = weaponSlots[slot];
+        activeWeapon.gameObject.SetActive(true);
+    }
+    */
 }

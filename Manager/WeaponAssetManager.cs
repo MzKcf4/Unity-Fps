@@ -5,24 +5,15 @@ using UnityEngine;
 public class WeaponAssetManager : MonoBehaviour
 {
     public static WeaponAssetManager Instance;
-    public WeaponNameToPrefabConfig weaponNameToPrefabConfig;
-    
-    // public GameObject ak47ViewPrefab;
-    public GameObject ak47WeaponPrefab;
-    
-    // public GameObject r8ViewPrefab;
-    public GameObject r8WeaponPrefab;
-    
-    // public GameObject sawoffViewPrefab;
-    public GameObject sawoffWeaponPrefab;
+    public WeaponNameToResourceConfig weaponNameToResourceConfig;
     
     void Awake()
     {
         Instance = this;
     }
-    
-    public GameObject GetWeaponPrefab(string weaponName)
+        
+    public WeaponResources GetWeaponResouce(string weaponName)
     {
-        return weaponNameToPrefabConfig.GetPrefab(weaponName);
+        return weaponNameToResourceConfig.GetWeaponResource(weaponName);
     }
 }

@@ -1,44 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Kit.Physic;
-using MoreMountains.Feedbacks;
-using UnityEngine.Events;
-using Animancer;
 
-
-public class FpsWeapon : MonoBehaviour
+// The logical layer (brain) of a weapon , updated by owner in Update()
+// It shouldn't care about the view/world model , 
+public class FpsWeapon
 {
-    [SerializeField] public GameObject weaponViewPrefab;
-    [SerializeField] private WeaponResources weaponResouces;
+    public string weaponName;
+    
+    private WeaponResources weaponResouces;
     
     private ActionCooldown cooldownUntilIdle = new ActionCooldown();
     private float secondaryActionInterval = 0.2f;
     private ActionCooldown secondaryActionCooldown = new ActionCooldown();
     
-	private WeaponState weaponState = WeaponState.Idle;
+    private WeaponState weaponState = WeaponState.Idle;
     private WeaponSecondaryState weaponSecondaryState = WeaponSecondaryState.None;
     
     public WeaponReloadType reloadType = WeaponReloadType.Clip;
     public WeaponCategory weaponCategory = WeaponCategory.Rifle;
-	
-	[SerializeField]
-	private RaycastSetting raycastSetting;
-	public bool isMelee = false;
-	
-	private MMFeedbacks muzzleFeedbacks;
-	private KeyPressState primaryActionState = KeyPressState.Released;
-    private KeyPressState secondaryActionState = KeyPressState.Released;
-	
-    public bool isFirstPersonView = true;
     
-    [HideInInspector] public FpsWeaponWorldModel weaponWorldModel;
-	
-    public string weaponName;
-    private int currentClip;
+    // private MMFeedbacks muzzleFeedbacks;
+    public KeyPressState primaryActionState = KeyPressState.Released;
+    public KeyPressState secondaryActionState = KeyPressState.Released;
+
+    public int currentClip;
     
-	[HideInInspector] public int damage = 20;
-	private int clipSize = 30;
+    [HideInInspector] public int damage = 20;
+    private int clipSize = 30;
     private float reloadTime = 3f;
     private float reloadTime_PalletStart = 0.2f;
     private float reloadTime_PalletInsert = 0.2f;
@@ -53,15 +42,16 @@ public class FpsWeapon : MonoBehaviour
     
     [HideInInspector] public FpsCharacter owner;
     
-	void Awake()
-	{
-        FetchDataFromDb();
-		muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
-        weaponWorldModel = GetComponent<FpsWeaponWorldModel>();
-        currentClip = clipSize;
-        secondaryActionCooldown.interval = secondaryActionInterval;
-	}
+    public FpsWeapon(){}
     
+    public FpsWeapon(string weaponName)
+    {
+        this.weaponName = weaponName;
+        FetchDataFromDb();
+        currentClip = clipSize;
+        this.weaponResouces = WeaponAssetManager.Instance.GetWeaponResouce(weaponName);
+    }
+        
     private void FetchDataFromDb()
     {
         E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(weaponName);
@@ -80,29 +70,29 @@ public class FpsWeapon : MonoBehaviour
         spread = dbWeaponInfo.f_spread;
     }
     
-	void Start()
-	{
+    void Start()
+    {
+        secondaryActionCooldown.interval = secondaryActionInterval;
+    }
 
-	}
-
-	void Update()
-	{
+    public void ManualUpdate()
+    {
         if(owner.IsDead())  return;
         // cooldown with secondary action
         HandleCooldownInterrupt();
         HandleCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
         {
-    		if(weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
-    		{
-    			DoWeaponPrimaryAction();
-    		}
+            if(weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
+            {
+                DoWeaponPrimaryAction();
+            }
             if(weaponState == WeaponState.Idle && secondaryActionState != KeyPressState.Released)
             {
                 DoWeaponSecondaryAction();
             }
         }
-	}
+    }
     
     private void HandleCooldownInterrupt()
     {
@@ -134,7 +124,7 @@ public class FpsWeapon : MonoBehaviour
             if(weaponState == WeaponState.Reloading)
             {
                 currentClip = clipSize;
-                UpdateAmmoDisplay();
+                EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
                 weaponState = WeaponState.Idle;
                 return;
             } 
@@ -149,7 +139,7 @@ public class FpsWeapon : MonoBehaviour
             else if (weaponState == WeaponState.Reloading_PalletInsert)
             {
                 currentClip++;
-                UpdateAmmoDisplay();
+                EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
                 if(currentClip != clipSize)
                 {
                     cooldownUntilIdle.StartCooldown(reloadTime_PalletInsert);
@@ -210,11 +200,11 @@ public class FpsWeapon : MonoBehaviour
             EmitWeaponViewEvent(WeaponEvent.UnScope);
         }
     }
-	
-	public void DoWeaponReload()
-	{
-		if(weaponState != WeaponState.Idle || currentClip == clipSize)
-			return;
+    
+    public void DoWeaponReload()
+    {
+        if(weaponState != WeaponState.Idle || currentClip == clipSize)
+            return;
         
         ResetWeaponSecondaryState();
         if(reloadType == WeaponReloadType.Clip)
@@ -229,56 +219,46 @@ public class FpsWeapon : MonoBehaviour
             weaponState = WeaponState.Reloading_PalletStart;
             cooldownUntilIdle.StartCooldown(reloadTime_PalletStart);
         }
-	}
-	
-	public void DoWeaponDraw()
-	{
+    }
+    
+    public void DoWeaponDraw()
+    {
         ResetWeaponSecondaryState();
         EmitWeaponViewEvent(WeaponEvent.Draw);
-        UpdateAmmoDisplay();
+        EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         weaponState = WeaponState.Drawing;
         cooldownUntilIdle.StartCooldown(drawTime);
-	}
+    }
     
-	public void DoWeaponPrimaryAction()
-	{
-		if(!CanFire())	return;
+    public void DoWeaponPrimaryAction()
+    {
+        if(!CanFire())  return;
 
-		if(!isMelee)
-		{
-            EmitWeaponViewEvent(WeaponEvent.Shoot);
-            ResetWeaponSecondaryState();
-            currentClip--;
-            weaponState = WeaponState.Shooting;
-            cooldownUntilIdle.StartCooldown(shootInterval);
-            
-			ApplyRecoil();
-            UpdateAmmoDisplay();
-		}
-	}
+        EmitWeaponViewEvent(WeaponEvent.Shoot);
+        ResetWeaponSecondaryState();
+        currentClip--;
+        weaponState = WeaponState.Shooting;
+        EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
+        cooldownUntilIdle.StartCooldown(shootInterval);
+    }
+    
+    // Temp way for bot to use weapon's cooldown
+    public void DoCooldownFromShoot()
+    {
+        weaponState = WeaponState.Shooting;
+        cooldownUntilIdle.StartCooldown(shootInterval);
+    }
     
     public void FireWeapon(Vector3 dest)
     {
-        weaponWorldModel.ShootProjectile(dest);
+        // weaponWorldModel.ShootProjectile(dest);
     }
-            
-    private void UpdateAmmoDisplay()
+                
+    public bool CanFire()
     {
-        if(owner is FpsPlayer && owner.isLocalPlayer)
-            FpsUiManager.Instance.OnWeaponAmmoUpdate(currentClip);
+        return weaponState == WeaponState.Idle && currentClip > 0;
     }
-	
-	protected void ApplyRecoil()
-	{
-		Crosshair.Instance.DoLerp();
-		PlayerContext.Instance.ShakeCamera();
-	}
-	
-	private bool CanFire()
-	{
-		return weaponState == WeaponState.Idle && currentClip > 0;
-	}
-	
+    
     private void EmitWeaponViewEvent(WeaponEvent evt)
     {
         if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
@@ -294,66 +274,7 @@ public class FpsWeapon : MonoBehaviour
     
     public Vector3 GetMuzzlePosition()
     {
-        return weaponWorldModel.muzzleTransform.position;
+        return Vector3.zero;
+        // return weaponWorldModel.muzzleTransform.position;
     }
-    
-	void OnDestroy()
-	{
-        if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
-        {
-            PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
-            PlayerContext.Instance.weaponSecondaryActionInputEvent.RemoveListener(OnWeaponSecondaryAction);
-            PlayerContext.Instance.weaponReloadInputEvent.RemoveListener(DoWeaponReload);
-        }
-	}
-	
-	void OnEnable()
-	{
-        if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
-        {
-            PlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
-            PlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
-            PlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
-        }
-	}
-	
-	void OnDisable()
-	{
-        if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
-        {
-            PlayerContext.Instance.weaponPrimaryActionInputEvent.RemoveListener(OnWeaponPrimaryAction);
-            PlayerContext.Instance.weaponSecondaryActionInputEvent.RemoveListener(OnWeaponSecondaryAction);
-            PlayerContext.Instance.weaponReloadInputEvent.RemoveListener(DoWeaponReload);
-        }
-	}
-    
-    
-    // ----------------- Archived melee raycast ---------------------- //
-    /*
-    private void CheckWeaponRaycastHit()
-    {
-        if(isMelee)
-        {
-            // ToDo: Single hit count on single enemy
-            raycastHelper.m_LocalPosition = raycastSetting.localPosition;
-            raycastHelper.m_HalfExtends = raycastSetting.halfExtends;
-            raycastHelper.CheckPhysic();
-            IEnumerable<Collider> colliders = raycastHelper.GetOverlapColliders();
-            foreach(Collider c in colliders)
-            {
-                if(c.CompareTag(Constants.TAG_ENEMY))
-                {
-                    FpsEnemy fpsEnemy = c.GetComponent<FpsEnemy>();
-                    DamageInfo dmgInfo = new DamageInfo(){
-                        damage = 10,
-                        bodyPart = BodyPart.Chest,
-                        hitPoint = c.transform.position
-                    };
-                    
-                    hitTargetEvent.Invoke(fpsEnemy.gameObject, dmgInfo);
-                }
-            }
-        }
-    }
-    */
 }

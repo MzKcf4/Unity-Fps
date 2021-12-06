@@ -29,7 +29,7 @@ public class DamageInfo
         if(fromWeapon != null)
         {
             damageInfo.damageSource = fromWeapon.owner.characterName;
-            damageInfo.damageSourcePosition = fromWeapon.transform.position;
+            damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;
         }
         
         return damageInfo;

@@ -44,9 +44,9 @@ public class FpsWeaponView : MonoBehaviour
         activeWeaponViewModel.HandleWeaponEvent(evt);
     }
     
-    public void AddViewWeapon(FpsWeapon fpsWeapon , int slot)
+    public void AddViewWeaponNew(GameObject weaponViewPrefab, int slot)
     {
-        GameObject weaponViewObj = Instantiate(fpsWeapon.weaponViewPrefab , transform);
+        GameObject weaponViewObj = Instantiate(weaponViewPrefab , transform);
         FpsWeaponViewModel fpsWeaponViewModel = weaponViewObj.GetComponent<FpsWeaponViewModel>();
         fpsWeaponViewModel.transform.localPosition = fpsWeaponViewModel.offsetFromView;
         fpsWeaponViewModel.gameObject.SetActive(false);

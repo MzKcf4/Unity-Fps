@@ -28,9 +28,6 @@ public class FpsBot : FpsCharacter
     ActionCooldown weaponShotCooldown = new ActionCooldown();
     private FpsBotFsm botFsm = new FpsBotFsm();
     
-    // Assume bot can only hold 1 weapon at the moment
-    [HideInInspector] public FpsWeapon fpsWeapon;
-    
     public GameObject objAttachToModel;
     
     // Start is called before the first frame update
@@ -45,13 +42,14 @@ public class FpsBot : FpsCharacter
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
             SetupFsm();
+            weaponHandler.CmdGetWeapon("csgo_ak47" , 0);
+            weaponShotCooldown.interval = 0.1f;
         }
         if(objAttachToModel != null)
         {
             objAttachToModel.transform.parent = fpsModel.transform;
         }
         fpsModel.SetLookAtTransform(lookAtTransform);
-        GetWeapon(WeaponAssetManager.Instance.ak47WeaponPrefab , 0);
     }
     
     private void SetupFsm()
@@ -70,6 +68,7 @@ public class FpsBot : FpsCharacter
         
         if (botFsm.botState == BotStateEnum.Shooting)
         {
+            
             if(weaponShotCooldown.CanExecuteAfterDeltaTime(true))
             {
                 botFsm.ScanVisibleLosFromShootTarget();
@@ -135,22 +134,24 @@ public class FpsBot : FpsCharacter
     [Server]
     private void ShootAtTarget()
     {
-        if(fpsWeapon == null)
+        if(GetActiveWeapon() == null)
             return;
         
-        float spreadMultiplier = fpsWeapon.spread;
-        if(fpsWeapon.weaponCategory != WeaponCategory.Shotgun)
+        float spreadMultiplier = GetActiveWeapon().spread;
+        if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
         {
             spreadMultiplier *= 5f;
         }
         
-        for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
+        GetActiveWeapon().DoCooldownFromShoot();
+        
+        for(int i = 0 ; i < GetActiveWeapon().palletPerShot ; i++)
         {
-            RayHitInfo rayHitInfo = Utils.CastRayAndGetHitInfo(visionSensor.transform , LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX), fpsWeapon.spread);
+            RayHitInfo rayHitInfo = Utils.CastRayAndGetHitInfo(visionSensor.transform , LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX), GetActiveWeapon().spread);
             if(rayHitInfo == null)
                 continue;
             
-            fpsWeapon.FireWeapon(rayHitInfo.hitPoint);
+            GetActiveWeapon().FireWeapon(rayHitInfo.hitPoint);
             GameObject objOnHit = rayHitInfo.hitObject;
             
             // Hits wall
@@ -172,7 +173,7 @@ public class FpsBot : FpsCharacter
         
             if(hitEntity != null)
             {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon , enemyHitBox , enemyHitBox.transform.position);
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(GetActiveWeapon() , enemyHitBox , enemyHitBox.transform.position);
                 hitEntity.TakeDamage(dmgInfo);
                 continue;
             }
@@ -192,17 +193,6 @@ public class FpsBot : FpsCharacter
         
         botFsm.OnTakeHit(damageInfo);
     }
-    
-    public void GetWeapon(GameObject weaponModelPrefab , int slot)
-    {
-        GameObject weaponModelObj = Instantiate(weaponModelPrefab , weaponRootTransform);
-        FpsWeapon fpsWeapon = weaponModelObj.GetComponent<FpsWeapon>();
-        fpsWeapon.owner = this;
-        
-        this.fpsWeapon = fpsWeapon;
-        this.weaponShotCooldown.interval = fpsWeapon.shootInterval;
-    }
-    
 
     public override Vector3 GetMovementVelocity()
     {
@@ -217,6 +207,16 @@ public class FpsBot : FpsCharacter
     }
 
     /*
+    public void GetWeapon(GameObject weaponModelPrefab , int slot)
+    {
+    GameObject weaponModelObj = Instantiate(weaponModelPrefab , weaponRootTransform);
+    FpsWeapon fpsWeapon = weaponModelObj.GetComponent<FpsWeapon>();
+    fpsWeapon.owner = this;
+        
+    this.fpsWeapon = fpsWeapon;
+    this.weaponShotCooldown.interval = fpsWeapon.shootInterval;
+    }
+    
     private void RotateModelTowardsDirection(Vector3 dir)
     {
         if(dir == Vector3.zero)   return;

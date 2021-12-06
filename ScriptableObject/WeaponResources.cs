@@ -7,6 +7,9 @@ using Animancer;
 [CreateAssetMenu]
 public class WeaponResources : SerializedScriptableObject
 {
+    public GameObject weaponViewPrefab;
+    public GameObject weaponWorldPrefab;
+    
 	public Dictionary<string , AudioClip> dictWeaponSounds;
 	
 	public ClipTransition drawClip;

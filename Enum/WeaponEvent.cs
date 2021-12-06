@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum WeaponEvent
 {
+    AmmoUpdate,
     Draw,
     Shoot,
     Reload,

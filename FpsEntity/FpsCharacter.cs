@@ -33,6 +33,24 @@ public abstract class FpsCharacter : FpsEntity
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.None;
     
+    public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>(){"" , "" , ""};
+    public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
+
+    // public readonly SyncList<FpsWeapon> weaponSlots = new SyncList<FpsWeapon>();
+    [HideInInspector] [SyncVar] public int activeWeaponSlot = -1;
+    
+    // Currently should be available to Local FpsPlayer only !
+    public FpsWeaponView fpsWeaponView;
+    public FpsWeaponWorldModel[] fpsWeaponWorldSlot = new FpsWeaponWorldModel[Constants.WEAPON_SLOT_MAX];
+    
+    protected FpsCharacterWeaponHandler weaponHandler;
+    
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+       
+    }
+    
     protected override void Start()
     {
         base.Start();
@@ -41,6 +59,23 @@ public abstract class FpsCharacter : FpsEntity
         weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
         
         SharedContext.Instance.RegisterCharacter(this);
+        
+        weaponHandler = new FpsCharacterWeaponHandler(){
+            fpsCharacter = this,
+            weaponRootTransform = this.weaponRootTransform
+        };
+        
+        if(isClient && !isLocalPlayer)
+        {
+            // Process initial SyncList payload , load the weapon GameObjects for existing players.
+            for (int index = 0; index < syncWeaponNameInSlots.Count; index++)
+            {
+                string weaponName = syncWeaponNameInSlots[index];
+                if(string.IsNullOrWhiteSpace(weaponName))
+                    continue;
+                weaponHandler.GetWeapon(syncWeaponNameInSlots[index] , index);
+            }
+        }
     }
     
     protected virtual void AttachModel()
@@ -73,7 +108,15 @@ public abstract class FpsCharacter : FpsEntity
     {
         base.Update();
         if(IsDead())    return;
-
+        // Only process weapon if it's Server (bot) or LocalPlayer
+        if(isLocalPlayer || isServer)
+        {
+            if(activeWeaponSlot != -1)
+            {
+                weaponSlots[activeWeaponSlot].ManualUpdate();
+            }
+        }
+        
         UpdateMovementDir();
         HandleMovementAnimation();
     }
@@ -246,6 +289,11 @@ public abstract class FpsCharacter : FpsEntity
     protected void CmdSetVelocity(Vector3 velocity)
     {
         currentVelocity = velocity;
+    }
+    
+    public FpsWeapon GetActiveWeapon()
+    {
+        return weaponSlots[activeWeaponSlot];
     }
     
     protected void OnDestroy()

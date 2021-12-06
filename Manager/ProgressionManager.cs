@@ -138,10 +138,10 @@ public class ProgressionManager : NetworkBehaviour
 		
 		List<GameObject> weaponPrefabList = progressionWeaponConfig.dictTierToWeaponPrefab[currentStage];
 		GameObject weaponPrefab = Utils.GetRandomElement<GameObject>(weaponPrefabList);
-		FpsWeapon fpsWeapon = weaponPrefab.GetComponent<FpsWeapon>();		
+		// FpsWeapon fpsWeapon = weaponPrefab.GetComponent<FpsWeapon>();		
 		foreach(FpsPlayer player in ServerContext.Instance.playerList)
 		{
-			player.RpcGetWeapon(fpsWeapon.weaponName,  0);
+			// player.RpcGetWeapon(fpsWeapon.weaponName,  0);
 		}
 	}
 	
