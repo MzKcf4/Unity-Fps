@@ -42,7 +42,9 @@ public class FpsBot : FpsCharacter
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
             SetupFsm();
-            weaponHandler.CmdGetWeapon("csgo_ak47" , 0);
+            
+            weaponHandler.ServerGetWeapon("csgo_ak47" , 0);
+            RpcGetWeapon("csgo_ak47" , 0);
             weaponShotCooldown.interval = 0.1f;
         }
         if(objAttachToModel != null)
@@ -71,6 +73,7 @@ public class FpsBot : FpsCharacter
             
             if(weaponShotCooldown.CanExecuteAfterDeltaTime(true))
             {
+                // Debug.Log(weaponShotCooldown.nextUse);
                 botFsm.ScanVisibleLosFromShootTarget();
                 if(botFsm.aimAtHitboxTransform != null)
                     ShootAtTarget();
@@ -144,40 +147,10 @@ public class FpsBot : FpsCharacter
         }
         
         GetActiveWeapon().DoCooldownFromShoot();
+        Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, botFsm.targetLookAtPosition);
+        CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
         
-        for(int i = 0 ; i < GetActiveWeapon().palletPerShot ; i++)
-        {
-            RayHitInfo rayHitInfo = Utils.CastRayAndGetHitInfo(visionSensor.transform , LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX), GetActiveWeapon().spread);
-            if(rayHitInfo == null)
-                continue;
-            
-            GetActiveWeapon().FireWeapon(rayHitInfo.hitPoint);
-            GameObject objOnHit = rayHitInfo.hitObject;
-            
-            // Hits wall
-            if( (1 << objOnHit.layer) == LayerMask.GetMask(Constants.LAYER_GROUND))
-            {
-                LocalSpawnManager.Instance.SpawnBulletDecalFx(rayHitInfo.hitPoint , rayHitInfo.normal);
-                continue;
-            }
-            
-            // Else should expect hitting hitbox
-            FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
-            FpsEntity hitEntity = enemyHitBox.fpsEntity;
-        
-            if(hitEntity is FpsCharacter)
-            {
-                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
-                if(hitTeam == this.team)   continue;
-            }
-        
-            if(hitEntity != null)
-            {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(GetActiveWeapon() , enemyHitBox , enemyHitBox.transform.position);
-                hitEntity.TakeDamage(dmgInfo);
-                continue;
-            }
-        }        
+        RpcFireWeapon();
     }
                 
     [Server]

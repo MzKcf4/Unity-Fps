@@ -18,6 +18,10 @@ public class FpsEntity : NetworkBehaviour
 	
 	public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
 	
+    protected virtual void Awake()
+    {
+        
+    }
 	
     // Start is called before the first frame update
 	protected virtual void Start()

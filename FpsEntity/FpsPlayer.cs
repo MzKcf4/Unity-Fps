@@ -88,44 +88,12 @@ public class FpsPlayer : FpsCharacter
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
     
-    [Command]
-    public void CmdGetWeapon(string weaponName , int slot)
-    {
-        weaponHandler.CmdGetWeapon(weaponName, slot);
-        RpcGetWeapon(weaponName, slot);
-    }
-    
-    [ClientRpc]
-    public void RpcGetWeapon(string weaponName, int slot)
-    {
-        weaponHandler.GetWeapon(weaponName, slot);
-        
-        // Force switch weapon if it's main slot
-        if((isServer || isLocalPlayer) && slot == 0)
-            CmdSwitchWeapon(slot);
-    }
-    
-    [Command]
-    public void CmdSwitchWeapon(int slot)
-    {
-        weaponHandler.SwitchWeapon(slot);
-        RpcSwitchWeapon(slot);
-    }
-    
-    [ClientRpc]
-    protected void RpcSwitchWeapon(int slot)
-    {
-        weaponHandler.SwitchWeapon(slot);
-    }
-    
     public void LoadLocalPlayerSettings()
     {
         cameraController.cameraSpeed = localPlayerSettingDto.mouseSpeed;
         
         AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraController.transform);
         AudioManager.Instance.localPlayerAudioSource.transform.localPosition = Vector3.zero;
-        
-        
     }
     
 	protected override void Update()
@@ -268,14 +236,7 @@ public class FpsPlayer : FpsCharacter
         CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
         RpcFireWeapon();
     }
-    
-    // 
-    [ClientRpc]
-    public void RpcFireWeapon()
-    {
-        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , GetActiveWeapon().GetMuzzlePosition());
-    }
-    
+        
     [TargetRpc]
     public void TargetOnWeaponHitEnemy(NetworkConnection target)
     {

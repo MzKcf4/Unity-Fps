@@ -36,7 +36,6 @@ public abstract class FpsCharacter : FpsEntity
     public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>(){"" , "" , ""};
     public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
 
-    // public readonly SyncList<FpsWeapon> weaponSlots = new SyncList<FpsWeapon>();
     [HideInInspector] [SyncVar] public int activeWeaponSlot = -1;
     
     // Currently should be available to Local FpsPlayer only !
@@ -51,19 +50,24 @@ public abstract class FpsCharacter : FpsEntity
        
     }
     
+    protected override void Awake()
+    {
+        base.Awake();
+        
+        weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
+        weaponHandler = new FpsCharacterWeaponHandler(){
+            fpsCharacter = this,
+            weaponRootTransform = this.weaponRootTransform
+        };
+    }
+    
     protected override void Start()
     {
         base.Start();
         AttachModel();
         SetRagdollState(false);
-        weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
         
         SharedContext.Instance.RegisterCharacter(this);
-        
-        weaponHandler = new FpsCharacterWeaponHandler(){
-            fpsCharacter = this,
-            weaponRootTransform = this.weaponRootTransform
-        };
         
         if(isClient && !isLocalPlayer)
         {
@@ -73,10 +77,52 @@ public abstract class FpsCharacter : FpsEntity
                 string weaponName = syncWeaponNameInSlots[index];
                 if(string.IsNullOrWhiteSpace(weaponName))
                     continue;
-                weaponHandler.GetWeapon(syncWeaponNameInSlots[index] , index);
+                weaponHandler.ClientGetWeapon(syncWeaponNameInSlots[index] , index);
             }
         }
     }
+    
+    [Command]
+    public void CmdGetWeapon(string weaponName , int slot)
+    {
+        weaponHandler.ServerGetWeapon(weaponName, slot);
+        RpcGetWeapon(weaponName, slot);
+    }
+    
+    [ClientRpc]
+    public void RpcGetWeapon(string weaponName, int slot)
+    {
+        weaponHandler.ClientGetWeapon(weaponName, slot);
+        
+        // Force switch weapon if it's main slot
+        if(slot == 0)
+        {
+            if(isLocalPlayer)
+                CmdSwitchWeapon(slot);
+            else if (isServer)
+                RpcSwitchWeapon(slot);
+        }
+    }
+    
+    [Command]
+    public void CmdSwitchWeapon(int slot)
+    {
+        weaponHandler.SwitchWeapon(slot);
+        RpcSwitchWeapon(slot);
+    }
+    
+    [ClientRpc]
+    protected void RpcSwitchWeapon(int slot)
+    {
+        weaponHandler.SwitchWeapon(slot);
+    }
+    
+    [ClientRpc]
+    public void RpcFireWeapon()
+    {
+        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position);
+    }
+    
     
     protected virtual void AttachModel()
     {

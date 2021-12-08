@@ -8,7 +8,7 @@ public class FpsCharacterWeaponHandler
     public FpsCharacter fpsCharacter;
     public Transform weaponRootTransform;
     
-    public void CmdGetWeapon(string weaponName , int slot)
+    public void ServerGetWeapon(string weaponName , int slot)
     {
         // Server just need to set itself have FpsWeapon , without World/View model.
         FpsWeapon fpsWeapon = new FpsWeapon(weaponName);
@@ -19,7 +19,7 @@ public class FpsCharacterWeaponHandler
     }
         
     // Client size gets the weapon , initialize fpsWeapon with models
-    public void GetWeapon(string weaponName, int slot)
+    public void ClientGetWeapon(string weaponName, int slot)
     {
         FpsWeapon fpsWeapon = new FpsWeapon(weaponName);
         fpsWeapon.owner = fpsCharacter;
