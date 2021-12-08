@@ -8,9 +8,12 @@ using Animancer;
 public class CharacterResources : SerializedScriptableObject
 {
     public AvatarMask upperBodyMask;
+    public AvatarMask lowerBodyMask;
     
     public AudioClip hurtAudio;
     public AudioClip deathAudio;
+    
+    public ClipTransition upperBodyAimClip;
     
     public ClipTransition idleClip;
     public ClipTransition runClip;

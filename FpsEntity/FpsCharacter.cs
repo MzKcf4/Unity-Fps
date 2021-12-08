@@ -9,17 +9,16 @@ using Animancer;
 // -  be able to hold FpsWeapon
 // -  perform weapon action with FpsWeapon
 
-public abstract class FpsCharacter : FpsEntity
+public abstract partial class FpsCharacter : FpsEntity
 {
-    protected AnimancerComponent modelAnimancer;
-    
+
     protected FpsModel fpsModel;
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
     [SerializeField] protected Transform lookAtTransform; 
     public string characterName;
     
-    [SyncVar] protected CharacterStateEnum currState;
+    [SyncVar] public CharacterStateEnum currState;
     [SerializeField] protected CharacterResources charRes;
     
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
@@ -27,9 +26,7 @@ public abstract class FpsCharacter : FpsEntity
     
     protected Transform weaponRootTransform;
     protected MovementDirection currMoveDir = MovementDirection.None;
-    
-    private ClipTransition currentPlayingClip;
-    
+        
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.None;
     
@@ -43,7 +40,7 @@ public abstract class FpsCharacter : FpsEntity
     public FpsWeaponWorldModel[] fpsWeaponWorldSlot = new FpsWeaponWorldModel[Constants.WEAPON_SLOT_MAX];
     
     protected FpsCharacterWeaponHandler weaponHandler;
-    
+        
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -80,6 +77,8 @@ public abstract class FpsCharacter : FpsEntity
                 weaponHandler.ClientGetWeapon(syncWeaponNameInSlots[index] , index);
             }
         }
+        
+        InitializeAnimation();
     }
     
     [Command]
@@ -163,67 +162,10 @@ public abstract class FpsCharacter : FpsEntity
             }
         }
         
-        UpdateMovementDir();
-        HandleMovementAnimation();
+        Update_Animation();
     }
 
-    protected virtual void UpdateMovementDir()
-    {
-        if(CanPlayIdleAnimation())
-        {
-            currState = CharacterStateEnum.Idle;
-            currMoveDir = MovementDirection.None;
-        } 
-        else if (CanPlayRunAnimation())
-        {
-            currState = CharacterStateEnum.Run;
-            currMoveDir = GetMovementDirection();
-        }
-    }
-    
-    protected virtual void HandleMovementAnimation()
-    {
-        if(charRes == null) return;
-        
-        if(currState == CharacterStateEnum.Idle)
-            PlayAnimation(charRes.idleClip);
-        else if(currState == CharacterStateEnum.Run)
-        {
-            if(currMoveDir == MovementDirection.Front)
-                PlayAnimation(charRes.runClip);
-            else if(currMoveDir == MovementDirection.Back)
-                PlayAnimation(charRes.runClipBack);
-            else if(currMoveDir == MovementDirection.Left)
-                PlayAnimation(charRes.runClipLeft);
-            else if(currMoveDir == MovementDirection.Right)
-                PlayAnimation(charRes.runClipRight);
-        }
-    }
-    
-    private bool CanPlayIdleAnimation()
-    {
-        return !IsDead() && 
-        (currState != CharacterStateEnum.Idle && 
-            currState != CharacterStateEnum.Dead && 
-            GetMovementVelocity().magnitude == 0f);
-    }
-    
-    private bool CanPlayRunAnimation()
-    {
-        return !IsDead() && 
-        (currState != CharacterStateEnum.Dead &&
-            GetMovementVelocity().magnitude > 0f);
-    }
-    
-    protected void PlayAnimation(ClipTransition clip)
-    {
-        if(currentPlayingClip == clip)
-            return;
-            
-        currentPlayingClip = clip;
-        modelAnimancer.Play(clip , 0.1f , FadeMode.FromStart);
-    }
-    
+       
     [ClientRpc]
     protected void RpcPlayAnimation(ClipTransition clip)
     {
