@@ -87,7 +87,6 @@ public partial class FpsCharacter
 
     public void RpcFireWeapon_Animation()
     {
-        Debug.Log("Play~");
         modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyShootClip , 0.1f , FadeMode.FromStart);
     }
 }

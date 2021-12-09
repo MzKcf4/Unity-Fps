@@ -44,7 +44,6 @@ public abstract partial class FpsCharacter : FpsEntity
     public override void OnStartClient()
     {
         base.OnStartClient();
-       
     }
     
     protected override void Awake()
@@ -79,6 +78,16 @@ public abstract partial class FpsCharacter : FpsEntity
         }
         
         InitializeAnimation();
+    }
+    
+    protected virtual void AttachModel()
+    {
+        fpsModel = GetComponentInChildren<FpsModel>(true);
+        modelObject = fpsModel.gameObject;
+        modelObjectParent = modelObject.transform.parent.gameObject;
+        
+        modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
+        fpsModel.SetLookAtTransform(lookAtTransform);
     }
     
     [Command]
@@ -125,16 +134,6 @@ public abstract partial class FpsCharacter : FpsEntity
             fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
             RpcFireWeapon_Animation();
         }
-    }
-    
-    
-    protected virtual void AttachModel()
-    {
-        fpsModel = GetComponentInChildren<FpsModel>(true);
-        modelObject = fpsModel.gameObject;
-        modelObjectParent = modelObject.transform.parent.gameObject;
-        
-        modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
     }
     
     [Server]

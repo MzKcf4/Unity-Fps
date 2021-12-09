@@ -38,6 +38,9 @@ public class FpsPlayer : FpsCharacter
     private PlayerSettingDto localPlayerSettingDto;
     private FpsWeaponEventHandler weaponEventHandler;
     private FpsWeaponPlayerInputHandler weaponInputHandler;
+    
+    // This is the one attached to the fpsCamera , sync the position of LookAt to this so as to sync the character rotation.
+    [SerializeField] Transform localPlayerLookAt;
         
 	protected override void Start()
 	{
@@ -66,6 +69,7 @@ public class FpsPlayer : FpsCharacter
             weaponEventHandler = new FpsWeaponEventHandler(this);
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             
+            
             LoadLocalPlayerSettings();
             
             CmdGetWeapon("csgo_awp" , 0);
@@ -84,7 +88,7 @@ public class FpsPlayer : FpsCharacter
             PlayerManager.Instance.TeleportToSpawnPoint(this);
         }
         
-        fpsModel.SetLookAtTransform(lookAtTransform);
+
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
     
@@ -101,6 +105,7 @@ public class FpsPlayer : FpsCharacter
 	    base.Update();
         if(isLocalPlayer)
         {
+            lookAtTransform.position = localPlayerLookAt.position;
             if(painShockCooldown.IsOnCooldown())
                 painShockCooldown.ReduceCooldown(Time.deltaTime);
             else

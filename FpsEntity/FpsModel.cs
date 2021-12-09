@@ -27,14 +27,6 @@ public class FpsModel : MonoBehaviour
     void Start()
     {
         
-        if(!controllerEntity.isLocalPlayer && (controllerEntity is FpsPlayer))
-        {
-            if(finalIkAimController != null)
-                finalIkAimController.enabled = false;
-            if(finalIkAimIk != null)
-                finalIkAimIk.enabled = false;
-        }
-        
     }
     
     public void SetLookAtTransform(Transform transform)

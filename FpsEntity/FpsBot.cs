@@ -51,7 +51,6 @@ public class FpsBot : FpsCharacter
         {
             objAttachToModel.transform.parent = fpsModel.transform;
         }
-        fpsModel.SetLookAtTransform(lookAtTransform);
     }
     
     private void SetupFsm()
