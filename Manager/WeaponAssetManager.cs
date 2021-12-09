@@ -6,6 +6,7 @@ public class WeaponAssetManager : MonoBehaviour
 {
     public static WeaponAssetManager Instance;
     public WeaponNameToResourceConfig weaponNameToResourceConfig;
+    public GameObject weaponMuzzleFeedbackPrefab;
     
     void Awake()
     {

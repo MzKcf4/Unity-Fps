@@ -120,6 +120,11 @@ public abstract partial class FpsCharacter : FpsEntity
     public void RpcFireWeapon()
     {
         AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position);
+        if(!isLocalPlayer)
+        {
+            fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
+            RpcFireWeapon_Animation();
+        }
     }
     
     

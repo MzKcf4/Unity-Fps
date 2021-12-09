@@ -22,12 +22,9 @@ public class CoreGameManager : NetworkBehaviour
         MASK_HITBOX_AND_WALL = (1 << MASK_HITBOX.value) | (1 << MASK_WALL.value);
     }
     
-    
-    // forwardVec : The direction of aim , from 'fromPos'
     [Server]
     public void DoWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
-        Debug.Log(fromPos);
         float spread = fpsWeapon.spread;
         int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
         
@@ -38,12 +35,10 @@ public class CoreGameManager : NetworkBehaviour
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
             RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(fromPos , direction , mask , spread);
-            Debug.Log(hitInfo);
             if(hitInfo == null)
                 continue;
             
             GameObject objOnHit = hitInfo.hitObject;
-            Debug.Log(objOnHit);
             // Hits wall
             if( (1 << objOnHit.layer) == MASK_WALL.value)
             {

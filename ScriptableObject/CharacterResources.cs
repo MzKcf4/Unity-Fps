@@ -14,6 +14,7 @@ public class CharacterResources : SerializedScriptableObject
     public AudioClip deathAudio;
     
     public ClipTransition upperBodyAimClip;
+    public ClipTransition upperBodyShootClip;
     
     public ClipTransition idleClip;
     public ClipTransition runClip;

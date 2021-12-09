@@ -25,6 +25,7 @@ public partial class FpsCharacter
     {
         UpdateMovementDir();
         HandleMovementAnimation();
+        
     }
     
     protected virtual void UpdateMovementDir()
@@ -82,5 +83,11 @@ public partial class FpsCharacter
             
         currentPlayingClip = clip;
         modelAnimancer.Layers[layer].Play(clip , 0.1f , FadeMode.FromStart);
+    }
+
+    public void RpcFireWeapon_Animation()
+    {
+        Debug.Log("Play~");
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyShootClip , 0.1f , FadeMode.FromStart);
     }
 }

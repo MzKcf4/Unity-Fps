@@ -15,13 +15,16 @@ public class FpsWeaponWorldModel : MonoBehaviour
     
     void Awake()
     {
-        muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
+        
     }
     
     // Start is called before the first frame update
     void Start()
     {
-        
+        GameObject muzzleFeedbackPrefab = WeaponAssetManager.Instance.weaponMuzzleFeedbackPrefab;
+        GameObject muzzleFeedbackObj = Instantiate(muzzleFeedbackPrefab,muzzleTransform);
+        muzzleFeedbackObj.transform.localPosition = Vector3.zero;
+        muzzleFeedbacks = muzzleFeedbackObj.GetComponent<MMFeedbacks>();
     }
 
     // Update is called once per frame
