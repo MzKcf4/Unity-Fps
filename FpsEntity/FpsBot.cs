@@ -8,7 +8,7 @@ using Pathfinding;
 using Animancer;
 using RootMotion.FinalIK;
 
-public class FpsBot : FpsCharacter
+public partial class FpsBot : FpsCharacter
 {
     public bool aiEnabled = true;
     public bool aiIgnoreEnemy = false;
@@ -26,7 +26,7 @@ public class FpsBot : FpsCharacter
     // --------------------------------- //
     
     ActionCooldown weaponShotCooldown = new ActionCooldown();
-    private FpsBotFsm botFsm = new FpsBotFsm();
+    // private FpsBotFsm botFsm = new FpsBotFsm();
     
     public GameObject objAttachToModel;
     
@@ -41,7 +41,7 @@ public class FpsBot : FpsCharacter
             ai = GetComponent<IAstarAI>();
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
-            SetupFsm();
+            
             
             ServerGetWeapon("csgo_ak47" , 0);
             RpcGetWeapon("csgo_ak47" , 0);
@@ -53,16 +53,6 @@ public class FpsBot : FpsCharacter
         }
     }
     
-    private void SetupFsm()
-    {
-        botFsm.Setup(this , visionSensor);
-    }
-    
-    public void SetSkillLevel(int skillLevel)
-    {
-        botFsm.AdjustSkillLevel(skillLevel);
-    }
-
     // Update is called once per frame
     protected override void Update()
     {
@@ -70,16 +60,15 @@ public class FpsBot : FpsCharacter
         if(!isServer || IsDead() || !aiEnabled)   return;
         RecoverSpeed();
         
-        botFsm.ManualUpdate();
+        Update_Fsm();
         
-        if (botFsm.botState == BotStateEnum.Shooting)
+        if (botState == BotStateEnum.Shooting)
         {
             
             if(weaponShotCooldown.CanExecuteAfterDeltaTime(true))
             {
-                // Debug.Log(weaponShotCooldown.nextUse);
-                botFsm.ScanVisibleLosFromShootTarget();
-                if(botFsm.aimAtHitboxTransform != null)
+                ScanVisibleLosFromShootTarget();
+                if(aimAtHitboxTransform != null)
                     ShootAtTarget();
                 
             }
@@ -106,19 +95,20 @@ public class FpsBot : FpsCharacter
     
     private void UpdateLookAt()
     {
-        if(botFsm.targetLookAtPosition == Vector3.zero)
+        UpdateLookAt_Fsm();
+        if(targetLookAtPosition == Vector3.zero)
         {
             Vector3 moveVec = GetMovementVelocity().normalized * 2f;
             if(moveVec != Vector3.zero)
                 lookAtTransform.localPosition = new Vector3(moveVec.x , 1.3f + moveVec.y , moveVec.z);            
         }
         else
-            lookAtTransform.position = botFsm.targetLookAtPosition;
+            lookAtTransform.position = targetLookAtPosition;
     }
     
     private void UpdateMovementDestination()
     {
-        if(botFsm.botState == BotStateEnum.Default || botFsm.botState == BotStateEnum.Alert)
+        if(botState == BotStateEnum.Default || botState == BotStateEnum.Alert)
         {
             if(moveDest == null || ai.reachedDestination)
             {
@@ -131,7 +121,7 @@ public class FpsBot : FpsCharacter
                 aiDest.target = moveDest;
             }
         }
-        else if (botFsm.botState == BotStateEnum.Aiming || botFsm.botState == BotStateEnum.Shooting)
+        else if (botState == BotStateEnum.Aiming || botState == BotStateEnum.Shooting)
         {
             // Stop moving , by now
             aiDest.target = transform;
@@ -158,7 +148,7 @@ public class FpsBot : FpsCharacter
             speedRecoverElapsed = 0f;
         }
         
-        botFsm.OnTakeHit(damageInfo);
+        OnTakeHit(damageInfo);
     }
 
     public override Vector3 GetMovementVelocity()
@@ -175,7 +165,7 @@ public class FpsBot : FpsCharacter
     
     public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
-        botFsm.ProcessWeaponEventUpdate(evt);
+        ProcessWeaponEventUpdate_Fsm(evt);
         if(evt == WeaponEvent.Shoot)
         {
             
@@ -185,7 +175,7 @@ public class FpsBot : FpsCharacter
             {
                 spreadMultiplier *= 5f;
             }
-            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, botFsm.targetLookAtPosition);
+            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, targetLookAtPosition);
             CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
             // ----------------------------------------------- //
             RpcFireWeapon();

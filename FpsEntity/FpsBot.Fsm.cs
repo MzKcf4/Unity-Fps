@@ -1,17 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using SensorToolkit;
 
-// The brain of the bot , this determines the "state" of the bot,
-//   so that it executes actions according to the "state"
-
-[System.Serializable]
-public class FpsBotFsm
+// FpsBot.Fsm
+public partial class FpsBot
 {
     public BotStateEnum botState = BotStateEnum.Default;
-    private FpsBot fpsBot;
-    private TriggerSensor visionSensor;
     
     private ActionCooldown alertStateCooldown = new ActionCooldown { interval = 2f};
     private ActionCooldown reactionCooldown = new ActionCooldown { interval = 2f};
@@ -27,30 +21,10 @@ public class FpsBotFsm
     public FpsModel aimAtFpsModel;
     public Transform aimAtHitboxTransform;
     
-    public void Setup(FpsBot fpsBot, TriggerSensor visionSensor)
-    {
-        this.fpsBot = fpsBot;
-        this.visionSensor = visionSensor;
-    }
-    
-    public void AdjustSkillLevel(int level)
-    {
-        if(level <= 0)
-            reactionTime = 2f;
-        else if (level == 1)
-            reactionTime = 1f;
-        else if (level == 2)
-            reactionTime = 0.5f;
-        else 
-            reactionTime = 0.3f;
-        
-        reactionCooldown.interval = reactionTime;
-    }
-    
     // Should be placed in MonoBehaviour's Update() method , to replicate update() behavior
-    public void ManualUpdate()
+    public void Update_Fsm()
     {
-        if(fpsBot == null || fpsBot.aiIgnoreEnemy)  return;
+        if(aiIgnoreEnemy)  return;
         
         CheckWeaponAmmo();
         if(botState == BotStateEnum.Reloading)  return;
@@ -86,26 +60,32 @@ public class FpsBotFsm
         UpdateLookAt();
     }
     
+            
+    public void SetSkillLevel(int level)
+    {
+        if(level <= 0)
+            reactionTime = 2f;
+        else if (level == 1)
+            reactionTime = 1f;
+        else if (level == 2)
+            reactionTime = 0.5f;
+        else 
+            reactionTime = 0.3f;
+        
+        reactionCooldown.interval = reactionTime;
+    }
     
     private void CheckWeaponAmmo()
     {
-        if(fpsBot.GetActiveWeapon().currentClip <= 0)
+        if(GetActiveWeapon().currentClip <= 0)
         {
-            fpsBot.ReloadActiveWeapon();
-            fpsBot.RpcReloadActiveWeapon();
+            ReloadActiveWeapon();
+            RpcReloadActiveWeapon();
             botState = BotStateEnum.Reloading;
         }
     }
-    
-    public void ProcessWeaponEventUpdate(WeaponEvent evt)
-    {
-        if(evt == WeaponEvent.Reload)
-            botState = BotStateEnum.Reloading;
-        else if(evt == WeaponEvent.Reload_End)
-            botState = BotStateEnum.Default;
-    }
-    
-    private void UpdateLookAt()
+        
+    private void UpdateLookAt_Fsm()
     {
         if(botState == BotStateEnum.Aiming)
             targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
@@ -138,7 +118,7 @@ public class FpsBotFsm
                 continue;
                 
             FpsCharacter detectedCharacter = (FpsCharacter)detectedModel.controllerEntity;
-            if(!detectedModel.controllerEntity.IsDead() && !(detectedCharacter.team == fpsBot.team))
+            if(!detectedModel.controllerEntity.IsDead() && !(detectedCharacter.team == this.team))
             {
                 return detectedModel;
             }
@@ -192,5 +172,13 @@ public class FpsBotFsm
         botState = BotStateEnum.Default;
         aimAtFpsModel = null;
         aimAtHitboxTransform = null;
+    }
+    
+    public void ProcessWeaponEventUpdate_Fsm(WeaponEvent evt)
+    {
+        if(evt == WeaponEvent.Reload)
+            botState = BotStateEnum.Reloading;
+        else if(evt == WeaponEvent.Reload_End)
+            botState = BotStateEnum.Default;
     }
 }
