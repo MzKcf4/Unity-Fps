@@ -82,7 +82,6 @@ public class FpsPlayer : FpsCharacter
         
         if(isServer)
         {
-            isGodMode = true;
             team = TeamEnum.TeamA;
             ServerContext.Instance.playerList.Add(this);
             // *ToFix* Teleport only , since 'Respawn' will cause null on client side 

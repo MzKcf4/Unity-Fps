@@ -28,7 +28,7 @@ public class PlayerManager : NetworkBehaviour
     }
     
     [Server]
-    public void AddBot(TeamEnum team)
+    public void AddBot(TeamEnum team, int skillLevel)
     {
         Transform spawn = GetSpawnTransform(team);
         
@@ -37,6 +37,7 @@ public class PlayerManager : NetworkBehaviour
         
         FpsBot fpsBot = botObj.GetComponent<FpsBot>();
         fpsBot.team = team;
+        fpsBot.SetSkillLevel(skillLevel);
         
         RespawnAndTeleport(fpsBot);
     }

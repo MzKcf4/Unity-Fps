@@ -57,6 +57,11 @@ public class FpsBot : FpsCharacter
     {
         botFsm.Setup(this , visionSensor);
     }
+    
+    public void SetSkillLevel(int skillLevel)
+    {
+        botFsm.AdjustSkillLevel(skillLevel);
+    }
 
     // Update is called once per frame
     protected override void Update()

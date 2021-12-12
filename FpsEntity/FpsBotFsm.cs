@@ -17,7 +17,6 @@ public class FpsBotFsm
     private ActionCooldown reactionCooldown = new ActionCooldown { interval = 2f};
     private ActionCooldown scanCooldown = new ActionCooldown { interval = 0.2f};
     
-    
     // How long bot stays in alert state ( look at alert direction )
     public float maxAlertTime;
     // How long bot stays "Aiming" enemy before shooting
@@ -32,6 +31,20 @@ public class FpsBotFsm
     {
         this.fpsBot = fpsBot;
         this.visionSensor = visionSensor;
+    }
+    
+    public void AdjustSkillLevel(int level)
+    {
+        if(level <= 0)
+            reactionTime = 2f;
+        else if (level == 1)
+            reactionTime = 1f;
+        else if (level == 2)
+            reactionTime = 0.5f;
+        else 
+            reactionTime = 0.3f;
+        
+        reactionCooldown.interval = reactionTime;
     }
     
     // Should be placed in MonoBehaviour's Update() method , to replicate update() behavior
@@ -76,7 +89,6 @@ public class FpsBotFsm
     
     private void CheckWeaponAmmo()
     {
-        Debug.Log(fpsBot.GetActiveWeapon().currentClip);
         if(fpsBot.GetActiveWeapon().currentClip <= 0)
         {
             fpsBot.ReloadActiveWeapon();
