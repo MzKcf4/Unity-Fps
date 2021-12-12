@@ -24,23 +24,13 @@ public abstract partial class FpsCharacter : FpsEntity
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
     
-    protected Transform weaponRootTransform;
+    
     protected MovementDirection currMoveDir = MovementDirection.None;
         
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.None;
     
-    public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>(){"" , "" , ""};
-    public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
 
-    [HideInInspector] [SyncVar] public int activeWeaponSlot = -1;
-    
-    // Currently should be available to Local FpsPlayer only !
-    public FpsWeaponView fpsWeaponView;
-    public FpsWeaponWorldModel[] fpsWeaponWorldSlot = new FpsWeaponWorldModel[Constants.WEAPON_SLOT_MAX];
-    
-    protected FpsCharacterWeaponHandler weaponHandler;
-        
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -51,10 +41,6 @@ public abstract partial class FpsCharacter : FpsEntity
         base.Awake();
         
         weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
-        weaponHandler = new FpsCharacterWeaponHandler(){
-            fpsCharacter = this,
-            weaponRootTransform = this.weaponRootTransform
-        };
     }
     
     protected override void Start()
@@ -65,19 +51,9 @@ public abstract partial class FpsCharacter : FpsEntity
         
         SharedContext.Instance.RegisterCharacter(this);
         
-        if(isClient && !isLocalPlayer)
-        {
-            // Process initial SyncList payload , load the weapon GameObjects for existing players.
-            for (int index = 0; index < syncWeaponNameInSlots.Count; index++)
-            {
-                string weaponName = syncWeaponNameInSlots[index];
-                if(string.IsNullOrWhiteSpace(weaponName))
-                    continue;
-                weaponHandler.ClientGetWeapon(syncWeaponNameInSlots[index] , index);
-            }
-        }
         
-        InitializeAnimation();
+        Start_Weapon();
+        Start_Animation();
     }
     
     protected virtual void AttachModel()
@@ -89,53 +65,7 @@ public abstract partial class FpsCharacter : FpsEntity
         modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
         fpsModel.SetLookAtTransform(lookAtTransform);
     }
-    
-    [Command]
-    public void CmdGetWeapon(string weaponName , int slot)
-    {
-        weaponHandler.ServerGetWeapon(weaponName, slot);
-        RpcGetWeapon(weaponName, slot);
-    }
-    
-    [ClientRpc]
-    public void RpcGetWeapon(string weaponName, int slot)
-    {
-        weaponHandler.ClientGetWeapon(weaponName, slot);
         
-        // Force switch weapon if it's main slot
-        if(slot == 0)
-        {
-            if(isLocalPlayer)
-                CmdSwitchWeapon(slot);
-            else if (isServer)
-                RpcSwitchWeapon(slot);
-        }
-    }
-    
-    [Command]
-    public void CmdSwitchWeapon(int slot)
-    {
-        weaponHandler.SwitchWeapon(slot);
-        RpcSwitchWeapon(slot);
-    }
-    
-    [ClientRpc]
-    protected void RpcSwitchWeapon(int slot)
-    {
-        weaponHandler.SwitchWeapon(slot);
-    }
-    
-    [ClientRpc]
-    public void RpcFireWeapon()
-    {
-        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position);
-        if(!isLocalPlayer)
-        {
-            fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
-            RpcFireWeapon_Animation();
-        }
-    }
-    
     [Server]
     public virtual void Respawn()
     {
@@ -157,15 +87,8 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         base.Update();
         if(IsDead())    return;
-        // Only process weapon if it's Server (bot) or LocalPlayer
-        if(isLocalPlayer || isServer)
-        {
-            if(activeWeaponSlot != -1)
-            {
-                weaponSlots[activeWeaponSlot].ManualUpdate();
-            }
-        }
-        
+
+        Update_Weapon();
         Update_Animation();
     }
 
@@ -282,12 +205,7 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         currentVelocity = velocity;
     }
-    
-    public FpsWeapon GetActiveWeapon()
-    {
-        return weaponSlots[activeWeaponSlot];
-    }
-    
+        
     protected void OnDestroy()
     {
         SharedContext.Instance.RemoveCharacter(this);

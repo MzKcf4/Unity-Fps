@@ -43,7 +43,7 @@ public class FpsBot : FpsCharacter
             aiDest = GetComponent<AIDestinationSetter>();
             SetupFsm();
             
-            weaponHandler.ServerGetWeapon("csgo_ak47" , 0);
+            ServerGetWeapon("csgo_ak47" , 0);
             RpcGetWeapon("csgo_ak47" , 0);
             weaponShotCooldown.interval = 0.1f;
         }
@@ -139,17 +139,7 @@ public class FpsBot : FpsCharacter
         if(GetActiveWeapon() == null)
             return;
         
-        float spreadMultiplier = GetActiveWeapon().spread;
-        if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
-        {
-            spreadMultiplier *= 5f;
-        }
-        
-        GetActiveWeapon().DoCooldownFromShoot();
-        Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, botFsm.targetLookAtPosition);
-        CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
-        
-        RpcFireWeapon();
+        GetActiveWeapon().DoWeaponFire();
     }
                 
     [Server]
@@ -177,29 +167,23 @@ public class FpsBot : FpsCharacter
         }
         return currentVelocity;
     }
-
-    /*
-    public void GetWeapon(GameObject weaponModelPrefab , int slot)
-    {
-    GameObject weaponModelObj = Instantiate(weaponModelPrefab , weaponRootTransform);
-    FpsWeapon fpsWeapon = weaponModelObj.GetComponent<FpsWeapon>();
-    fpsWeapon.owner = this;
-        
-    this.fpsWeapon = fpsWeapon;
-    this.weaponShotCooldown.interval = fpsWeapon.shootInterval;
-    }
     
-    private void RotateModelTowardsDirection(Vector3 dir)
+    public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
-        if(dir == Vector3.zero)   return;
-        
-        
-        Quaternion lookAtTargetRotation = Quaternion.LookRotation(dir);
-        lookAtRotationTransform.rotation = Quaternion.RotateTowards(lookAtRotationTransform.rotation , lookAtTargetRotation , 200f * Time.deltaTime);
-        // Offset y to 0 so model doesn't rotate up/down
-        Quaternion targetDir = Quaternion.LookRotation(new Vector3(dir.x , 0f , dir.z));
-        
-        modelObjectParent.transform.rotation = Quaternion.RotateTowards(modelObjectParent.transform.rotation , targetDir , 200f * Time.deltaTime);
+        botFsm.ProcessWeaponEventUpdate(evt);
+        if(evt == WeaponEvent.Shoot)
+        {
+            
+            float spreadMultiplier = GetActiveWeapon().spread;
+            // ---------ToDo: Shotgun pallet ??--------------- //
+            if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
+            {
+                spreadMultiplier *= 5f;
+            }
+            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, botFsm.targetLookAtPosition);
+            CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
+            // ----------------------------------------------- //
+            RpcFireWeapon();
+        }
     }
-    */
 }

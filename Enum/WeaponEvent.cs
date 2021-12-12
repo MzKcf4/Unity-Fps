@@ -8,6 +8,7 @@ public enum WeaponEvent
     Draw,
     Shoot,
     Reload,
+    Reload_End,
     Reload_PalletStart,
     Reload_PalletInsertStart,
     Reload_PalletEnd,

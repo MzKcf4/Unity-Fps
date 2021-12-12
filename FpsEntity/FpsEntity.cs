@@ -15,6 +15,8 @@ public class FpsEntity : NetworkBehaviour
 	// For enemies , it's the base health at stage 1 whem player count is 1
 	[SyncVar] public int health = 100;
 	[SyncVar] public int maxHealth = 100;
+    
+    [SyncVar] public bool isGodMode = false;
 	
 	public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
 	
@@ -75,7 +77,7 @@ public class FpsEntity : NetworkBehaviour
 	[Server]
 	public virtual void TakeDamage(DamageInfo damageInfo)
 	{
-		if(!isServer || IsDead())	return;
+		if(!isServer || IsDead() || isGodMode)	return;
 		
 		ProcessDamageByBodyPart(damageInfo);
 		int newHealth = health - damageInfo.damage;

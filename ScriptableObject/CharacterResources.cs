@@ -15,6 +15,7 @@ public class CharacterResources : SerializedScriptableObject
     
     public ClipTransition upperBodyAimClip;
     public ClipTransition upperBodyShootClip;
+    public ClipTransition upperBodyReloadClip;
     
     public ClipTransition idleClip;
     public ClipTransition runClip;

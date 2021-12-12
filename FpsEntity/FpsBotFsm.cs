@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using SensorToolkit;
 
+// The brain of the bot , this determines the "state" of the bot,
+//   so that it executes actions according to the "state"
+
 [System.Serializable]
 public class FpsBotFsm
 {
@@ -36,6 +39,8 @@ public class FpsBotFsm
     {
         if(fpsBot == null || fpsBot.aiIgnoreEnemy)  return;
         
+        CheckWeaponAmmo();
+        if(botState == BotStateEnum.Reloading)  return;
         
         if(botState == BotStateEnum.Alert)
         {
@@ -68,6 +73,25 @@ public class FpsBotFsm
         UpdateLookAt();
     }
     
+    
+    private void CheckWeaponAmmo()
+    {
+        Debug.Log(fpsBot.GetActiveWeapon().currentClip);
+        if(fpsBot.GetActiveWeapon().currentClip <= 0)
+        {
+            fpsBot.ReloadActiveWeapon();
+            fpsBot.RpcReloadActiveWeapon();
+            botState = BotStateEnum.Reloading;
+        }
+    }
+    
+    public void ProcessWeaponEventUpdate(WeaponEvent evt)
+    {
+        if(evt == WeaponEvent.Reload)
+            botState = BotStateEnum.Reloading;
+        else if(evt == WeaponEvent.Reload_End)
+            botState = BotStateEnum.Default;
+    }
     
     private void UpdateLookAt()
     {

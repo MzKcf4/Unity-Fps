@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // The logical layer (brain) of a weapon , updated by owner in Update()
-// It shouldn't care about the view/world model , 
+// It shouldn't care about the view/world model
+
+// Weapons should be able to perform following actions : 
+//      Draw , Shoot , Reload  ,  Scope (if possible)
+
+// The actions are either triggered by local player input , or direct call by bot
 public class FpsWeapon
 {
     public string weaponName;
@@ -20,7 +25,6 @@ public class FpsWeapon
     public WeaponReloadType reloadType = WeaponReloadType.Clip;
     public WeaponCategory weaponCategory = WeaponCategory.Rifle;
     
-    // private MMFeedbacks muzzleFeedbacks;
     public KeyPressState primaryActionState = KeyPressState.Released;
     public KeyPressState secondaryActionState = KeyPressState.Released;
 
@@ -124,6 +128,7 @@ public class FpsWeapon
             if(weaponState == WeaponState.Reloading)
             {
                 currentClip = clipSize;
+                EmitWeaponViewEvent(WeaponEvent.Reload_End);
                 EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
                 weaponState = WeaponState.Idle;
                 return;
@@ -233,7 +238,11 @@ public class FpsWeapon
     public void DoWeaponPrimaryAction()
     {
         if(!CanFire())  return;
-
+        DoWeaponFire();
+    }
+    
+    public void DoWeaponFire()
+    {
         EmitWeaponViewEvent(WeaponEvent.Shoot);
         ResetWeaponSecondaryState();
         currentClip--;
@@ -261,9 +270,9 @@ public class FpsWeapon
     
     private void EmitWeaponViewEvent(WeaponEvent evt)
     {
-        if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
+        if(owner != null)
         {
-            PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
+            owner.ProcessWeaponEventUpdate(evt);
         }
     }
     

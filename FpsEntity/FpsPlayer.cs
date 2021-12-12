@@ -53,7 +53,7 @@ public class FpsPlayer : FpsCharacter
             
 	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	PlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
-            PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
+            // PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             cameraController = GetComponentInChildren<CMF.CameraController>();
@@ -82,6 +82,7 @@ public class FpsPlayer : FpsCharacter
         
         if(isServer)
         {
+            isGodMode = true;
             team = TeamEnum.TeamA;
             ServerContext.Instance.playerList.Add(this);
             // *ToFix* Teleport only , since 'Respawn' will cause null on client side 
@@ -193,9 +194,12 @@ public class FpsPlayer : FpsCharacter
 			fpsEntity.TakeDamage(dmgInfo);
 	}
     
-    private void OnWeaponEventUpdate(WeaponEvent evt)
+    public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
         if(!isLocalPlayer)  return;
+        
+        // Send the event to weaponView for animations
+        PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
         
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
@@ -203,6 +207,14 @@ public class FpsPlayer : FpsCharacter
             OnWeaponScopeEvent();
         else if (evt == WeaponEvent.UnScope)
             OnWeaponUnScopeEvent();
+        else if (evt == WeaponEvent.Reload)
+            OnWeaponReloadEvent();
+        
+    }
+        
+    private void OnWeaponReloadEvent()
+    {
+        RpcReloadWeapon_Animation();
     }
     
     private void OnWeaponScopeEvent()

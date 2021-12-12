@@ -7,5 +7,6 @@ public enum BotStateEnum
     Default,
     Aiming,
     Alert,
-    Shooting
+    Shooting,
+    Reloading
 }

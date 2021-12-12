@@ -8,12 +8,12 @@ public partial class FpsCharacter
 {
     protected AnimancerComponent modelAnimancer;
     
-    private const int UPPER_LAYER = 0;
-    private const int LOWER_LAYER = 1;
+    protected const int UPPER_LAYER = 0;
+    protected const int LOWER_LAYER = 1;
     
     private ClipTransition currentPlayingClip;
     
-    private void InitializeAnimation()
+    private void Start_Animation()
     {
         modelAnimancer.Layers[UPPER_LAYER].SetMask(charRes.upperBodyMask);
         modelAnimancer.Layers[LOWER_LAYER].SetMask(charRes.lowerBodyMask);
@@ -87,6 +87,11 @@ public partial class FpsCharacter
 
     public void RpcFireWeapon_Animation()
     {
-        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyShootClip , 0.1f , FadeMode.FromStart);
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyShootClip);
+    }
+    
+    public void RpcReloadWeapon_Animation()
+    {
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyReloadClip);
     }
 }
