@@ -7,7 +7,7 @@ public partial class FpsBot
 {
     public BotStateEnum botState = BotStateEnum.Default;
     
-    private ActionCooldown alertStateCooldown = new ActionCooldown { interval = 2f};
+    private ActionCooldown alertStateCooldown = new ActionCooldown { interval = 3f};
     private ActionCooldown reactionCooldown = new ActionCooldown { interval = 2f};
     private ActionCooldown scanCooldown = new ActionCooldown { interval = 0.2f};
     
@@ -84,9 +84,28 @@ public partial class FpsBot
             botState = BotStateEnum.Reloading;
         }
     }
+    
+    public void OnTeammateKilledNearby_Fsm(Vector3 deathPos, DamageInfo damageInfo)
+    {
+        if(botState != BotStateEnum.Default)
+            return;
+        
+        aiDest.SetByPosition(deathPos);
+        targetLookAtPosition = damageInfo.damageSourcePosition;
+        botState = BotStateEnum.Alert;
+        alertStateCooldown.StartCooldown();
+    }
         
     private void UpdateLookAt_Fsm()
     {
+        if(botState == BotStateEnum.Default)
+        {
+            Vector3 moveVec = GetMovementVelocity().normalized * 2f;
+            if(moveVec != Vector3.zero)
+                lookAtTransform.localPosition = new Vector3(moveVec.x , 1.3f + moveVec.y , moveVec.z);
+            return;
+        }
+        
         if(botState == BotStateEnum.Aiming)
             targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
         else if (botState == BotStateEnum.Shooting)
@@ -95,8 +114,9 @@ public partial class FpsBot
                 targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
             else
                 targetLookAtPosition = aimAtHitboxTransform.position;
-        } else if (botState != BotStateEnum.Alert)
-            targetLookAtPosition = Vector3.zero;
+        } 
+
+        lookAtTransform.position = targetLookAtPosition;
     }
     
     

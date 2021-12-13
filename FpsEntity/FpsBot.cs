@@ -12,13 +12,14 @@ public partial class FpsBot : FpsCharacter
 {
     public bool aiEnabled = true;
     public bool aiIgnoreEnemy = false;
+    public bool aiEnableWander = true;
     
     protected TriggerSensor visionSensor;
     
     private IAstarAI ai;
     private Seeker seeker;
     private AIDestinationSetter aiDest;
-    public Transform moveDest;
+    public Vector3 moveDest;
     // --------- Pain Shock ------------ //
     public float moveSpeed = 4f;
     public float speedRecoverDuration = 0.5f;
@@ -41,7 +42,6 @@ public partial class FpsBot : FpsCharacter
             ai = GetComponent<IAstarAI>();
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
-            
             
             ServerGetWeapon("csgo_ak47" , 0);
             RpcGetWeapon("csgo_ak47" , 0);
@@ -96,35 +96,30 @@ public partial class FpsBot : FpsCharacter
     private void UpdateLookAt()
     {
         UpdateLookAt_Fsm();
-        if(targetLookAtPosition == Vector3.zero)
-        {
-            Vector3 moveVec = GetMovementVelocity().normalized * 2f;
-            if(moveVec != Vector3.zero)
-                lookAtTransform.localPosition = new Vector3(moveVec.x , 1.3f + moveVec.y , moveVec.z);            
-        }
-        else
-            lookAtTransform.position = targetLookAtPosition;
     }
     
     private void UpdateMovementDestination()
     {
+        if(!aiEnableWander)
+            return;
+            
         if(botState == BotStateEnum.Default || botState == BotStateEnum.Alert)
         {
-            if(moveDest == null || ai.reachedDestination)
+            if(moveDest == null || moveDest == Vector3.zero || ai.reachedDestination)
             {
                 Transform newDest = Utils.GetRandomElement<Transform>(WaypointManager.Instance.mapGoalList);
-                moveDest = newDest;
-                aiDest.target = newDest;
+                moveDest = newDest.position;
+                aiDest.SetByPosition(moveDest);
             }
             else
             {
-                aiDest.target = moveDest;
+                aiDest.SetByPosition(moveDest);
             }
         }
         else if (botState == BotStateEnum.Aiming || botState == BotStateEnum.Shooting)
         {
             // Stop moving , by now
-            aiDest.target = transform;
+            aiDest.SetByTransform(transform);
         }
     }
     
@@ -150,7 +145,28 @@ public partial class FpsBot : FpsCharacter
         
         OnTakeHit(damageInfo);
     }
-
+    
+    [Server]
+    protected override void Killed(DamageInfo damageInfo)
+    {
+        base.Killed(damageInfo);
+        BoardcastKilledWarning(damageInfo);
+    }
+    
+    [Server]
+    private void BoardcastKilledWarning(DamageInfo damageInfo)
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 12f);
+        foreach (Collider hitCollider in hitColliders)
+        {
+            FpsBot fpsBot = hitCollider.GetComponent<FpsBot>();
+            if(fpsBot == null || fpsBot == this || fpsBot.IsDead() || fpsBot.team != this.team)
+                continue;
+            
+            fpsBot.OnTeammateKilledNearby_Fsm(transform.position , damageInfo);
+        }
+    }
+    
     public override Vector3 GetMovementVelocity()
     {
         if(isServer)

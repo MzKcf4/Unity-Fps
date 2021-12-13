@@ -20,7 +20,6 @@ public class ConsoleCmdManager : NetworkBehaviour
     {
         if(!isServer)   return;
         
-        Debug.Log(skillLevel);
         if(PlayerManager.Instance != null)
             PlayerManager.Instance.AddBot(TeamEnum.TeamB, skillLevel);
     }
@@ -33,4 +32,6 @@ public class ConsoleCmdManager : NetworkBehaviour
         if(PlayerManager.Instance != null)
             PlayerManager.Instance.KickAllBot();
     }
+    
+
 }
