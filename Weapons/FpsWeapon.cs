@@ -53,6 +53,7 @@ public class FpsWeapon
         this.weaponName = weaponName;
         FetchDataFromDb();
         currentClip = clipSize;
+        secondaryActionCooldown.interval = secondaryActionInterval;
         this.weaponResouces = WeaponAssetManager.Instance.GetWeaponResouce(weaponName);
     }
         
@@ -74,11 +75,6 @@ public class FpsWeapon
         spread = dbWeaponInfo.f_spread;
     }
     
-    void Start()
-    {
-        secondaryActionCooldown.interval = secondaryActionInterval;
-    }
-
     public void ManualUpdate()
     {
         if(owner.IsDead())  return;
