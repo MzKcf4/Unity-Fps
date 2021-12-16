@@ -1,117 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Utils
-{
-	public static void AddAnimationEvent(AnimationClip clip, string functionName , float timeInPercent)
-	{
-		AnimationEvent evt = new AnimationEvent();
-		evt.functionName = functionName;
-		evt.time = timeInPercent;
-		clip.AddEvent(evt);
-	}
-    
-    public static Vector3 GetMouseAimByPlane()
+{    
+    public static RayHitInfo CastRayAndGetHitInfo(FpsCharacter fpsCharacter, Vector3 fromPos, Vector3 direction, int mask , float spread)
     {
-        Transform cameraTransform = Camera.main.transform;
-        Plane p = new Plane(cameraTransform.up, cameraTransform.position);
-        Ray r = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        float d;
-        if(p.Raycast(r, out d)) {
-            Vector3 v = r.GetPoint(d);
-            return v;
-        } else {
-            Debug.Log("Nothing hits");    
-        }
-        
-        return Vector3.zero;
-    }
-	
-	public static Vector3 GetMouseAim()
-	{
-		Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-		RaycastHit hit;
-		if(Physics.Raycast(ray , out hit , 1000.0f))
-		{
-			return hit.point;
-		}
-        else
-        {
-            return ray.GetPoint(100.0f);
-        }
-		return Vector3.zero;
-	}
-	
-	public static Vector3 GetMouseAim(LayerMask mask)
-	{
-		Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-		RaycastHit hit;
-		if(Physics.Raycast(ray , out hit , 1000.0f , mask))
-		{
-			Debug.Log(hit);
-			return hit.point;
-		}
-		Debug.Log("Nothing hits");
-		return Vector3.zero;
-	}
-	
-	
-	public static GameObject GetMouseAimHitTarget()
-	{
-		Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-		RaycastHit hit;
-		if(Physics.Raycast(ray , out hit , 1000.0f))
-		{
-			return hit.transform.gameObject;
-		}
-		Debug.Log("Nothing hits");
-		return null;
-	}
-	
-	public static GameObject GetMouseAimHitTarget(LayerMask mask)
-	{
-		Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-		RaycastHit hit;
-		if(Physics.Raycast(ray , out hit , 1000.0f , mask))
-		{
-			return hit.transform.gameObject;
-		}
-		Debug.Log("Nothing hits");
-		return null;
-	}
-
-    public static RayHitInfo GetMouseAimHitInfo(LayerMask mask, float spread)
-    {
-        return GetMouseAimHitInfo(mask.value , spread);
-    }
-
-	public static RayHitInfo GetMouseAimHitInfo(int mask, float spread)
-	{        
-        return CastRayAndGetHitInfo(Camera.main.transform, mask , spread);
-        
-	}
-    
-    public static RayHitInfo CastRayAndGetHitInfo(Transform origin, int mask , float spread)
-    {
-        return CastRayAndGetHitInfo(origin.position , origin.forward , mask , spread);
-    }
-    
-    public static RayHitInfo CastRayAndGetHitInfo(Vector3 fromPos, Vector3 direction, int mask , float spread)
-    {
-        // random vector within circle
-        float rad = Random.Range(0.0f , 360.0f) * Mathf.Rad2Deg;
-        float spreadX = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
-        float spreadY = Random.Range(0.0f , spread/2.0f) * Mathf.Sin(rad);
-        float spreadZ = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
-        Vector3 spreadVec = new Vector3(spreadX , spreadY , spreadZ);
-        Vector3 directionWithSpread = direction + spreadVec;
+        Vector3 directionWithSpread = GetRandomizedSpreadDirection(fromPos , direction , spread);
         Vector3 originPos = fromPos;
         
-        RaycastHit hit;
-        if(Physics.Raycast(originPos ,directionWithSpread, out hit , 1000.0f , mask))
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(originPos ,directionWithSpread, 100.0f , mask);
+        
+        // ascending distance
+        List<RaycastHit> sortedHits = hits.OrderBy(hit=>Vector3.Distance(fromPos , hit.transform.position)).ToList();
+        
+        foreach(RaycastHit hit in sortedHits)
         {
+            GameObject hitObject = hit.transform.gameObject;
+            FpsHitbox hitbox = hitObject.GetComponent<FpsHitbox>();
+            if(hitbox != null)
+            {
+                FpsEntity hitEntity = hitbox.fpsEntity;
+                // Hit self for some reason , ignore and keep processing
+                if(hitEntity == fpsCharacter)
+                    continue;
+            }
+            
             RayHitInfo info = new RayHitInfo(){
                 hitPoint = hit.point,
                 hitObject = hit.transform.gameObject,
@@ -120,6 +37,19 @@ public class Utils
             return info;
         }
         return null;
+    }
+    
+    public static Vector3 GetRandomizedSpreadDirection(Vector3 fromPos , Vector3 direction, float spread)
+    {
+        // random vector within circle
+        float rad = Random.Range(0.0f , 360.0f) * Mathf.Rad2Deg;
+        float spreadX = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
+        float spreadY = Random.Range(0.0f , spread/2.0f) * Mathf.Sin(rad);
+        float spreadZ = Random.Range(0.0f , spread/2.0f) * Mathf.Cos(rad);
+        Vector3 spreadVec = new Vector3(spreadX , spreadY , spreadZ);
+        Vector3 directionWithSpread = direction + spreadVec;
+        
+        return directionWithSpread;
     }
 	
 	public static T GetRandomElement<T>(List<T> list)
