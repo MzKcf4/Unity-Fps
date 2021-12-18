@@ -33,5 +33,33 @@ public class ConsoleCmdManager : NetworkBehaviour
             PlayerManager.Instance.KickAllBot();
     }
     
-
+    [QFSW.QC.Command("bot_ignore_enemy")]
+    public void SetBotIgnoreEnemy(int ignore)
+    {
+        if(!isServer)   return;
+        bool isIgnore = ignore == 0 ? false : true;
+        
+        foreach(FpsCharacter character in SharedContext.Instance.characterList)
+        {
+            if(!(character is FpsBot))
+                continue;
+            FpsBot fpsBot = (FpsBot) character;
+            fpsBot.aiIgnoreEnemy = isIgnore;
+        }
+    }
+    
+    [QFSW.QC.Command("bot_enable_wander")]
+    public void SetBotWander(int enable)
+    {
+        if(!isServer)   return;
+        bool isEnable = enable == 0 ? false : true;
+        
+        foreach(FpsCharacter character in SharedContext.Instance.characterList)
+        {
+            if(!(character is FpsBot))
+                continue;
+            FpsBot fpsBot = (FpsBot) character;
+            fpsBot.aiEnableWander = isEnable;
+        }
+    }
 }

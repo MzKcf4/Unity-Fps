@@ -24,8 +24,6 @@ public partial class FpsBot
     // Should be placed in MonoBehaviour's Update() method , to replicate update() behavior
     public void Update_Fsm()
     {
-        if(aiIgnoreEnemy)  return;
-        
         CheckWeaponAmmo();
         if(botState == BotStateEnum.Reloading)  return;
         
@@ -122,7 +120,7 @@ public partial class FpsBot
     
     private FpsModel ScanForShootTarget()
     {
-        if(visionSensor == null)   
+        if(visionSensor == null || aiIgnoreEnemy)
             return null;
             
         // Should detect "FpsModel" attached in the ModelRoot , because it contains the LOS Target.
