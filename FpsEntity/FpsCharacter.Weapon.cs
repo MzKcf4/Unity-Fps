@@ -7,6 +7,7 @@ using Mirror;
 public partial class FpsCharacter
 {
     public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>(){"" , "" , ""};
+    // ** ----- Just note that fpsWeapon is NOT sync by server ------ **
     public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
     [HideInInspector] [SyncVar] public int activeWeaponSlot = -1;
     
@@ -176,6 +177,16 @@ public partial class FpsCharacter
     public virtual void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
         
+    }
+    
+    protected void ResetAllWeapons()
+    {
+        foreach(FpsWeapon weapon in weaponSlots)
+        {
+            if(weapon == null)
+                continue;
+            weapon.Reset();
+        }
     }
     
 }

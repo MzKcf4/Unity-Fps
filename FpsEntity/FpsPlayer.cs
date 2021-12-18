@@ -172,6 +172,7 @@ public partial class FpsPlayer : FpsCharacter
         {
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
+            PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
         }
 	}
     

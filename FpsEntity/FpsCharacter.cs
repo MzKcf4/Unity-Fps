@@ -73,6 +73,8 @@ public abstract partial class FpsCharacter : FpsEntity
         SetHealth(maxHealth);
         SetControllableState(true);
         RpcRespawn();
+        RpcSwitchWeapon(activeWeaponSlot);
+        ResetAllWeapons();
     }
     
     [ClientRpc]
@@ -80,6 +82,8 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         SetControllableState(true);
         SetupComponentsByNetworkSetting();
+        ResetAllWeapons();
+        Respawn_Animation();
     }
 
     // Update is called once per frame
@@ -199,7 +203,7 @@ public abstract partial class FpsCharacter : FpsEntity
     }
     
     public abstract Vector3 GetMovementVelocity();
-    
+        
     [Command]
     protected void CmdSetVelocity(Vector3 velocity)
     {

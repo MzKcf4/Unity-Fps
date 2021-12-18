@@ -21,6 +21,11 @@ public partial class FpsCharacter
         modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip , 0.1f , FadeMode.FromStart);
     }
     
+    protected void Respawn_Animation()
+    {
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip , 0.1f , FadeMode.FromStart);
+    }
+    
     protected virtual void Update_Animation()
     {
         UpdateMovementDir();

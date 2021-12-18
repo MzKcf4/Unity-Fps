@@ -9,6 +9,8 @@ using UnityEngine;
 //      Draw , Shoot , Reload  ,  Scope (if possible)
 
 // The actions are either triggered by local player input , or direct call by bot
+
+// *** Note that weapons variables are managed by players locally ! ***
 public class FpsWeapon
 {
     public string weaponName;
@@ -87,6 +89,12 @@ public class FpsWeapon
         
         rangeModifier = dbWeaponInfo.f_range_modifier;
         spreadInMove = dbWeaponInfo.f_spread_move;
+    }
+    
+    public void Reset()
+    {
+        currentClip = clipSize;
+        currentSpread = spreadMin;
     }
     
     public void ManualUpdate()
