@@ -176,6 +176,7 @@ public partial class FpsBot : FpsCharacter
             else
                 currentVelocity = ai.velocity;
         }
+        
         return currentVelocity;
     }
     
@@ -185,7 +186,7 @@ public partial class FpsBot : FpsCharacter
         if(evt == WeaponEvent.Shoot)
         {
             
-            float spreadMultiplier = GetActiveWeapon().spread;
+            float spreadMultiplier = GetActiveWeapon().currentSpread;
             // ---------ToDo: Shotgun pallet ??--------------- //
             if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
             {

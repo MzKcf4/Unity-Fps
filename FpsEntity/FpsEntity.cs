@@ -79,6 +79,7 @@ public class FpsEntity : NetworkBehaviour
 	{
 		if(!isServer || IsDead() || isGodMode)	return;
 		
+        ProcessDamageByDistance(damageInfo);
 		ProcessDamageByBodyPart(damageInfo);
 		int newHealth = health - damageInfo.damage;
         SetHealth(newHealth);
@@ -92,6 +93,11 @@ public class FpsEntity : NetworkBehaviour
 			RpcTakeDamage(damageInfo);
         }
 	}
+    
+    private void ProcessDamageByDistance(DamageInfo damageInfo)
+    {
+        damageInfo.damage = Utils.CalculateDamageByDropoff(damageInfo.damage , damageInfo.GetDamageDistance() , damageInfo.weaponRangeModifier);
+    }
 	
 	private void ProcessDamageByBodyPart(DamageInfo damageInfo)
 	{

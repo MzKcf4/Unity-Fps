@@ -25,7 +25,7 @@ public class CoreGameManager : NetworkBehaviour
     [Server]
     public void DoWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
-        float spread = fpsWeapon.spread;
+        float spread = processSpread(fpsWeapon , character);
         int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
         
         // Gather the hit points from valid hits on walls / entities
@@ -73,6 +73,15 @@ public class CoreGameManager : NetworkBehaviour
         
         RpcSpawnFx(hitWallRayList , hitCharacterRayList);
     }
+    
+    private float processSpread(FpsWeapon weapon , FpsCharacter character)
+    {
+        float currentSpread = weapon.currentSpread;
+        float movementSpread = weapon.spreadInMove * (character.GetMovementVelocity().magnitude / 5.5f);
+        return currentSpread + movementSpread;
+        
+    }
+    
     
     [ClientRpc]
     public void RpcSpawnFx(List<HitPointInfoDto> hitWallRayList , List<HitPointInfoDto> hitCharacterRayList)

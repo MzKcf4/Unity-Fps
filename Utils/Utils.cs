@@ -15,7 +15,7 @@ public class Utils
         hits = Physics.RaycastAll(originPos ,directionWithSpread, 100.0f , mask);
         
         // ascending distance
-        List<RaycastHit> sortedHits = hits.OrderBy(hit=>Vector3.Distance(fromPos , hit.transform.position)).ToList();
+        List<RaycastHit> sortedHits = hits.OrderBy(hit => Vector3.Distance(fromPos , hit.transform.position)).ToList();
         
         foreach(RaycastHit hit in sortedHits)
         {
@@ -107,5 +107,15 @@ public class Utils
     {
         float range = Random.RandomRange(0f , 1.0f);
         return range < probability;
+    }
+    
+    
+    // From CSGO : given rangeModifier = 0.75 , damage is 75% of original when distance is 25f
+    // https://counterstrike.fandom.com/wiki/Damage_dropoff
+    public static int CalculateDamageByDropoff(float baseDamage , float distance, float rangeModifier)
+    {
+        float result = baseDamage * (Mathf.Pow(rangeModifier , distance / 25f));
+        Debug.Log(rangeModifier + " , " + distance + " , " + (distance / 25f) + " = " + result );
+        return Mathf.FloorToInt(result);
     }
 }

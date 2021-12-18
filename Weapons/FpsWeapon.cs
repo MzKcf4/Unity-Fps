@@ -38,11 +38,19 @@ public class FpsWeapon
     private float reloadTime_PalletEnd = 0.2f;
     private float drawTime = 2f;
     
+    [HideInInspector] public float rangeModifier = 1f;
     [HideInInspector] public float shootInterval = 0.1f;
-    
-    
     [HideInInspector] public int palletPerShot = 1;
-    [HideInInspector] public float spread = 0.1f;
+    [HideInInspector] public float spreadInMove = 0f;
+    
+    private float spreadMin = 0f;
+    private float spreadMax = 0.1f;
+    public float currentSpread = 0.1f;
+    private float spreadPerShot = 0.01f;
+    private ActionCooldown cooldownUntilSpreadReduction = new ActionCooldown(){interval = 0.5f};
+    private ActionCooldown spreadReductionCooldown = new ActionCooldown(){interval = 0.1f};
+    private float spreadReductionInterval = 0.1f;
+    private float spreadReductionPerTick = 0.03f;
     
     [HideInInspector] public FpsCharacter owner;
     
@@ -72,7 +80,13 @@ public class FpsWeapon
         reloadTime_PalletEnd = dbWeaponInfo.f_reload_time_pallet_end;
         drawTime = dbWeaponInfo.f_draw_time;
         palletPerShot = dbWeaponInfo.f_pallet_per_shot;
-        spread = dbWeaponInfo.f_spread;
+        
+        spreadMin = dbWeaponInfo.f_spread_min;
+        spreadMax = dbWeaponInfo.f_spread_max;
+        spreadPerShot = dbWeaponInfo.f_spread_per_shot;
+        
+        rangeModifier = dbWeaponInfo.f_range_modifier;
+        spreadInMove = dbWeaponInfo.f_spread_move;
     }
     
     public void ManualUpdate()
@@ -80,7 +94,8 @@ public class FpsWeapon
         if(owner.IsDead())  return;
         // cooldown with secondary action
         HandleCooldownInterrupt();
-        HandleCooldown();
+        HandleWeaponStateCooldown();
+        HandleSpreadCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
         {
             if(weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
@@ -108,7 +123,7 @@ public class FpsWeapon
         }
     }
     
-    private void HandleCooldown()
+    private void HandleWeaponStateCooldown()
     {
         secondaryActionCooldown.ReduceCooldown();
         
@@ -158,6 +173,16 @@ public class FpsWeapon
             }
             // Otherwise should always reset to Idle
             weaponState = WeaponState.Idle;
+        }
+    }
+    
+    private void HandleSpreadCooldown()
+    {
+        if(cooldownUntilSpreadReduction.CanExecuteAfterDeltaTime() &&  
+            currentSpread > 0f && spreadReductionCooldown.CanExecuteAfterDeltaTime(true))
+        {
+            currentSpread -= spreadReductionPerTick;
+            currentSpread = currentSpread < spreadMin ? spreadMin : currentSpread;
         }
     }
     
@@ -242,6 +267,9 @@ public class FpsWeapon
         EmitWeaponViewEvent(WeaponEvent.Shoot);
         ResetWeaponSecondaryState();
         currentClip--;
+        currentSpread += spreadPerShot;
+        currentSpread = currentSpread > spreadMax ? spreadMax : currentSpread;
+        cooldownUntilSpreadReduction.StartCooldown();
         weaponState = WeaponState.Shooting;
         EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         cooldownUntilIdle.StartCooldown(shootInterval);

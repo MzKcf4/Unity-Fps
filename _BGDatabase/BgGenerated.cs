@@ -76,6 +76,17 @@ public partial class E_weapon_info : BGEntity
 			_f_base_damage[Index] = value;
 		}
 	}
+	public System.Single f_range_modifier
+	{
+		get
+		{
+			return _f_range_modifier[Index];
+		}
+		set
+		{
+			_f_range_modifier[Index] = value;
+		}
+	}
 	public System.Int32 f_clip_size
 	{
 		get
@@ -98,15 +109,48 @@ public partial class E_weapon_info : BGEntity
 			_f_pallet_per_shot[Index] = value;
 		}
 	}
-	public System.Single f_spread
+	public System.Single f_spread_min
 	{
 		get
 		{
-			return _f_spread[Index];
+			return _f_spread_min[Index];
 		}
 		set
 		{
-			_f_spread[Index] = value;
+			_f_spread_min[Index] = value;
+		}
+	}
+	public System.Single f_spread_max
+	{
+		get
+		{
+			return _f_spread_max[Index];
+		}
+		set
+		{
+			_f_spread_max[Index] = value;
+		}
+	}
+	public System.Single f_spread_per_shot
+	{
+		get
+		{
+			return _f_spread_per_shot[Index];
+		}
+		set
+		{
+			_f_spread_per_shot[Index] = value;
+		}
+	}
+	public System.Single f_spread_move
+	{
+		get
+		{
+			return _f_spread_move[Index];
+		}
+		set
+		{
+			_f_spread_move[Index] = value;
 		}
 	}
 	public System.Single f_draw_time
@@ -226,6 +270,15 @@ public partial class E_weapon_info : BGEntity
 			return _ufle12jhs77_f_base_damage;
 		}
 	}
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_range_modifier;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_range_modifier
+	{
+		get
+		{
+			if(_ufle12jhs77_f_range_modifier==null || _ufle12jhs77_f_range_modifier.IsDeleted) _ufle12jhs77_f_range_modifier=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4683219957302565823,13678527264954651022));
+			return _ufle12jhs77_f_range_modifier;
+		}
+	}
 	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_clip_size;
 	public static BansheeGz.BGDatabase.BGFieldInt _f_clip_size
 	{
@@ -244,13 +297,40 @@ public partial class E_weapon_info : BGEntity
 			return _ufle12jhs77_f_pallet_per_shot;
 		}
 	}
-	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread;
-	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_min;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_min
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread==null || _ufle12jhs77_f_spread.IsDeleted) _ufle12jhs77_f_spread=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4995956644634368447,15126530113305527988));
-			return _ufle12jhs77_f_spread;
+			if(_ufle12jhs77_f_spread_min==null || _ufle12jhs77_f_spread_min.IsDeleted) _ufle12jhs77_f_spread_min=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4995956644634368447,15126530113305527988));
+			return _ufle12jhs77_f_spread_min;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_max;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_max
+	{
+		get
+		{
+			if(_ufle12jhs77_f_spread_max==null || _ufle12jhs77_f_spread_max.IsDeleted) _ufle12jhs77_f_spread_max=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4958013212648839020,7441969036014212481));
+			return _ufle12jhs77_f_spread_max;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_per_shot;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_per_shot
+	{
+		get
+		{
+			if(_ufle12jhs77_f_spread_per_shot==null || _ufle12jhs77_f_spread_per_shot.IsDeleted) _ufle12jhs77_f_spread_per_shot=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5466859075159666362,18237160558880310948));
+			return _ufle12jhs77_f_spread_per_shot;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_move;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_move
+	{
+		get
+		{
+			if(_ufle12jhs77_f_spread_move==null || _ufle12jhs77_f_spread_move.IsDeleted) _ufle12jhs77_f_spread_move=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5728888798148707652,11861507793609491092));
+			return _ufle12jhs77_f_spread_move;
 		}
 	}
 	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_draw_time;

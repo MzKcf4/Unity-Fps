@@ -5,7 +5,7 @@ using UnityEngine;
 public class FpsHitbox : MonoBehaviour
 {
 	public BodyPart bodyPart = BodyPart.Chest;
-	public FpsEntity fpsEntity;
+	[HideInInspector] public FpsEntity fpsEntity;
 	
 	void Start()
 	{
