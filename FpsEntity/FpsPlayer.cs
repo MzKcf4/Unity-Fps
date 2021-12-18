@@ -5,7 +5,7 @@ using Mirror;
 using CMF;
 using Animancer;
 
-public class FpsPlayer : FpsCharacter
+public partial class FpsPlayer : FpsCharacter
 {
 	[SerializeField]
 	private ProgressionWeaponConfig progressionWeaponConfig;
@@ -36,7 +36,6 @@ public class FpsPlayer : FpsCharacter
 	// ------------------------------------- //
     
     private PlayerSettingDto localPlayerSettingDto;
-    private FpsWeaponEventHandler weaponEventHandler;
     private FpsWeaponPlayerInputHandler weaponInputHandler;
     
     // This is the one attached to the fpsCamera , sync the position of LookAt to this so as to sync the character rotation.
@@ -66,14 +65,13 @@ public class FpsPlayer : FpsCharacter
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
             
             localPlayerSettingDto = PlayerContext.Instance.playerSettingDto;
-            weaponEventHandler = new FpsWeaponEventHandler(this);
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
-            
             
             LoadLocalPlayerSettings();
             
             CmdGetWeapon("csgo_awp" , 0);
             CmdGetWeapon("csgo_ak47" , 1);
+            CmdGetWeapon("csgo_sawoff" , 2);
 	    }
 	    else
 	    {
@@ -192,57 +190,6 @@ public class FpsPlayer : FpsCharacter
 		if(fpsEntity != null)
 			fpsEntity.TakeDamage(dmgInfo);
 	}
-    
-    public override void ProcessWeaponEventUpdate(WeaponEvent evt)
-    {
-        if(!isLocalPlayer)  return;
-        
-        // Send the event to weaponView for animations
-        PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
-        
-        if(evt == WeaponEvent.Shoot)
-            OnWeaponFireEvent();
-        else if (evt == WeaponEvent.Scope)
-            OnWeaponScopeEvent();
-        else if (evt == WeaponEvent.UnScope)
-            OnWeaponUnScopeEvent();
-        else if (evt == WeaponEvent.Reload)
-            OnWeaponReloadEvent();
-        
-    }
-        
-    private void OnWeaponReloadEvent()
-    {
-        RpcReloadWeapon_Animation();
-    }
-    
-    private void OnWeaponScopeEvent()
-    {
-        FpsUiManager.Instance.ToggleCrosshair(false);
-        FpsUiManager.Instance.ToggleScope(true);
-        PlayerContext.Instance.ToggleScope(true);
-        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
-    }
-    
-    private void OnWeaponUnScopeEvent()
-    {
-        FpsUiManager.Instance.ToggleCrosshair(true);
-        FpsUiManager.Instance.ToggleScope(false);
-        PlayerContext.Instance.ToggleScope(false);
-        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
-    }
-    
-    // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
-    //   notify the server to do corresponding actions
-    private void OnWeaponFireEvent()
-    {
-        Transform fromTransform = Camera.main.transform;
-        
-        Vector3 fromPos = Camera.main.transform.position;
-        Vector3 forwardVec = Camera.main.transform.forward;
-        
-        CmdFireWeapon(fromPos , forwardVec);
-    }
     
     // Server then do Raycast to check if it hits
     //    and tells other clients to create weapon fire effects (e.g  muzzleFlash , audio )

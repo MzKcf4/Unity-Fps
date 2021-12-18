@@ -2,29 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Local player only
-public class FpsWeaponEventHandler
+public partial class FpsPlayer : FpsCharacter
 {
-    private FpsPlayer fpsPlayer;
-    private PlayerSettingDto localPlayerSettingDto;
-    
-    public FpsWeaponEventHandler(FpsPlayer fpsPlayer)
+
+    public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
-        this.fpsPlayer = fpsPlayer;
-        PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
-        localPlayerSettingDto = PlayerContext.Instance.playerSettingDto;
-    }
-    
-    private void OnWeaponEventUpdate(WeaponEvent evt)
-    {
+        if(!isLocalPlayer)  return;
+        
+        // Send the event to weaponView for animations
+        PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
+        
+        // Process events for other logic / UI
         if(evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
         else if (evt == WeaponEvent.Scope)
             OnWeaponScopeEvent();
         else if (evt == WeaponEvent.UnScope)
             OnWeaponUnScopeEvent();
+        else if (evt == WeaponEvent.Reload)
+            OnWeaponReloadEvent();
         else if (evt == WeaponEvent.AmmoUpdate)
             UpdateAmmoDisplay();
+    }
+        
+    private void OnWeaponReloadEvent()
+    {
+        RpcReloadWeapon_Animation();
     }
     
     private void OnWeaponScopeEvent()
@@ -32,7 +35,7 @@ public class FpsWeaponEventHandler
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
         PlayerContext.Instance.ToggleScope(true);
-        fpsPlayer.cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
+        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
     }
     
     private void OnWeaponUnScopeEvent()
@@ -40,12 +43,7 @@ public class FpsWeaponEventHandler
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
         PlayerContext.Instance.ToggleScope(false);
-        fpsPlayer.cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
-    }
-    
-    private void OnWeaponAmmoUpdateEvent()
-    {
-        UpdateAmmoDisplay();
+        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
@@ -57,15 +55,13 @@ public class FpsWeaponEventHandler
         Vector3 fromPos = Camera.main.transform.position;
         Vector3 forwardVec = Camera.main.transform.forward;
         
-        UpdateAmmoDisplay();
         ApplyRecoil();
-        
-        fpsPlayer.CmdFireWeapon(fromPos , forwardVec);
+        CmdFireWeapon(fromPos , forwardVec);
     }
     
     private void UpdateAmmoDisplay()
     {
-        FpsUiManager.Instance.OnWeaponAmmoUpdate(fpsPlayer.GetActiveWeapon().currentClip);
+        FpsUiManager.Instance.OnWeaponAmmoUpdate(GetActiveWeapon().currentClip);
     }
     
     protected void ApplyRecoil()
