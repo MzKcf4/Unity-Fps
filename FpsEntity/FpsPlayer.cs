@@ -68,6 +68,7 @@ public partial class FpsPlayer : FpsCharacter
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             
             LoadLocalPlayerSettings();
+            CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
             
             CmdGetWeapon("csgo_awp" , 0);
             CmdGetWeapon("csgo_ak47" , 1);
@@ -89,6 +90,11 @@ public partial class FpsPlayer : FpsCharacter
 
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
+    
+    public void CmdSetupPlayer(string playerName)
+    {
+        characterName = playerName;
+    }
     
     public void LoadLocalPlayerSettings()
     {

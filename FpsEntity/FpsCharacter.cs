@@ -16,7 +16,7 @@ public abstract partial class FpsCharacter : FpsEntity
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
     [SerializeField] protected Transform lookAtTransform; 
-    public string characterName;
+    [SyncVar] public string characterName;
     
     [SyncVar] public CharacterStateEnum currState;
     [SerializeField] protected CharacterResources charRes;
@@ -50,7 +50,6 @@ public abstract partial class FpsCharacter : FpsEntity
         SetRagdollState(false);
         
         SharedContext.Instance.RegisterCharacter(this);
-        
         
         Start_Weapon();
         Start_Animation();

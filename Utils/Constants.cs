@@ -25,4 +25,5 @@ public class Constants
     public static readonly string SETTING_KEY_AUDIO_MASTER_VOLUME = "AudioMasterVolume";
     public static readonly string SETTING_KEY_MOUSE_SPEED = "MouseSpeed";
     public static readonly string SETTING_KEY_MOUSE_SPEED_ZOOMED = "MouseSpeedZoomed";
+    public static readonly string SETTING_KEY_PLAYER_NAME = "PlayerName";
 }

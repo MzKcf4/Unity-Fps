@@ -7,4 +7,6 @@ public class PlayerSettingDto
     public float audioMasterVolume;
     public float mouseSpeed;
     public float mouseSpeedZoomed;
+    
+    public string playerName;
 }
