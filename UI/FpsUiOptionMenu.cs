@@ -21,23 +21,23 @@ public class FpsUiOptionMenu : MonoBehaviour
     
     void Start()
     {
-        applyButton.clickEvent.AddListener( () => PlayerContext.Instance.SavePlayerSettings());
+        applyButton.clickEvent.AddListener( () => LocalPlayerContext.Instance.SavePlayerSettings());
         resetButton.clickEvent.AddListener( () => {
-            PlayerContext.Instance.LoadPlayerSettings();
+            LocalPlayerContext.Instance.LoadPlayerSettings();
             audioSlider.UpdateUI();
         });
         
         // ------- Audio ------- //
         audioMenuButton.clickEvent.AddListener( () => SwitchToAudioPanel());
-        audioSlider.sliderEvent.AddListener( newVol => PlayerContext.Instance.OnAudioVolumeChanged(newVol));
+        audioSlider.sliderEvent.AddListener( newVol => LocalPlayerContext.Instance.OnAudioVolumeChanged(newVol));
         
         
         // ------ Mouse -------// 
         mouseMenuButton.clickEvent.AddListener( () => SwitchToMousePanel());
-        mouseSpeedSlider.sliderEvent.AddListener(newSpeed => PlayerContext.Instance.OnMouseSpeedChanged(newSpeed));
-        mouseSpeedScopedSlider.sliderEvent.AddListener(newSpeed => PlayerContext.Instance.OnMouseSpeedZoomedChanged(newSpeed));
+        mouseSpeedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedChanged(newSpeed));
+        mouseSpeedScopedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedZoomedChanged(newSpeed));
         
-        PlayerContext.Instance.onOptionMenuToggleEvent.AddListener(ToggleOptionPanel);
+        LocalPlayerContext.Instance.onOptionMenuToggleEvent.AddListener(ToggleOptionPanel);
         
         LoadFromPlayerContext();
     }
@@ -62,7 +62,7 @@ public class FpsUiOptionMenu : MonoBehaviour
     
     public void LoadFromPlayerContext()
     {
-        PlayerSettingDto playerSettingDto = PlayerContext.Instance.playerSettingDto;
+        PlayerSettingDto playerSettingDto = LocalPlayerContext.Instance.playerSettingDto;
         
         audioSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.audioMasterVolume);
         audioSlider.UpdateUI();

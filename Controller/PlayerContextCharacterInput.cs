@@ -12,8 +12,8 @@ public class PlayerContextCharacterInput : CharacterInput
 	
 	void Start()
 	{
-		PlayerContext.Instance.movementInputEvent.AddListener(OnMovement);
-        PlayerContext.Instance.jumpEvent.AddListener(OnJump);
+		LocalPlayerContext.Instance.movementInputEvent.AddListener(OnMovement);
+        LocalPlayerContext.Instance.jumpEvent.AddListener(OnJump);
 	}
 	
 	public void OnMovement(InputAction.CallbackContext value)

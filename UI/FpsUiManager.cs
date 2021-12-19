@@ -31,8 +31,8 @@ public class FpsUiManager : MonoBehaviour
 	
     void Start()
     {
-	    PlayerContext.Instance.onWeaponShootEvent.AddListener(OnWeaponShoot);
-	    PlayerContext.Instance.onHealthUpdateEvent.AddListener(OnHealthUpdate);
+	    LocalPlayerContext.Instance.onWeaponShootEvent.AddListener(OnWeaponShoot);
+	    LocalPlayerContext.Instance.onHealthUpdateEvent.AddListener(OnHealthUpdate);
 	    ProgressionManager.Instance.onProgressUpdateEvent.AddListener(OnProgressionUpdate);
     }
 

@@ -34,7 +34,7 @@ public partial class FpsPlayer : FpsCharacter
     {
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
-        PlayerContext.Instance.ToggleScope(true);
+        LocalPlayerContext.Instance.ToggleScope(true);
         cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
     }
     
@@ -42,7 +42,7 @@ public partial class FpsPlayer : FpsCharacter
     {
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
-        PlayerContext.Instance.ToggleScope(false);
+        LocalPlayerContext.Instance.ToggleScope(false);
         cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
     }
     
@@ -68,6 +68,6 @@ public partial class FpsPlayer : FpsCharacter
     protected void ApplyRecoil()
     {
         Crosshair.Instance.DoLerp();
-        PlayerContext.Instance.ShakeCamera();
+        LocalPlayerContext.Instance.ShakeCamera();
     }
 }

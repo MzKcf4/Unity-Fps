@@ -6,9 +6,10 @@ using UnityEngine.Events;
 using Cinemachine;
 using UnityEngine.Audio;
 
-public class PlayerContext : MonoBehaviour
+public class LocalPlayerContext : MonoBehaviour
 {
-	public static PlayerContext Instance;
+	public static LocalPlayerContext Instance;
+    
 	// ----- Input events : events fired when corresponding input key pressed -----
 	public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
     public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
@@ -24,7 +25,7 @@ public class PlayerContext : MonoBehaviour
     public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
     
     
-	public FpsPlayer player;
+	[HideInInspector] public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
     
@@ -36,6 +37,7 @@ public class PlayerContext : MonoBehaviour
 	{
 		Instance = this;
         playerSettingDto = new PlayerSettingDto();
+        DontDestroyOnLoad(gameObject);
 	}
     
     void Start()
@@ -141,10 +143,12 @@ public class PlayerContext : MonoBehaviour
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
         float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 250);
         float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 83);
+        string playerName = ES3.Load<string>(Constants.SETTING_KEY_PLAYER_NAME);
         
         playerSettingDto.audioMasterVolume = masterVolume;
         playerSettingDto.mouseSpeed = mouseSpeed;
         playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
+        playerSettingDto.playerName = playerName;
         
         audioMixerMaster.SetFloat("volume" , masterVolume);
     }
@@ -154,11 +158,17 @@ public class PlayerContext : MonoBehaviour
         ES3.Save<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, playerSettingDto.audioMasterVolume);
         ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED, playerSettingDto.mouseSpeed);
         ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, playerSettingDto.mouseSpeedZoomed);
+        ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
         
         // A fast way to apply settings , when already in game
         if(player != null)
             player.LoadLocalPlayerSettings();
-        
+    }
+    
+    public void UpdatePlayerName(string newName)
+    {
+        playerSettingDto.playerName = newName;
+        ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
     }
 	
     public void OnOptionMenuToggleInput(InputAction.CallbackContext value)

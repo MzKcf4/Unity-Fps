@@ -50,8 +50,8 @@ public partial class FpsPlayer : FpsCharacter
 	    {
 	    	progressionWeaponConfig.InitializeWeaponList();
             
-	    	PlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
-	    	PlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
+	    	LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
+	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             // PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
@@ -64,7 +64,7 @@ public partial class FpsPlayer : FpsCharacter
             // The children are LocalPlayerHitBox , so that bot can raycast on them
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
             
-            localPlayerSettingDto = PlayerContext.Instance.playerSettingDto;
+            localPlayerSettingDto = LocalPlayerContext.Instance.playerSettingDto;
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             
             LoadLocalPlayerSettings();
@@ -172,7 +172,7 @@ public partial class FpsPlayer : FpsCharacter
         {
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
-            PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
+            LocalPlayerContext.Instance.OnHealthUpdate(health , maxHealth);
         }
 	}
     
@@ -310,7 +310,7 @@ public partial class FpsPlayer : FpsCharacter
     {
         base.RpcHealthUpdate();
         if(isLocalPlayer)
-            PlayerContext.Instance.OnHealthUpdate(health , maxHealth);
+            LocalPlayerContext.Instance.OnHealthUpdate(health , maxHealth);
     }
     
     protected void LocalSwitchWeapon(int slot)

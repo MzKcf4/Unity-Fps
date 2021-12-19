@@ -19,7 +19,7 @@ public class PlayerContextCameraInput : CameraInput
 	
 	public void Start()
 	{
-		PlayerContext.Instance.mouseLookInputEvent.AddListener(OnView);
+		LocalPlayerContext.Instance.mouseLookInputEvent.AddListener(OnView);
 	}
 	
 	public void OnView(InputAction.CallbackContext value)

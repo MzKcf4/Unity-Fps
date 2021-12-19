@@ -12,9 +12,9 @@ public class FpsWeaponPlayerInputHandler
     {
         this.fpsPlayer = fpsPlayer;
         
-        PlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
-        PlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
-        PlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
+        LocalPlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
+        LocalPlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
+        LocalPlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
     }
     
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
