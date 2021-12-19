@@ -192,6 +192,39 @@ public partial class FpsPlayer : FpsCharacter
 			fpsEntity.TakeDamage(dmgInfo);
 	}
     
+    // ========== Hitscan detection on local side =========== //
+    protected void LocalFireWeapon(Vector3 fromPos , Vector3 forwardVec)
+    {
+        HitInfoDto hitInfoDto = CoreGameManager.Instance.DoLocalWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
+        CmdHandleHitInfo(hitInfoDto);
+    }
+    
+    // Tells the server side that I hit something on these locations , process damage for them and spawn fx
+    [Command]
+    public void CmdHandleHitInfo(HitInfoDto hitInfoDto)
+    {
+        foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
+        {
+            FpsEntity hitEntity = hitInfo.networkIdentity.gameObject.GetComponent<FpsEntity>();
+            if(hitEntity)
+            {
+                hitEntity.TakeDamage(hitInfo.damageInfo);
+            }
+        }
+
+        CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
+        // Audio / Muzzle effects
+        RpcFireWeapon();
+        /*
+        foreach(HitWallInfoDto hitWallInfo in hitInfoDto.hitWallInfoDtoList)
+        {
+            Debug.Log(hitWallInfo.hitPoint);
+            Debug.Log(hitWallInfo.hitPointNormal);
+        }
+        */
+    }
+    // ==================================================== //
+    
     // Server then do Raycast to check if it hits
     //    and tells other clients to create weapon fire effects (e.g  muzzleFlash , audio )
     [Command]

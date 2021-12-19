@@ -19,6 +19,8 @@ public class LocalSpawnManager : MonoBehaviour
 	
 	public void SpawnBloodFx(Vector3 position)
 	{
+        if(position == null)    return;
+        
 		Transform objTransform = PoolManager.Pools["FX"].Spawn(bloodFxPrefab , position , Quaternion.identity);
 		PoolManager.Pools["FX"].Despawn(objTransform , 2f);
 	}

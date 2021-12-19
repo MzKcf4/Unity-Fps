@@ -16,4 +16,14 @@ public class RayHitInfo
             hitPointNormal = this.normal
         };
     }
+    
+    public HitWallInfoDto asHitWallInfoDto()
+    {
+        return new HitWallInfoDto()
+        {
+            hitPoint = this.hitPoint,
+            hitPointNormal = this.normal
+        };
+    }
+
 }

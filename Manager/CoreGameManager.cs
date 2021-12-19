@@ -35,9 +35,10 @@ public class CoreGameManager : NetworkBehaviour
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
             RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
+            
             if(hitInfo == null)
                 continue;
-            
+            // DebugManager.Instance.SetLinePoints(fromPos , hitInfo.hitPoint);
             GameObject objOnHit = hitInfo.hitObject;
             // Hits wall
             if( (1 << objOnHit.layer) == MASK_WALL.value)
@@ -74,6 +75,65 @@ public class CoreGameManager : NetworkBehaviour
         RpcSpawnFx(hitWallRayList , hitCharacterRayList);
     }
     
+    public HitInfoDto DoLocalWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
+    {
+        float spread = processSpread(fpsWeapon , character);
+        int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
+        
+        // Gather the hit points from valid hits on walls / entities
+        List<HitWallInfoDto> hitWallDtoList = new List<HitWallInfoDto>();
+        List<HitEntityInfoDto> hitEntityDtoList = new List<HitEntityInfoDto>();
+        
+        HitInfoDto hitInfoDto = new HitInfoDto(hitEntityDtoList , hitWallDtoList);
+        
+        for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
+        {
+            RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
+            
+            if(hitInfo == null)
+                continue;
+            GameObject objOnHit = hitInfo.hitObject;
+            // Hits wall
+            if( (1 << objOnHit.layer) == MASK_WALL.value)
+            {
+                hitWallDtoList.Add(hitInfo.asHitWallInfoDto());
+                continue;
+            }
+            
+            // Else should expect hitting hitbox
+            FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
+            FpsEntity hitEntity = enemyHitBox.fpsEntity;
+                
+            if(hitEntity is FpsCharacter)
+            {
+                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
+                if(hitTeam == character.team)   
+                    continue;
+            }
+                
+            if(hitEntity != null)
+            {
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);
+                if(character is FpsPlayer)
+                {
+                    ((FpsPlayer)character).TargetOnWeaponHitEnemy(character.netIdentity.connectionToClient);    
+                }
+                
+                HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
+                {
+                    networkIdentity = hitEntity.netIdentity,
+                    damageInfo = dmgInfo
+                };
+                
+                hitEntityDtoList.Add(hitEntityInfoDto);
+                continue;
+            }
+        }
+        
+        // RpcSpawnFx(hitWallRayList , hitCharacterRayList);
+        return hitInfoDto;
+    }
+    
     private float processSpread(FpsWeapon weapon , FpsCharacter character)
     {
         float currentSpread = weapon.currentSpread;
@@ -93,4 +153,13 @@ public class CoreGameManager : NetworkBehaviour
             LocalSpawnManager.Instance.SpawnBloodFx(hitInfo.hitPoint);
     }
     
+    [ClientRpc]
+    public void RpcSpawnFxHitInfo(HitInfoDto hitInfoDto)
+    {
+        foreach(HitWallInfoDto hitInfo in hitInfoDto.hitWallInfoDtoList)
+            LocalSpawnManager.Instance.SpawnBulletDecalFx(hitInfo.hitPoint , hitInfo.hitPointNormal);
+        
+        foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
+            LocalSpawnManager.Instance.SpawnBloodFx(hitInfo.damageInfo.hitPoint);
+    }
 }

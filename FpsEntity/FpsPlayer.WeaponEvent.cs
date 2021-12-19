@@ -56,7 +56,8 @@ public partial class FpsPlayer : FpsCharacter
         Vector3 forwardVec = Camera.main.transform.forward;
         
         ApplyRecoil();
-        CmdFireWeapon(fromPos , forwardVec);
+        LocalFireWeapon(fromPos , forwardVec);
+        // CmdFireWeapon(fromPos , forwardVec);
     }
     
     private void UpdateAmmoDisplay()
