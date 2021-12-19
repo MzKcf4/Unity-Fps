@@ -161,6 +161,7 @@ public partial class FpsCharacter
         int currActiveWeaponSlot = activeWeaponSlot;
         if(currActiveWeaponSlot != -1)
         {
+            weaponSlots[currActiveWeaponSlot].ResetActionState();
             fpsWeaponWorldSlot[currActiveWeaponSlot].gameObject.SetActive(false);
         }
         

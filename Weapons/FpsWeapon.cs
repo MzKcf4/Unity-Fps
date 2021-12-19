@@ -95,6 +95,20 @@ public class FpsWeapon
     {
         currentClip = clipSize;
         currentSpread = spreadMin;
+        primaryActionState = KeyPressState.Released;
+        secondaryActionState = KeyPressState.Released;
+    }
+    
+    public void ResetActionState()
+    {
+        primaryActionState = KeyPressState.Released;
+        secondaryActionState = KeyPressState.Released;
+        
+        if(weaponSecondaryState == WeaponSecondaryState.Scoped)
+        {
+            weaponSecondaryState = WeaponSecondaryState.None;
+            EmitWeaponViewEvent(WeaponEvent.UnScope);
+        }
     }
     
     public void ManualUpdate()

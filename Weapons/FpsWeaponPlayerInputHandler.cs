@@ -20,29 +20,15 @@ public class FpsWeaponPlayerInputHandler
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
     {
         fpsPlayer.GetActiveWeapon().primaryActionState = keyPressState;
-        // primaryActionState = keyPressState;
     }
     
     public void OnWeaponSecondaryAction(KeyPressState keyPressState)
     {
         fpsPlayer.GetActiveWeapon().secondaryActionState = keyPressState;
-        // secondaryActionState = keyPressState;
     }
     
     public void DoWeaponReload()
     {
         fpsPlayer.GetActiveWeapon().DoWeaponReload();
     }
-    
-    /*
-    void OnEnable()
-    {
-        if(owner != null && owner is FpsPlayer && owner.isLocalPlayer)
-        {
-            PlayerContext.Instance.weaponPrimaryActionInputEvent.AddListener(OnWeaponPrimaryAction);
-            PlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
-            PlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
-        }
-    }
-    */
 }
