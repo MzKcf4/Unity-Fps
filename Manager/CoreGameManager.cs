@@ -113,12 +113,7 @@ public class CoreGameManager : NetworkBehaviour
                 
             if(hitEntity != null)
             {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);
-                if(character is FpsPlayer)
-                {
-                    ((FpsPlayer)character).TargetOnWeaponHitEnemy(character.netIdentity.connectionToClient);    
-                }
-                
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);                
                 HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
                 {
                     networkIdentity = hitEntity.netIdentity,

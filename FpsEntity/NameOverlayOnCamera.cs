@@ -36,11 +36,14 @@ public class NameOverlayOnCamera: MonoBehaviour
                 continue;
             }
                 
-            textMesh.transform.position = Camera.main.WorldToScreenPoint(character.transform.position + new Vector3(0 , 1.5f , 0));
+            textMesh.transform.position = Camera.main.WorldToScreenPoint(character.transform.position + new Vector3(0 , 1.8f , 0));
             if(Vector3.Dot((character.transform.position - Camera.main.transform.position) ,  Camera.main.transform.forward) < 0)
                 textMesh.gameObject.SetActive(false);
             else
+            {
+                textMesh.text = character.characterName;
                 textMesh.gameObject.SetActive(true);
+            }
         }
     }
     

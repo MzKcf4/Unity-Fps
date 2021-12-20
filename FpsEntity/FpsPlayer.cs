@@ -52,7 +52,6 @@ public partial class FpsPlayer : FpsCharacter
             
 	    	LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
-            // PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             cameraController = GetComponentInChildren<CMF.CameraController>();
@@ -68,6 +67,7 @@ public partial class FpsPlayer : FpsCharacter
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             
             LoadLocalPlayerSettings();
+            
             CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
             
             CmdGetWeapon("csgo_awp" , 0);
@@ -91,9 +91,10 @@ public partial class FpsPlayer : FpsCharacter
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
     
+    [Command]
     public void CmdSetupPlayer(string playerName)
     {
-        characterName = playerName;
+        this.characterName = playerName;
     }
     
     public void LoadLocalPlayerSettings()
