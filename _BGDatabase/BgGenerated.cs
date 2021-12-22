@@ -252,6 +252,17 @@ public partial class E_weapon_info : BGEntity
 			_f_progression_tier[Index] = value;
 		}
 	}
+	public System.Int32 f_dm_kill_score
+	{
+		get
+		{
+			return _f_dm_kill_score[Index];
+		}
+		set
+		{
+			_f_dm_kill_score[Index] = value;
+		}
+	}
 	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
 	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name
 	{
@@ -412,6 +423,15 @@ public partial class E_weapon_info : BGEntity
 		{
 			if(_ufle12jhs77_f_progression_tier==null || _ufle12jhs77_f_progression_tier.IsDeleted) _ufle12jhs77_f_progression_tier=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5154641768473479024,4415341554901312417));
 			return _ufle12jhs77_f_progression_tier;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_dm_kill_score;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_dm_kill_score
+	{
+		get
+		{
+			if(_ufle12jhs77_f_dm_kill_score==null || _ufle12jhs77_f_dm_kill_score.IsDeleted) _ufle12jhs77_f_dm_kill_score=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4694662279016321779,11883779653410052013));
+			return _ufle12jhs77_f_dm_kill_score;
 		}
 	}
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();

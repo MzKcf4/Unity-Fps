@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using Mirror;
 
 public class ServerContext : NetworkBehaviour
 {
 	public static ServerContext Instance;
+    public UnityEvent<FpsCharacter, DamageInfo> characterKilledEventServer = new UnityEvent<FpsCharacter, DamageInfo>();
 	public List<FpsPlayer> playerList = new List<FpsPlayer>();
     
     public List<FpsCharacter> characterList = new List<FpsCharacter>();
@@ -14,6 +16,11 @@ public class ServerContext : NetworkBehaviour
 	{
 		Instance = this;
 	}
+    
+    public void UpdateCharacterKilledEvent(FpsCharacter character, DamageInfo dmgInfo)
+    {
+        characterKilledEventServer.Invoke(character,dmgInfo);
+    }
 	
 	public FpsPlayer GetRandomPlayer()
 	{

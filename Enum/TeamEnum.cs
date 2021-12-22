@@ -4,8 +4,7 @@ using UnityEngine;
 
 public enum TeamEnum
 {
-    None,
-    TeamA,
-    TeamB,
-    TeamC
+    Blue,
+    Red,
+    Spectator
 }

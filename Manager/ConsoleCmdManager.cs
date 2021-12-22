@@ -12,7 +12,7 @@ public class ConsoleCmdManager : NetworkBehaviour
         
         Debug.Log(skillLevel);
         if(PlayerManager.Instance != null)
-            PlayerManager.Instance.AddBot(TeamEnum.TeamA, skillLevel);
+            PlayerManager.Instance.AddBot(TeamEnum.Blue, skillLevel);
     }
     
     [QFSW.QC.Command("bot_add_b")]
@@ -21,7 +21,7 @@ public class ConsoleCmdManager : NetworkBehaviour
         if(!isServer)   return;
         
         if(PlayerManager.Instance != null)
-            PlayerManager.Instance.AddBot(TeamEnum.TeamB, skillLevel);
+            PlayerManager.Instance.AddBot(TeamEnum.Red, skillLevel);
     }
     
     [QFSW.QC.Command("bot_kick")]
@@ -61,5 +61,27 @@ public class ConsoleCmdManager : NetworkBehaviour
             FpsBot fpsBot = (FpsBot) character;
             fpsBot.aiEnableWander = isEnable;
         }
+    }
+    
+    [QFSW.QC.Command("bot_enable_godmode")]
+    public void SetBotGodmode(int enable)
+    {
+        if(!isServer)   return;
+        bool isEnable = enable == 0 ? false : true;
+        
+        foreach(FpsCharacter character in SharedContext.Instance.characterList)
+        {
+            if(!(character is FpsBot))
+                continue;
+            FpsBot fpsBot = (FpsBot) character;
+            fpsBot.isGodMode = isEnable;
+        }
+    }
+    
+    [QFSW.QC.Command("dm_restart")]
+    public void RestartDeathMatch()
+    {
+        if(!isServer)   return;
+        DeathMatchManager.Instance.RestartMatch();
     }
 }

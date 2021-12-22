@@ -115,7 +115,7 @@ public class Utils
     public static int CalculateDamageByDropoff(float baseDamage , float distance, float rangeModifier)
     {
         float result = baseDamage * (Mathf.Pow(rangeModifier , distance / 25f));
-        Debug.Log(rangeModifier + " , " + distance + " , " + (distance / 25f) + " = " + result );
+        // Debug.Log(rangeModifier + " , " + distance + " , " + (distance / 25f) + " = " + result );
         return Mathf.FloorToInt(result);
     }
 }

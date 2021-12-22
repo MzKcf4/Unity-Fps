@@ -49,10 +49,12 @@ public class FpsWeapon
     private float spreadMax = 0.1f;
     public float currentSpread = 0.1f;
     private float spreadPerShot = 0.01f;
-    private ActionCooldown cooldownUntilSpreadReduction = new ActionCooldown(){interval = 0.5f};
+    private ActionCooldown cooldownUntilSpreadReduction = new ActionCooldown(){interval = 0.3f};
     private ActionCooldown spreadReductionCooldown = new ActionCooldown(){interval = 0.1f};
     private float spreadReductionInterval = 0.1f;
     private float spreadReductionPerTick = 0.03f;
+    
+    public int dmKillScore = 5;
     
     [HideInInspector] public FpsCharacter owner;
     
@@ -89,6 +91,8 @@ public class FpsWeapon
         
         rangeModifier = dbWeaponInfo.f_range_modifier;
         spreadInMove = dbWeaponInfo.f_spread_move;
+        
+        dmKillScore = dbWeaponInfo.f_dm_kill_score;
     }
     
     public void Reset()

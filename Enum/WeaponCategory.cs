@@ -7,5 +7,7 @@ public enum WeaponCategory
     Rifle,
     Shotgun,
     Pistol,
-    Sniper
+    Sniper,
+    Smg,
+    Melee
 }

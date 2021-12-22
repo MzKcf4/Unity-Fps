@@ -28,7 +28,7 @@ public abstract partial class FpsCharacter : FpsEntity
     protected MovementDirection currMoveDir = MovementDirection.None;
         
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
-    [SyncVar] public TeamEnum team = TeamEnum.None;
+    [SyncVar] public TeamEnum team = TeamEnum.Blue;
     
 
     public override void OnStartClient()
@@ -114,6 +114,7 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         base.Killed(damageInfo);
         PlayerManager.Instance.QueueRespawn(this);
+        ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
     }
     
     [ClientRpc]

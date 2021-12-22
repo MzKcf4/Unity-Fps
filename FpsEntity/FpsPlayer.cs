@@ -81,7 +81,7 @@ public partial class FpsPlayer : FpsCharacter
         
         if(isServer)
         {
-            team = TeamEnum.TeamA;
+            team = TeamEnum.Blue;
             ServerContext.Instance.playerList.Add(this);
             // *ToFix* Teleport only , since 'Respawn' will cause null on client side 
             PlayerManager.Instance.TeleportToSpawnPoint(this);

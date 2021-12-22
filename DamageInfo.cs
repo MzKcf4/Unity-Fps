@@ -9,6 +9,8 @@ public class DamageInfo
     public string damageSource = "";
     public Vector3 hitPoint;
     public Vector3 damageSourcePosition = Vector3.zero;
+    public string damageWeaponName = "";
+    // For calculating damage reduction over distance
     public float weaponRangeModifier = 1f;
 	
 	public static DamageInfo AsDamageInfo(int dmg, BodyPart bodyPart, Vector3 hitPoint)
@@ -27,6 +29,7 @@ public class DamageInfo
         
         if(fromWeapon != null)
         {
+            damageInfo.damageWeaponName = fromWeapon.weaponName;
             damageInfo.damage = fromWeapon.damage;
             damageInfo.damageSource = fromWeapon.owner.characterName;
             damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;

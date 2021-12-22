@@ -11,6 +11,7 @@ public class PlayerManager : NetworkBehaviour
     public List<Transform> teamBSpawns = new List<Transform>();
     	
     [SerializeField] GameObject botPrefab;
+    [SerializeField] GameObject botPrefab_B;
     
 	void Awake()
 	{
@@ -32,7 +33,11 @@ public class PlayerManager : NetworkBehaviour
     {
         Transform spawn = GetSpawnTransform(team);
         
-        GameObject botObj = Instantiate(botPrefab , spawn.position , Quaternion.identity);
+        GameObject botObj;
+        if(team == TeamEnum.Red)
+            botObj = Instantiate(botPrefab_B , spawn.position , Quaternion.identity);
+        else
+            botObj = Instantiate(botPrefab , spawn.position , Quaternion.identity);
         NetworkServer.Spawn(botObj);
         
         FpsBot fpsBot = botObj.GetComponent<FpsBot>();
@@ -97,7 +102,7 @@ public class PlayerManager : NetworkBehaviour
     
     private Transform GetSpawnTransform(TeamEnum team)
     {
-        if(team == TeamEnum.TeamA)
+        if(team == TeamEnum.Blue)
             return Utils.GetRandomElement<Transform>(teamASpawns);
         else
             return Utils.GetRandomElement<Transform>(teamBSpawns);
