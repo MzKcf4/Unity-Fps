@@ -10,6 +10,7 @@ public class SharedContext : NetworkBehaviour
     public List<FpsCharacter> characterList = new List<FpsCharacter>();
     public UnityEvent<FpsCharacter> characterJoinEvent = new UnityEvent<FpsCharacter>();
     public UnityEvent<FpsCharacter> characterRemoveEvent = new UnityEvent<FpsCharacter>();
+    public UnityEvent<FpsCharacter> characterSpawnEvent = new UnityEvent<FpsCharacter>();
     
     void Awake()
     {

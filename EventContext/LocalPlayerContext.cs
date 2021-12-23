@@ -9,6 +9,7 @@ using UnityEngine.Audio;
 public class LocalPlayerContext : MonoBehaviour
 {
 	public static LocalPlayerContext Instance;
+    private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
     
 	// ----- Input events : events fired when corresponding input key pressed -----
 	public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
@@ -17,12 +18,13 @@ public class LocalPlayerContext : MonoBehaviour
     public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
 	public InputActionContextEvent mouseLookInputEvent = new InputActionContextEvent();
 	public UnityEvent weaponReloadInputEvent = new UnityEvent();
-	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();	
+	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
 	// ---------------
 	public UnityEvent onWeaponShootEvent = new UnityEvent();
 	public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
 	public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
     public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
+    public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
     
     
 	[HideInInspector] public FpsPlayer player;
@@ -51,7 +53,7 @@ public class LocalPlayerContext : MonoBehaviour
 		cameraShake = fpsPlayer.GetComponentInChildren<CinemachineImpulseSource>();
         virtualCamera = fpsPlayer.GetComponentInChildren<CinemachineVirtualCamera>();
         
-        
+        dictAdditionalInfo.Clear();
 	}
 	
 	public void ShakeCamera()
@@ -135,7 +137,7 @@ public class LocalPlayerContext : MonoBehaviour
 	{
 		onHealthUpdateEvent.Invoke(newHealth, maxHealth);
 	}
-    
+        
     // ============================================================================================
     
     public void LoadPlayerSettings()
@@ -185,12 +187,33 @@ public class LocalPlayerContext : MonoBehaviour
 
     public void OnMouseSpeedChanged(float newSpeed)
     {
-        playerSettingDto.mouseSpeed =newSpeed;
+        playerSettingDto.mouseSpeed = newSpeed;
     }
     
     public void OnMouseSpeedZoomedChanged(float newSpeed)
     {
         playerSettingDto.mouseSpeedZoomed = newSpeed;
     }
+    
+    public void OnTempDeathmatchWeaponMenuToggle(InputAction.CallbackContext value)
+    {
+        if(value.started)
+            onTempDeathmatchWeaponMenuToggleEvent.Invoke();
+    }
 	
+    public void StoreAdditionalValue(string key , string value)
+    {
+        if(dictAdditionalInfo.ContainsKey(key))
+            dictAdditionalInfo[key] = value;    
+        else
+            dictAdditionalInfo.Add(key, value);
+    }
+    
+    public string GetAdditionalValue(string key, string defaultValue)
+    {
+        if(!dictAdditionalInfo.ContainsKey(key))
+            return defaultValue;
+            
+        return dictAdditionalInfo[key];
+    }
 }

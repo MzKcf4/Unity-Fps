@@ -26,4 +26,6 @@ public class Constants
     public static readonly string SETTING_KEY_MOUSE_SPEED = "MouseSpeed";
     public static readonly string SETTING_KEY_MOUSE_SPEED_ZOOMED = "MouseSpeedZoomed";
     public static readonly string SETTING_KEY_PLAYER_NAME = "PlayerName";
+    
+    public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON = "dm_selected_weapon";
 }

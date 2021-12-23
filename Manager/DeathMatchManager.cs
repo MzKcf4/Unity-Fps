@@ -33,29 +33,23 @@ public class DeathMatchManager : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        UpdateUiScore();
+        UpdateUiScore(currentScoreBlue , currentScoreRed , targetScore);
+        SharedContext.Instance.characterSpawnEvent.AddListener(OnCharacterSpawn);
     }
-    
-    
-    
-    // Start is called before the first frame update
-    void Start()
-    {
         
-    }
-    
     [Server]
     public void RestartMatch()
     {
         currentScoreBlue = 0;
         currentScoreRed = 0;
         isMatchActive = true;
-        UpdateUiScore();
+        RpcUpdateScore(currentScoreBlue , currentScoreRed , targetScore);
     }
     
     [Server]
-    public void OnCharacterKilled(FpsCharacter victim, DamageInfo dmgInfo){
-        if(!isMatchActive || string.IsNullOrEmpty(dmgInfo.damageWeaponName))  
+    public void OnCharacterKilled(FpsCharacter victim, DamageInfo dmgInfo)
+    {    
+        if(!isServer || !isMatchActive || string.IsNullOrEmpty(dmgInfo.damageWeaponName))  
             return;
             
         int killScore = GetWeaponKillScore(dmgInfo.damageWeaponName);
@@ -65,7 +59,7 @@ public class DeathMatchManager : NetworkBehaviour
         else if (victim.team == TeamEnum.Red)
             currentScoreBlue += killScore;
         
-        RpcUpdateScore();
+        RpcUpdateScore(currentScoreBlue , currentScoreRed , targetScore);
     }
     
     private void CheckWinCondition(){
@@ -81,16 +75,30 @@ public class DeathMatchManager : NetworkBehaviour
     }
     
     [ClientRpc]
-    public void RpcUpdateScore()
+    public void RpcUpdateScore(int newBlue , int newRed , int newTarget)
     {
-        UpdateUiScore();
+        UpdateUiScore(newBlue , newRed , newTarget);
+    }
+        
+    
+    private void UpdateUiScore(int newBlue , int newRed , int newTarget)
+    {
+        uiTextScoreTarget.text = newTarget.ToString();
+        uiTextScoreBlue.text = newBlue.ToString();
+        uiTextScoreRed.text = newRed.ToString();
     }
     
-    private void UpdateUiScore()
+    private void OnCharacterSpawn(FpsCharacter fpsCharacter)
     {
-        uiTextScoreTarget.text = targetScore.ToString();
-        uiTextScoreBlue.text = currentScoreBlue.ToString();
-        uiTextScoreRed.text = currentScoreRed.ToString();
+        if(fpsCharacter.isLocalPlayer)
+        {
+            string weaponName = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON , "csgo_ak47");
+            
+            if(fpsCharacter.HasWeapon(weaponName))
+                return;
+            
+            fpsCharacter.CmdGetWeapon(weaponName , 0);
+        }
     }
     
 }

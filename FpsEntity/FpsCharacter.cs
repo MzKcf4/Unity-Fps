@@ -24,7 +24,6 @@ public abstract partial class FpsCharacter : FpsEntity
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
     
-    
     protected MovementDirection currMoveDir = MovementDirection.None;
         
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
@@ -83,6 +82,8 @@ public abstract partial class FpsCharacter : FpsEntity
         SetupComponentsByNetworkSetting();
         ResetAllWeapons();
         Respawn_Animation();
+        
+        SharedContext.Instance.characterSpawnEvent.Invoke(this);
     }
 
     // Update is called once per frame

@@ -38,7 +38,7 @@ public class CoreGameManager : NetworkBehaviour
             
             if(hitInfo == null)
                 continue;
-            // DebugManager.Instance.SetLinePoints(fromPos , hitInfo.hitPoint);
+                
             GameObject objOnHit = hitInfo.hitObject;
             // Hits wall
             if( (1 << objOnHit.layer) == MASK_WALL.value)

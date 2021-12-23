@@ -69,10 +69,7 @@ public partial class FpsPlayer : FpsCharacter
             LoadLocalPlayerSettings();
             
             CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
-            
-            CmdGetWeapon("csgo_awp" , 0);
-            CmdGetWeapon("csgo_ak47" , 1);
-            CmdGetWeapon("csgo_sawoff" , 2);
+            CmdGetWeapon("csgo_ak47" , 0);
 	    }
 	    else
 	    {
