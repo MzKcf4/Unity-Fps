@@ -17,6 +17,8 @@ public class PlayerContextCameraInput : CameraInput
 	//All mouse input will be multiplied by this value;
 	public float mouseInputMultiplier = 0.01f;
 	
+    private float weaponImpulseVertical = 0f;
+    
 	public void Start()
 	{
 		LocalPlayerContext.Instance.mouseLookInputEvent.AddListener(OnView);
@@ -26,6 +28,12 @@ public class PlayerContextCameraInput : CameraInput
 	{
 		axisInput = value.ReadValue<Vector2>();
 	}
+    
+    void Update()
+    {
+        if(!LocalPlayerContext.Instance)    return;
+        weaponImpulseVertical = LocalPlayerContext.Instance.TakeWeaponRecoilImpulse();
+    }
 
 	public override float GetHorizontalCameraInput()
 	{
@@ -67,11 +75,16 @@ public class PlayerContextCameraInput : CameraInput
 
 		//Apply mouse sensitivity;
 		_input *= mouseInputMultiplier;
-
+        
+        // Apply weapon recoil
+        _input -= weaponImpulseVertical;
+        
 		//Invert input;
 		if(invertVerticalInput)
 			_input *= -1f;
-
+        
+        
+        
 		return _input;
 	}
 }

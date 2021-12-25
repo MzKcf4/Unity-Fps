@@ -131,9 +131,9 @@ public class CoreGameManager : NetworkBehaviour
     
     private float processSpread(FpsWeapon weapon , FpsCharacter character)
     {
-        float currentSpread = weapon.currentSpread;
+        float baseSpread = weapon.spread;
         float movementSpread = weapon.spreadInMove * (character.GetMovementVelocity().magnitude / 5.5f);
-        return currentSpread + movementSpread;
+        return baseSpread + movementSpread;
         
     }
     

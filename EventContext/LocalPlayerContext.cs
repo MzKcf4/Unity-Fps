@@ -16,9 +16,11 @@ public class LocalPlayerContext : MonoBehaviour
     public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
     
     public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
-	public InputActionContextEvent mouseLookInputEvent = new InputActionContextEvent();
+	// public InputActionContextEvent mouseLookInputEvent = new InputActionContextEvent();
+    public UnityEvent<InputAction.CallbackContext> mouseLookInputEvent = new UnityEvent<InputAction.CallbackContext>();
 	public UnityEvent weaponReloadInputEvent = new UnityEvent();
 	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
+    public UnityEvent previousWeaponInputEvent = new UnityEvent();
 	// ---------------
 	public UnityEvent onWeaponShootEvent = new UnityEvent();
 	public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
@@ -30,6 +32,7 @@ public class LocalPlayerContext : MonoBehaviour
 	[HideInInspector] public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
+    [HideInInspector] public float weaponRecoilImpulse = 0f;
     
     public PlayerSettingDto playerSettingDto;
     public AudioMixer audioMixerMaster;
@@ -58,10 +61,24 @@ public class LocalPlayerContext : MonoBehaviour
 	
 	public void ShakeCamera()
 	{
+        weaponRecoilImpulse = player.GetActiveWeapon().recoil;
+        
 		if(cameraShake == null)	return;
-		cameraShake.GenerateImpulse(Camera.main.transform.forward);
+        cameraShake.GenerateImpulse(Camera.main.transform.forward * player.GetActiveWeapon().cameraShake);
+        
 	}
     
+    public float TakeWeaponRecoilImpulse()
+    {
+        if(weaponRecoilImpulse > 0f)
+        {
+            float toReturn = weaponRecoilImpulse;
+            weaponRecoilImpulse = 0f;
+            return toReturn;
+        }
+        return 0f;
+    }
+        
     public void ToggleScope(bool scoped)
     {
         virtualCamera.m_Lens.FieldOfView = scoped ? 15f : 60f;
@@ -112,6 +129,12 @@ public class LocalPlayerContext : MonoBehaviour
 		if(value.started)
 			weaponReloadInputEvent.Invoke();
 	}
+    
+    public void OnPreviousWeaponInput(InputAction.CallbackContext value)
+    {
+        if(value.started)
+            previousWeaponInputEvent.Invoke();
+    }
 	
 	public void OnWeaponShoot()
 	{

@@ -45,15 +45,9 @@ public class FpsWeapon
     [HideInInspector] public int palletPerShot = 1;
     [HideInInspector] public float spreadInMove = 0f;
     
-    private float spreadMin = 0f;
-    private float spreadMax = 0.1f;
-    public float currentSpread = 0.1f;
-    private float spreadPerShot = 0.01f;
-    private ActionCooldown cooldownUntilSpreadReduction = new ActionCooldown(){interval = 0.3f};
-    private ActionCooldown spreadReductionCooldown = new ActionCooldown(){interval = 0.1f};
-    private float spreadReductionInterval = 0.1f;
-    private float spreadReductionPerTick = 0.03f;
-    
+    public float spread = 0f;
+    public float recoil = 0f;
+    public float cameraShake = 0f;
     public int dmKillScore = 5;
     
     [HideInInspector] public FpsCharacter owner;
@@ -85,20 +79,20 @@ public class FpsWeapon
         drawTime = dbWeaponInfo.f_draw_time;
         palletPerShot = dbWeaponInfo.f_pallet_per_shot;
         
-        spreadMin = dbWeaponInfo.f_spread_min;
-        spreadMax = dbWeaponInfo.f_spread_max;
-        spreadPerShot = dbWeaponInfo.f_spread_per_shot;
-        
+        spread = dbWeaponInfo.f_spread;
+        recoil = dbWeaponInfo.f_recoil;
+        cameraShake = dbWeaponInfo.f_camera_shake;
+
         rangeModifier = dbWeaponInfo.f_range_modifier;
         spreadInMove = dbWeaponInfo.f_spread_move;
         
         dmKillScore = dbWeaponInfo.f_dm_kill_score;
+        
     }
     
     public void Reset()
     {
         currentClip = clipSize;
-        currentSpread = spreadMin;
         primaryActionState = KeyPressState.Released;
         secondaryActionState = KeyPressState.Released;
     }
@@ -121,7 +115,6 @@ public class FpsWeapon
         // cooldown with secondary action
         HandleCooldownInterrupt();
         HandleWeaponStateCooldown();
-        HandleSpreadCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
         {
             if(weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
@@ -201,17 +194,7 @@ public class FpsWeapon
             weaponState = WeaponState.Idle;
         }
     }
-    
-    private void HandleSpreadCooldown()
-    {
-        if(cooldownUntilSpreadReduction.CanExecuteAfterDeltaTime() &&  
-            currentSpread > 0f && spreadReductionCooldown.CanExecuteAfterDeltaTime(true))
-        {
-            currentSpread -= spreadReductionPerTick;
-            currentSpread = currentSpread < spreadMin ? spreadMin : currentSpread;
-        }
-    }
-    
+
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
     {
         primaryActionState = keyPressState;
@@ -293,9 +276,6 @@ public class FpsWeapon
         EmitWeaponViewEvent(WeaponEvent.Shoot);
         ResetWeaponSecondaryState();
         currentClip--;
-        currentSpread += spreadPerShot;
-        currentSpread = currentSpread > spreadMax ? spreadMax : currentSpread;
-        cooldownUntilSpreadReduction.StartCooldown();
         weaponState = WeaponState.Shooting;
         EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         cooldownUntilIdle.StartCooldown(shootInterval);

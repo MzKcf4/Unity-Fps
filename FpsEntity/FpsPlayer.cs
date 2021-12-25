@@ -22,7 +22,7 @@ public partial class FpsPlayer : FpsCharacter
     public GameObject viewCamera;
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
-    public CMF.CameraController cameraController;
+    [HideInInspector] public CMF.CameraController cameraController;
 	
     // ----------- View Layer ------------- //
 	[SerializeField]

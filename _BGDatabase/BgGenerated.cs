@@ -109,37 +109,37 @@ public partial class E_weapon_info : BGEntity
 			_f_pallet_per_shot[Index] = value;
 		}
 	}
-	public System.Single f_spread_min
+	public System.Single f_recoil
 	{
 		get
 		{
-			return _f_spread_min[Index];
+			return _f_recoil[Index];
 		}
 		set
 		{
-			_f_spread_min[Index] = value;
+			_f_recoil[Index] = value;
 		}
 	}
-	public System.Single f_spread_max
+	public System.Single f_camera_shake
 	{
 		get
 		{
-			return _f_spread_max[Index];
+			return _f_camera_shake[Index];
 		}
 		set
 		{
-			_f_spread_max[Index] = value;
+			_f_camera_shake[Index] = value;
 		}
 	}
-	public System.Single f_spread_per_shot
+	public System.Single f_spread
 	{
 		get
 		{
-			return _f_spread_per_shot[Index];
+			return _f_spread[Index];
 		}
 		set
 		{
-			_f_spread_per_shot[Index] = value;
+			_f_spread[Index] = value;
 		}
 	}
 	public System.Single f_spread_move
@@ -319,31 +319,31 @@ public partial class E_weapon_info : BGEntity
 			return _ufle12jhs77_f_pallet_per_shot;
 		}
 	}
-	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_min;
-	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_min
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_recoil;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_recoil
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread_min==null || _ufle12jhs77_f_spread_min.IsDeleted) _ufle12jhs77_f_spread_min=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4995956644634368447,15126530113305527988));
-			return _ufle12jhs77_f_spread_min;
+			if(_ufle12jhs77_f_recoil==null || _ufle12jhs77_f_recoil.IsDeleted) _ufle12jhs77_f_recoil=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5306463085079295087,6167952524468047003));
+			return _ufle12jhs77_f_recoil;
 		}
 	}
-	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_max;
-	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_max
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_camera_shake;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_camera_shake
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread_max==null || _ufle12jhs77_f_spread_max.IsDeleted) _ufle12jhs77_f_spread_max=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4958013212648839020,7441969036014212481));
-			return _ufle12jhs77_f_spread_max;
+			if(_ufle12jhs77_f_camera_shake==null || _ufle12jhs77_f_camera_shake.IsDeleted) _ufle12jhs77_f_camera_shake=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5719258023115973339,11089364542864385422));
+			return _ufle12jhs77_f_camera_shake;
 		}
 	}
-	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_per_shot;
-	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread_per_shot
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_spread
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread_per_shot==null || _ufle12jhs77_f_spread_per_shot.IsDeleted) _ufle12jhs77_f_spread_per_shot=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5466859075159666362,18237160558880310948));
-			return _ufle12jhs77_f_spread_per_shot;
+			if(_ufle12jhs77_f_spread==null || _ufle12jhs77_f_spread.IsDeleted) _ufle12jhs77_f_spread=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5052825553567064992,7269493519236057988));
+			return _ufle12jhs77_f_spread;
 		}
 	}
 	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_spread_move;

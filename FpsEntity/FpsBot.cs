@@ -186,7 +186,7 @@ public partial class FpsBot : FpsCharacter
         if(evt == WeaponEvent.Shoot)
         {
             
-            float spreadMultiplier = GetActiveWeapon().currentSpread;
+            float spreadMultiplier = GetActiveWeapon().spread;
             // ---------ToDo: Shotgun pallet ??--------------- //
             if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
             {
