@@ -5,60 +5,40 @@ using UnityEngine;
 // FpsBot.Fsm
 public partial class FpsBot
 {
-    public BotStateEnum botState = BotStateEnum.Default;
-    
-    private ActionCooldown alertStateCooldown = new ActionCooldown { interval = 3f};
-    private ActionCooldown reactionCooldown = new ActionCooldown { interval = 2f};
-    private ActionCooldown scanCooldown = new ActionCooldown { interval = 0.2f};
-    
-    // How long bot stays in alert state ( look at alert direction )
-    public float maxAlertTime;
+    public BotStateEnum botState = BotStateEnum.Wandering;
+    private readonly Dictionary<BotStateEnum, AbstractBotStateProcessor> dictStateToProcessor = new Dictionary<BotStateEnum, AbstractBotStateProcessor>();
+    [SerializeField] private readonly BotFsmDto botFsmDto = new BotFsmDto();
+    private AbstractBotStateProcessor activeProcessor;
+
     // How long bot stays "Aiming" enemy before shooting
     public float reactionTime;
-    
-    public Vector3 targetLookAtPosition;
-    
-    public FpsModel aimAtFpsModel;
-    public Transform aimAtHitboxTransform;
-    
+    // The chance bot will chase enemy ( go to last seen position )
+    public float chaseChance = 1.0f;
+
+    public void Start_Fsm()
+    {
+        dictStateToProcessor.Add(BotStateEnum.Wandering, new BotWanderStateProcessor(this, botFsmDto));
+        dictStateToProcessor.Add(BotStateEnum.Engage, new BotEngageStateProcessor(this, botFsmDto));
+        dictStateToProcessor.Add(BotStateEnum.Chasing, new BotChaseStateProcessor(this, botFsmDto));
+        dictStateToProcessor.Add(BotStateEnum.ReactToUnknownDamage, new BotReactToUnknownDamageStateProcessor(this, botFsmDto));
+        TransitToState(BotStateEnum.Wandering);
+    }
+
     // Should be placed in MonoBehaviour's Update() method , to replicate update() behavior
     public void Update_Fsm()
     {
-        CheckWeaponAmmo();
-        if(botState == BotStateEnum.Reloading)  return;
-        
-        if(botState == BotStateEnum.Alert)
-        {
-            if(alertStateCooldown.CanExecuteAfterDeltaTime())
-                botState = BotStateEnum.Default;
-        } 
-        else if(botState == BotStateEnum.Aiming)
-        {
-            if(reactionCooldown.CanExecuteAfterDeltaTime())
-            {
-                botState = BotStateEnum.Shooting;
-            }
-        }
-        
-        
-        if (botState == BotStateEnum.Alert || botState == BotStateEnum.Default)
-        {
-            if(scanCooldown.CanExecuteAfterDeltaTime(true))
-            {
-                FpsModel foundFpsModel = ScanForShootTarget();
-                if(foundFpsModel != null)
-                {
-                    aimAtFpsModel = foundFpsModel;
-                    botState = BotStateEnum.Aiming;
-                    reactionCooldown.StartCooldown();
-                }
-            }
-        }
-        
-        UpdateLookAt();
+        if (activeProcessor == null) return;
+        activeProcessor.ProcessState();
     }
-    
-            
+
+    public void TransitToState(BotStateEnum newState)
+    {
+        botState = newState;
+        activeProcessor = dictStateToProcessor[newState];
+        activeProcessor.EnterState();
+    }
+
+
     public void SetSkillLevel(int level)
     {
         if(level <= 0)
@@ -69,8 +49,6 @@ public partial class FpsBot
             reactionTime = 0.5f;
         else 
             reactionTime = 0.3f;
-        
-        reactionCooldown.interval = reactionTime;
     }
     
     private void CheckWeaponAmmo()
@@ -79,51 +57,38 @@ public partial class FpsBot
         {
             ReloadActiveWeapon();
             RpcReloadActiveWeapon();
-            botState = BotStateEnum.Reloading;
         }
     }
     
-    public void OnTeammateKilledNearby_Fsm(Vector3 deathPos, DamageInfo damageInfo)
+    public void OnTeammateKilled(Vector3 deathPos, DamageInfo damageInfo)
     {
-        if(botState != BotStateEnum.Default)
-            return;
-        
-        aiDest.SetByPosition(deathPos);
-        targetLookAtPosition = damageInfo.damageSourcePosition;
-        botState = BotStateEnum.Alert;
-        alertStateCooldown.StartCooldown();
+        activeProcessor.OnTeammateKilled(deathPos, damageInfo);
     }
-        
-    private void UpdateLookAt_Fsm()
-    {
-        if(botState == BotStateEnum.Default)
-        {
-            Vector3 moveVec = GetMovementVelocity().normalized * 2f;
-            if(moveVec != Vector3.zero)
-                lookAtTransform.localPosition = new Vector3(moveVec.x , 1.3f + moveVec.y , moveVec.z);
-            return;
-        }
-        
-        if(botState == BotStateEnum.Aiming)
-            targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
-        else if (botState == BotStateEnum.Shooting)
-        {
-            if(aimAtHitboxTransform == null)
-                targetLookAtPosition = aimAtFpsModel.transform.position + new Vector3(0,1f,0);
-            else
-                targetLookAtPosition = aimAtHitboxTransform.position;
-        } 
 
-        lookAtTransform.position = targetLookAtPosition;
+    public bool IsReachedDesination()
+    {
+        return ai.reachedDestination || !ai.hasPath;
     }
-    
-    
-    private FpsModel ScanForShootTarget()
+
+    public void AlignLookAtWithMovementDirection()
+    {
+        Vector3 moveVec = GetMovementVelocity().normalized * 2f;
+        if (moveVec != Vector3.zero)
+            lookAtTransform.localPosition = new Vector3(moveVec.x, 1.3f + moveVec.y, moveVec.z);
+    }
+
+    public void SetLookAtToPosition(Vector3 pos)
+    {
+        lookAtTransform.position = pos;
+    }
+        
+    public FpsModel ScanForShootTarget()
     {
         if(visionSensor == null || aiIgnoreEnemy)
             return null;
-            
+
         // Should detect "FpsModel" attached in the ModelRoot , because it contains the LOS Target.
+        visionSensor.Pulse();
         List<FpsModel> detectedModels = visionSensor.GetDetectedByComponent<FpsModel>();
         
         if(detectedModels == null || detectedModels.Count == 0)     
@@ -144,59 +109,34 @@ public partial class FpsBot
         
         return null;
     }
-    
-    // Called from FpsBot , when it's about to fire the weapon.
-    public void ScanVisibleLosFromShootTarget()
+
+    public Transform GetVisibleHitBoxFromAimTarget(GameObject targetObject)
     {
-        if(visionSensor == null)
-            return;
-        
-        // The target has been killed ... reset to normal state
-        if(aimAtFpsModel.controllerEntity.IsDead())
-        {
-            OnShootTargetLostSight();
-            return;
-        }
-        
+        if (visionSensor == null)   return null;
+
         // Let's just assume all aim target is FpsCharacter first.
         visionSensor.Pulse();
-        List<Transform> tList = visionSensor.GetVisibleTransforms(aimAtFpsModel.gameObject);
-        if(tList != null && tList.Count > 0)
+        List<Transform> tList = visionSensor.GetVisibleTransforms(targetObject);
+        if (tList != null && tList.Count > 0)
         {
-            aimAtHitboxTransform = Utils.GetRandomElement<Transform>(tList);
-            return;
+            return Utils.GetRandomElement<Transform>(tList);
         }
-        
-        // Completely lost sight from ShootTarget
-        OnShootTargetLostSight();
+        return null;
     }
-    
     
     public void OnTakeHit(DamageInfo damageInfo)
     {
         if(damageInfo.damageSourcePosition == Vector3.zero) return;
-        
-        if(botState != BotStateEnum.Aiming && botState != BotStateEnum.Shooting)
-        {
-            botState = BotStateEnum.Alert;
-            alertStateCooldown.StartCooldown();
-            
-            targetLookAtPosition = damageInfo.damageSourcePosition;
-        }
+        activeProcessor.OnTakeHit(damageInfo);
     }
-    
-    public void OnShootTargetLostSight()
-    {
-        botState = BotStateEnum.Default;
-        aimAtFpsModel = null;
-        aimAtHitboxTransform = null;
-    }
-    
+
     public void ProcessWeaponEventUpdate_Fsm(WeaponEvent evt)
     {
+        /*
         if(evt == WeaponEvent.Reload)
             botState = BotStateEnum.Reloading;
         else if(evt == WeaponEvent.Reload_End)
             botState = BotStateEnum.Default;
+        */
     }
 }

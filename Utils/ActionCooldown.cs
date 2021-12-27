@@ -19,6 +19,11 @@ public class ActionCooldown
 		if(nextUse <= 0f)	return;
 		nextUse -= amt;
 	}
+
+    public void InstantCooldown()
+    {
+        nextUse = 0f;
+    }
 	
 	public bool IsOnCooldown()
 	{

@@ -25,10 +25,7 @@ public partial class FpsBot : FpsCharacter
     public float speedRecoverDuration = 0.5f;
     public float speedRecoverElapsed = 0f;
     // --------------------------------- //
-    
-    ActionCooldown weaponShotCooldown = new ActionCooldown();
-    // private FpsBotFsm botFsm = new FpsBotFsm();
-    
+        
     public GameObject objAttachToModel;
     
     // Start is called before the first frame update
@@ -43,9 +40,11 @@ public partial class FpsBot : FpsCharacter
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
             
+            
             ServerGetWeapon("csgo_ak47" , 0);
             RpcGetWeapon("csgo_ak47" , 0);
-            weaponShotCooldown.interval = 0.1f;
+            
+            Start_Fsm();
         }
         if(objAttachToModel != null)
         {
@@ -61,23 +60,16 @@ public partial class FpsBot : FpsCharacter
         RecoverSpeed();
         
         Update_Fsm();
-        
-        if (botState == BotStateEnum.Shooting)
-        {
-            
-            if(weaponShotCooldown.CanExecuteAfterDeltaTime(true))
-            {
-                ScanVisibleLosFromShootTarget();
-                if(aimAtHitboxTransform != null)
-                    ShootAtTarget();
-                
-            }
-        }
-        
-        UpdateMovementDestination();
-        UpdateLookAt();
     }
-        
+
+    public override void Respawn()
+    {
+        base.Respawn();
+        // Reset the dto data for FSM
+        botFsmDto.Clear();
+        TransitToState(BotStateEnum.Wandering);
+    }
+
     private void RecoverSpeed()
     {
         if(ai == null || ai.maxSpeed >= moveSpeed)  return;
@@ -92,39 +84,24 @@ public partial class FpsBot : FpsCharacter
             ai.maxSpeed = moveSpeed;
         }
     }
-    
-    private void UpdateLookAt()
+
+    public void SetDestination(Transform targetTransform)
     {
-        UpdateLookAt_Fsm();
+        aiDest.SetByTransform(targetTransform);
     }
-    
-    private void UpdateMovementDestination()
+
+    public void SetDestination(Vector3 position)
     {
-        if(!aiEnableWander)
-            return;
-            
-        if(botState == BotStateEnum.Default || botState == BotStateEnum.Alert)
-        {
-            if(moveDest == null || moveDest == Vector3.zero || ai.reachedDestination)
-            {
-                Transform newDest = Utils.GetRandomElement<Transform>(WaypointManager.Instance.mapGoalList);
-                moveDest = newDest.position;
-                aiDest.SetByPosition(moveDest);
-            }
-            else
-            {
-                aiDest.SetByPosition(moveDest);
-            }
-        }
-        else if (botState == BotStateEnum.Aiming || botState == BotStateEnum.Shooting)
-        {
-            // Stop moving , by now
-            aiDest.SetByTransform(transform);
-        }
+        aiDest.SetByPosition(position);
+    }
+
+    public void StopMoving()
+    {
+        aiDest.SetByTransform(transform);
     }
     
     [Server]
-    private void ShootAtTarget()
+    public void ShootAtTarget()
     {
         if(GetActiveWeapon() == null)
             return;
@@ -156,14 +133,15 @@ public partial class FpsBot : FpsCharacter
     [Server]
     private void BoardcastKilledWarning(DamageInfo damageInfo)
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 12f);
-        foreach (Collider hitCollider in hitColliders)
+        List<FpsCharacter> fpsCharacterList = SharedContext.Instance.characterList;
+        foreach (FpsCharacter fpsCharacter in fpsCharacterList)
         {
-            FpsBot fpsBot = hitCollider.GetComponent<FpsBot>();
-            if(fpsBot == null || fpsBot == this || fpsBot.IsDead() || fpsBot.team != this.team)
-                continue;
-            
-            fpsBot.OnTeammateKilledNearby_Fsm(transform.position , damageInfo);
+            if (!(fpsCharacter is FpsBot)) continue;
+
+            FpsBot otherBot = (FpsBot)fpsCharacter;
+            if (otherBot.team != team || otherBot.IsDead() || otherBot == this) continue;
+
+            otherBot.OnTeammateKilled(transform.position, damageInfo);
         }
     }
     
@@ -182,7 +160,7 @@ public partial class FpsBot : FpsCharacter
     
     public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
-        ProcessWeaponEventUpdate_Fsm(evt);
+        // ProcessWeaponEventUpdate_Fsm(evt);
         if(evt == WeaponEvent.Shoot)
         {
             
@@ -192,7 +170,7 @@ public partial class FpsBot : FpsCharacter
             {
                 spreadMultiplier *= 5f;
             }
-            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, targetLookAtPosition);
+            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, lookAtTransform.position);
             CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
             // ----------------------------------------------- //
             RpcFireWeapon();

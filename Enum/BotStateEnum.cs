@@ -4,9 +4,8 @@ using UnityEngine;
 
 public enum BotStateEnum
 {
-    Default,
-    Aiming,
-    Alert,
-    Shooting,
-    Reloading
+    Wandering,
+    Engage,
+    Chasing,
+    ReactToUnknownDamage
 }
