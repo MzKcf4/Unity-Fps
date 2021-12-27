@@ -16,7 +16,6 @@ public class LocalPlayerContext : MonoBehaviour
     public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
     
     public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
-	// public InputActionContextEvent mouseLookInputEvent = new InputActionContextEvent();
     public UnityEvent<InputAction.CallbackContext> mouseLookInputEvent = new UnityEvent<InputAction.CallbackContext>();
 	public UnityEvent weaponReloadInputEvent = new UnityEvent();
 	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
@@ -166,12 +165,12 @@ public class LocalPlayerContext : MonoBehaviour
     public void LoadPlayerSettings()
     {
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
-        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 250);
-        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 83);
+        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10);
+        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3);
         string playerName = ES3.Load<string>(Constants.SETTING_KEY_PLAYER_NAME);
         
         playerSettingDto.audioMasterVolume = masterVolume;
-        playerSettingDto.mouseSpeed = mouseSpeed;
+        playerSettingDto.mouseSpeed = mouseSpeed;       // CameraInput's default mouse sensitivity 0.001
         playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
         playerSettingDto.playerName = playerName;
         

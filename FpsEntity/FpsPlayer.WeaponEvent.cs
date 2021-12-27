@@ -35,7 +35,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
         LocalPlayerContext.Instance.ToggleScope(true);
-        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeedZoomed;
+        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseZoomedSpeed();
     }
     
     private void OnWeaponUnScopeEvent()
@@ -43,7 +43,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
         LocalPlayerContext.Instance.ToggleScope(false);
-        cameraController.cameraSpeed = (float)localPlayerSettingDto.mouseSpeed;
+        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
@@ -57,7 +57,6 @@ public partial class FpsPlayer : FpsCharacter
         
         ApplyRecoil();
         LocalFireWeapon(fromPos , forwardVec);
-        // CmdFireWeapon(fromPos , forwardVec);
     }
     
     private void UpdateAmmoDisplay()

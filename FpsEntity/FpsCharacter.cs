@@ -211,7 +211,7 @@ public abstract partial class FpsCharacter : FpsEntity
         currentVelocity = velocity;
     }
         
-    protected void OnDestroy()
+    protected virtual void OnDestroy()
     {
         SharedContext.Instance.RemoveCharacter(this);
     }

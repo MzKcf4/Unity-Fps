@@ -22,7 +22,7 @@ public partial class FpsPlayer : FpsCharacter
     public GameObject viewCamera;
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
-    [HideInInspector] public CMF.CameraController cameraController;
+    [HideInInspector] private PlayerContextCameraInput cameraInput;
 	
     // ----------- View Layer ------------- //
 	[SerializeField]
@@ -54,7 +54,7 @@ public partial class FpsPlayer : FpsCharacter
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
-            cameraController = GetComponentInChildren<CMF.CameraController>();
+            cameraInput = GetComponentInChildren<PlayerContextCameraInput>();
             
             // For reset the layer for non-local player so that we can see other players.
             //   as our camera has culling mask for LOCAL_PLAYER_MODEL
@@ -96,9 +96,9 @@ public partial class FpsPlayer : FpsCharacter
     
     public void LoadLocalPlayerSettings()
     {
-        cameraController.cameraSpeed = localPlayerSettingDto.mouseSpeed;
+        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
         
-        AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraController.transform);
+        AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraInput.transform);
         AudioManager.Instance.localPlayerAudioSource.transform.localPosition = Vector3.zero;
     }
     
@@ -296,7 +296,7 @@ public partial class FpsPlayer : FpsCharacter
     
 	#endregion
 	
-	void OnDestroy()
+	protected override void OnDestroy()
 	{
         base.OnDestroy();
 		if(isServer)
