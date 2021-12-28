@@ -20,12 +20,12 @@ public class FpsWeaponPlayerInputHandler
     
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
     {
-        fpsPlayer.GetActiveWeapon().primaryActionState = keyPressState;
+        fpsPlayer.GetActiveWeapon().UpdateWeaponPrimaryActionState(keyPressState);
     }
     
     public void OnWeaponSecondaryAction(KeyPressState keyPressState)
     {
-        fpsPlayer.GetActiveWeapon().secondaryActionState = keyPressState;
+        fpsPlayer.GetActiveWeapon().UpdateWeaponSecondaryActionState(keyPressState);
     }
     
     public void DoWeaponReload()

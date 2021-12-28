@@ -50,11 +50,11 @@ public partial class FpsPlayer : FpsCharacter
     //   notify the server to do corresponding actions
     private void OnWeaponFireEvent()
     {
-        Transform fromTransform = Camera.main.transform;
-        
         Vector3 fromPos = Camera.main.transform.position;
         Vector3 forwardVec = Camera.main.transform.forward;
-        
+
+        if (GetActiveWeapon().weaponCategory == WeaponCategory.Melee) return;
+
         ApplyRecoil();
         LocalFireWeapon(fromPos , forwardVec);
     }

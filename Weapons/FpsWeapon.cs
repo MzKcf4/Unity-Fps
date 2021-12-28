@@ -39,6 +39,10 @@ public class FpsWeapon
     private float reloadTime_PalletInsert = 0.2f;
     private float reloadTime_PalletEnd = 0.2f;
     private float drawTime = 2f;
+
+    // Shoot mode
+    private bool isSemiAuto = false;
+    private bool isPrimayActionWatingRelease = false;
     
     [HideInInspector] public float rangeModifier = 1f;
     [HideInInspector] public float shootInterval = 0.1f;
@@ -87,7 +91,7 @@ public class FpsWeapon
         spreadInMove = dbWeaponInfo.f_spread_move;
         
         dmKillScore = dbWeaponInfo.f_dm_kill_score;
-        
+        isSemiAuto = dbWeaponInfo.f_is_semi_auto;
     }
     
     public void Reset()
@@ -195,12 +199,17 @@ public class FpsWeapon
         }
     }
 
-    public void OnWeaponPrimaryAction(KeyPressState keyPressState)
+    public void UpdateWeaponPrimaryActionState(KeyPressState keyPressState)
     {
         primaryActionState = keyPressState;
+        if (primaryActionState == KeyPressState.Released)
+        {
+            // Reset the flag when received 'released' input
+            isPrimayActionWatingRelease = false;
+        }
     }
-    
-    public void OnWeaponSecondaryAction(KeyPressState keyPressState)
+
+    public void UpdateWeaponSecondaryActionState(KeyPressState keyPressState)
     {
         secondaryActionState = keyPressState;
     }
@@ -238,6 +247,8 @@ public class FpsWeapon
     
     public void DoWeaponReload()
     {
+        if (weaponCategory == WeaponCategory.Melee) return;
+
         if(weaponState != WeaponState.Idle || currentClip == clipSize)
             return;
         
@@ -275,10 +286,18 @@ public class FpsWeapon
     {
         EmitWeaponViewEvent(WeaponEvent.Shoot);
         ResetWeaponSecondaryState();
-        currentClip--;
-        weaponState = WeaponState.Shooting;
-        EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         cooldownUntilIdle.StartCooldown(shootInterval);
+        weaponState = WeaponState.Shooting;
+        if (isSemiAuto)
+        {
+            isPrimayActionWatingRelease = true;
+        }
+
+        if (weaponCategory == WeaponCategory.Melee) return;
+
+        currentClip--;
+        EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
+        
     }
     
     // Temp way for bot to use weapon's cooldown
@@ -295,7 +314,15 @@ public class FpsWeapon
                 
     public bool CanFire()
     {
-        return weaponState == WeaponState.Idle && currentClip > 0;
+        if (weaponCategory == WeaponCategory.Melee)
+            return weaponState == WeaponState.Idle;
+        else
+        {
+            if (isSemiAuto && isPrimayActionWatingRelease) 
+                return false;
+            return weaponState == WeaponState.Idle && currentClip > 0;
+        }
+            
     }
     
     private void EmitWeaponViewEvent(WeaponEvent evt)

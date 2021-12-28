@@ -87,6 +87,17 @@ public partial class E_weapon_info : BGEntity
 			_f_range_modifier[Index] = value;
 		}
 	}
+	public System.Boolean f_is_semi_auto
+	{
+		get
+		{
+			return _f_is_semi_auto[Index];
+		}
+		set
+		{
+			_f_is_semi_auto[Index] = value;
+		}
+	}
 	public System.Int32 f_clip_size
 	{
 		get
@@ -299,6 +310,15 @@ public partial class E_weapon_info : BGEntity
 		{
 			if(_ufle12jhs77_f_range_modifier==null || _ufle12jhs77_f_range_modifier.IsDeleted) _ufle12jhs77_f_range_modifier=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4683219957302565823,13678527264954651022));
 			return _ufle12jhs77_f_range_modifier;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldBool _ufle12jhs77_f_is_semi_auto;
+	public static BansheeGz.BGDatabase.BGFieldBool _f_is_semi_auto
+	{
+		get
+		{
+			if(_ufle12jhs77_f_is_semi_auto==null || _ufle12jhs77_f_is_semi_auto.IsDeleted) _ufle12jhs77_f_is_semi_auto=(BansheeGz.BGDatabase.BGFieldBool) MetaDefault.GetField(new BGId(4840471375314749571,6716578820605775798));
+			return _ufle12jhs77_f_is_semi_auto;
 		}
 	}
 	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_clip_size;
