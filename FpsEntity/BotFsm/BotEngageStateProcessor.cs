@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 // When an enemy is found , transit to Engage state.
 public class BotEngageStateProcessor : AbstractBotStateProcessor
@@ -34,11 +29,14 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
 
     public override void ProcessState()
     {
-        fpsBot.StopMoving();
         fpsBot.SetLookAtToPosition(botFsmDto.shootTargetModel.transform.position + new Vector3(0, 1f, 0));
 
         // Still in reaction time
-        if (!reactionTime.CanExecuteAfterDeltaTime()) return;
+        if (!reactionTime.CanExecuteAfterDeltaTime())
+        {
+            fpsBot.StopMoving();
+            return;
+        } 
 
         // Can shoot now
         if (!weaponShotCooldown.CanExecuteAfterDeltaTime(true)) return;
@@ -51,6 +49,12 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
             ResetShootTarget();
             ExitToState(BotStateEnum.Wandering);
             return;
+        }
+
+        // Set points for bot to strafe
+        if (fpsBot.IsReachedDesination())
+        {
+            fpsBot.SetDestination(PickRandomStrafePoint());
         }
 
         // Otherwise , find a visible body part to shoot
@@ -75,5 +79,12 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
     {
         botFsmDto.shootTargetModel = null;
     }
-}
 
+    private Vector3 PickRandomStrafePoint()
+    {
+        Vector3 randomPoint = Random.insideUnitSphere * 2f;
+        randomPoint.y = fpsBot.transform.position.y;
+
+        return randomPoint + fpsBot.transform.position;
+    }
+}

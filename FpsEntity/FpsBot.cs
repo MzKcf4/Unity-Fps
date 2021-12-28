@@ -19,7 +19,6 @@ public partial class FpsBot : FpsCharacter
     private IAstarAI ai;
     private Seeker seeker;
     private AIDestinationSetter aiDest;
-    public Vector3 moveDest;
     // --------- Pain Shock ------------ //
     public float moveSpeed = 4f;
     public float speedRecoverDuration = 0.5f;
@@ -87,17 +86,17 @@ public partial class FpsBot : FpsCharacter
 
     public void SetDestination(Transform targetTransform)
     {
-        aiDest.SetByTransform(targetTransform);
+        SetDestination(targetTransform.position);
     }
 
     public void SetDestination(Vector3 position)
     {
-        aiDest.SetByPosition(position);
+        ai.destination = position;
     }
 
     public void StopMoving()
     {
-        aiDest.SetByTransform(transform);
+        SetDestination(transform.position);
     }
     
     [Server]

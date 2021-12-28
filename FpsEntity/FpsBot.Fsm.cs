@@ -67,7 +67,12 @@ public partial class FpsBot
 
     public bool IsReachedDesination()
     {
-        return ai.reachedDestination || !ai.hasPath;
+        // Update the destination of the AI if
+        // the AI is not already calculating a path and
+        // the ai has reached the end of the path or it has no path at all
+        return (!ai.pathPending && (ai.reachedEndOfPath || !ai.hasPath));
+        
+        // return ai.reachedDestination || !ai.hasPath;
     }
 
     public void AlignLookAtWithMovementDirection()
