@@ -10,7 +10,6 @@ public partial class FpsCharacter
     // ** ----- Just note that fpsWeapon is NOT sync by server ------ **
     public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
     [HideInInspector] [SyncVar] public int activeWeaponSlot = -1;
-    private int previousActiveWeaponSlot = -1;
     
     protected Transform weaponRootTransform;
     
@@ -103,7 +102,6 @@ public partial class FpsCharacter
     [Command]
     public void CmdSwitchWeapon(int slot)
     {
-        Debug.Log("Switching to " + slot);
         SwitchWeapon(slot);
         RpcSwitchWeapon(slot);
     }
@@ -113,8 +111,31 @@ public partial class FpsCharacter
     {
         SwitchWeapon(slot);
     }
-    
-    
+
+
+
+    public void SwitchWeapon(int slot)
+    {
+        // Debug.Log(previousActiveWeaponSlot);
+        int currActiveWeaponSlot = activeWeaponSlot;
+
+        if (currActiveWeaponSlot != -1)
+        {
+            weaponSlots[currActiveWeaponSlot].ResetActionState();
+            fpsWeaponWorldSlot[currActiveWeaponSlot].gameObject.SetActive(false);
+        }
+
+        activeWeaponSlot = slot;
+        fpsWeaponWorldSlot[slot].gameObject.SetActive(true);
+
+        if (isLocalPlayer)
+        {
+            fpsWeaponView.SwitchWeapon(slot);
+            weaponSlots[slot].DoWeaponDraw();
+        }
+    }
+
+
     public void FireWeapon()
     {
         
@@ -166,39 +187,7 @@ public partial class FpsCharacter
             fpsWeaponView.AddViewWeaponNew(weaponResource.weaponViewPrefab, slot);
         }
     }
-    
-    public void LocalSwitchPreviousWeapon()
-    {
-        // Debug.Log("Local..");
-        // Debug.Log(previousActiveWeaponSlot + " ; " + activeWeaponSlot + "; " + weaponSlots[previousActiveWeaponSlot]);
-        if(previousActiveWeaponSlot != activeWeaponSlot && previousActiveWeaponSlot != -1
-            && weaponSlots[previousActiveWeaponSlot] != null)
-            CmdSwitchWeapon(previousActiveWeaponSlot);
-    }
-    
-    public void SwitchWeapon(int slot)
-    {
-        // Debug.Log(previousActiveWeaponSlot);
-        int currActiveWeaponSlot = activeWeaponSlot;
         
-        if(currActiveWeaponSlot != -1)
-        {
-            weaponSlots[currActiveWeaponSlot].ResetActionState();
-            fpsWeaponWorldSlot[currActiveWeaponSlot].gameObject.SetActive(false);
-        }
-        
-        activeWeaponSlot = slot;
-        fpsWeaponWorldSlot[slot].gameObject.SetActive(true);
-        
-        if(isLocalPlayer)
-        {
-            Debug.Log(previousActiveWeaponSlot);
-            previousActiveWeaponSlot = currActiveWeaponSlot;
-            fpsWeaponView.SwitchWeapon(slot);
-            weaponSlots[slot].DoWeaponDraw();
-        }
-    }
-    
     public virtual void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
         

@@ -37,7 +37,8 @@ public partial class FpsPlayer : FpsCharacter
     
     private PlayerSettingDto localPlayerSettingDto;
     private FpsWeaponPlayerInputHandler weaponInputHandler;
-    
+
+    private int previousActiveWeaponSlot = -1;
     // This is the one attached to the fpsCamera , sync the position of LookAt to this so as to sync the character rotation.
     [SerializeField] Transform localPlayerLookAt;
         
@@ -55,7 +56,7 @@ public partial class FpsPlayer : FpsCharacter
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             cameraInput = GetComponentInChildren<PlayerContextCameraInput>();
-            
+            weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             // For reset the layer for non-local player so that we can see other players.
             //   as our camera has culling mask for LOCAL_PLAYER_MODEL
             // The ragdoll object is LocalPlayerModel , so player won't raycast on themselves in FpsView
@@ -64,13 +65,12 @@ public partial class FpsPlayer : FpsCharacter
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
             
             localPlayerSettingDto = LocalPlayerContext.Instance.playerSettingDto;
-            weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
-            
             LoadLocalPlayerSettings();
             
             CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
             CmdGetWeapon("csgo_ak47" , 0);
-	    }
+            CmdGetWeapon("csgo_knife_butterfly", 2);
+        }
 	    else
 	    {
             
@@ -325,7 +325,17 @@ public partial class FpsPlayer : FpsCharacter
     {        
         if(weaponSlots[slot] == null)
             return;
-        
+
+        previousActiveWeaponSlot = activeWeaponSlot;
         CmdSwitchWeapon(slot);
+    }
+
+    public void LocalSwitchPreviousWeapon()
+    {
+        if (previousActiveWeaponSlot != activeWeaponSlot && previousActiveWeaponSlot != -1
+            && weaponSlots[previousActiveWeaponSlot] != null)
+        {
+            LocalSwitchWeapon(previousActiveWeaponSlot);
+        }
     }
 }
