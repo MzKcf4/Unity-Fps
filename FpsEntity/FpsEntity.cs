@@ -12,10 +12,10 @@ public class FpsEntity : NetworkBehaviour
 	[SerializeField] protected List<Behaviour> serverBehaviours;
 	[SerializeField] protected List<GameObject> serverGameObjects;
 	
-	// For enemies , it's the base health at stage 1 whem player count is 1
-	[SyncVar] public int health = 100;
+	[SyncVar(hook = nameof(OnHealthSync))] 
+    public int health = 100;
+
 	[SyncVar] public int maxHealth = 100;
-    
     [SyncVar] public bool isGodMode = false;
 	
 	public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
@@ -142,6 +142,11 @@ public class FpsEntity : NetworkBehaviour
     [ClientRpc]
     protected virtual void RpcKilled(DamageInfo damageInfo)
     {
+        
+    }
+
+    protected virtual void OnHealthSync(int oldHealth , int newHealth)
+    { 
         
     }
 }

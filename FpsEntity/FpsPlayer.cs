@@ -176,7 +176,6 @@ public partial class FpsPlayer : FpsCharacter
         {
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
-            LocalPlayerContext.Instance.OnHealthUpdate(health , maxHealth);
         }
 	}
     
@@ -223,13 +222,6 @@ public partial class FpsPlayer : FpsCharacter
         CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
         // Audio / Muzzle effects
         RpcFireWeapon();
-        /*
-        foreach(HitWallInfoDto hitWallInfo in hitInfoDto.hitWallInfoDtoList)
-        {
-            Debug.Log(hitWallInfo.hitPoint);
-            Debug.Log(hitWallInfo.hitPointNormal);
-        }
-        */
     }
     // ==================================================== //
     
@@ -342,5 +334,11 @@ public partial class FpsPlayer : FpsCharacter
         {
             LocalSwitchWeapon(previousActiveWeaponSlot);
         }
+    }
+
+    protected override void OnHealthSync(int oldHealth, int newHealth)
+    {
+        base.OnHealthSync(oldHealth, newHealth);
+        LocalPlayerContext.Instance.OnHealthUpdate(newHealth, maxHealth);
     }
 }
