@@ -253,6 +253,11 @@ public partial class FpsPlayer : FpsCharacter
     protected override void RpcKilled(DamageInfo damageInfo)
     {
         base.RpcKilled(damageInfo);
+        if (isLocalPlayer)
+        {
+            // Unscope the weapon on death
+            OnWeaponUnScopeEvent();
+        }
     }
     
     [TargetRpc]

@@ -99,6 +99,8 @@ public class FpsWeapon
         currentClip = clipSize;
         primaryActionState = KeyPressState.Released;
         secondaryActionState = KeyPressState.Released;
+
+        weaponSecondaryState = WeaponSecondaryState.None;
     }
     
     public void ResetActionState()
