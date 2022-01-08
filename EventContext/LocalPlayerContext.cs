@@ -5,10 +5,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using Cinemachine;
 using UnityEngine.Audio;
+using System;
 
 public class LocalPlayerContext : MonoBehaviour
 {
 	public static LocalPlayerContext Instance;
+    // [SerializeField] InputActionAsset playerInputActionAsset;
+    private PlayerInputActions playerInputActions;
     private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
     
 	// ----- Input events : events fired when corresponding input key pressed -----
@@ -41,12 +44,39 @@ public class LocalPlayerContext : MonoBehaviour
 	{
 		Instance = this;
         playerSettingDto = new PlayerSettingDto();
+        playerInputActions = new PlayerInputActions();
+        SetupInputActionEvents();
         DontDestroyOnLoad(gameObject);
 	}
     
     void Start()
     {
         LoadPlayerSettings();
+    }
+
+    private void SetupInputActionEvents()
+    {
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLook, OnMouseLookInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Movement, OnMovementInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponPrimaryAction, OnWeaponPrimaryActionInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLock, OnMouseLockInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot1, OnSwitchWeaponSlot1);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot2, OnSwitchWeaponSlot2);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot3, OnSwitchWeaponSlot3);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Reload, OnWeaponReloadInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Jump, OnJump);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponSecondaryAction, OnWeaponSecondaryActionInputEvent);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.PreviousWeapon, OnPreviousWeaponInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.TempDeathmatchWeaponMenu, OnTempDeathmatchWeaponMenuToggle);
+    }
+
+    private void MapInputActionToHandlerMethod(InputAction action , Action<InputAction.CallbackContext> inputHandlerMethod)
+    {
+        action.started += inputHandlerMethod;
+        action.performed += inputHandlerMethod;
+        action.canceled += inputHandlerMethod;
+        action.Enable();
     }
 	
 	public void InitalizeFieldsOnFirstSpawn(FpsPlayer fpsPlayer)
@@ -222,7 +252,17 @@ public class LocalPlayerContext : MonoBehaviour
         if(value.started)
             onTempDeathmatchWeaponMenuToggleEvent.Invoke();
     }
-	
+
+    public void OnMouseLockInput(InputAction.CallbackContext value)
+    {
+        if (value.started)
+        {
+            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ?
+                                         CursorLockMode.None : CursorLockMode.Locked;
+        }
+    }
+
+
     public void StoreAdditionalValue(string key , string value)
     {
         if(dictAdditionalInfo.ContainsKey(key))

@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 public class DamageInfo
 {
+    // Note that this value will be updated to calculated final damage after FpsEntity's TakeDamage
 	public int damage = 0;
 	public BodyPart bodyPart = BodyPart.Chest;
     public string damageSource = "";

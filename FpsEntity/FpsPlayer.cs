@@ -46,7 +46,7 @@ public partial class FpsPlayer : FpsCharacter
 	{
 		base.Start();
         painShockCooldown.interval = 0.06f;
-
+        
 	    if(isLocalPlayer)
 	    {
 	    	progressionWeaponConfig.InitializeWeaponList();
@@ -86,6 +86,7 @@ public partial class FpsPlayer : FpsCharacter
         
 
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
+        
 	}
     
     [Command]
@@ -212,16 +213,26 @@ public partial class FpsPlayer : FpsCharacter
     {
         foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
         {
-            FpsEntity hitEntity = hitInfo.networkIdentity.gameObject.GetComponent<FpsEntity>();
+            FpsEntity hitEntity = hitInfo.victimIdentity.gameObject.GetComponent<FpsEntity>();
             if(hitEntity)
             {
                 hitEntity.TakeDamage(hitInfo.damageInfo);
+                // Only send to the damage dealer
+                TargetSpawnDamageText(hitInfo.attackerIdentity.connectionToClient, hitInfo.damageInfo.damage, hitInfo.damageInfo.hitPoint , hitInfo.damageInfo.bodyPart == BodyPart.Head);
             }
         }
 
         CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
+        
         // Audio / Muzzle effects
         RpcFireWeapon();
+    }
+
+    [TargetRpc]
+    public void TargetSpawnDamageText(NetworkConnection target, int damage, Vector3 position , bool isHeadshot)
+    {
+        Debug.Log(target.identity.gameObject);
+        LocalSpawnManager.Instance.SpawnDamageText(damage, position + Vector3.up , isHeadshot);
     }
     // ==================================================== //
     

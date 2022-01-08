@@ -116,7 +116,8 @@ public class CoreGameManager : NetworkBehaviour
                 DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);                
                 HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
                 {
-                    networkIdentity = hitEntity.netIdentity,
+                    attackerIdentity = character.netIdentity,
+                    victimIdentity = hitEntity.netIdentity,
                     damageInfo = dmgInfo
                 };
                 
