@@ -36,6 +36,7 @@ public class DeathmatchWeaponSelectionUi : MonoBehaviour
             
         string formattedText = weaponInfo.f_name + " ( " + weaponInfo.f_dm_kill_score + " )";
         button.buttonText = formattedText;
+        
             
         button.clickEvent.AddListener(() => {
             LocalPlayerContext.Instance.StoreAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON, weaponInfo.f_name);
@@ -46,7 +47,7 @@ public class DeathmatchWeaponSelectionUi : MonoBehaviour
     
     private void OnWeaponSelectionPanelToggle()
     {
-        weaponSelectionPanelTransform.gameObject.SetActive(!weaponSelectionPanelTransform.gameObject.active);
+        weaponSelectionPanelTransform.gameObject.SetActive(!weaponSelectionPanelTransform.gameObject.activeSelf);
     }
     
 }

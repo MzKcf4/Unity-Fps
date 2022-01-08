@@ -5,6 +5,7 @@ using Mirror;
 
 public class HitEntityInfoDto
 {
-    public NetworkIdentity networkIdentity;
+    public NetworkIdentity attackerIdentity;
+    public NetworkIdentity victimIdentity;
     public DamageInfo damageInfo;
 }
