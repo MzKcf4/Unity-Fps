@@ -84,4 +84,13 @@ public class ConsoleCmdManager : NetworkBehaviour
         if(!isServer)   return;
         DeathMatchManager.Instance.RestartMatch();
     }
+
+    [QFSW.QC.Command("changelevel")]
+    public void ChangeLevel()
+    {
+        if (!isServer) return;
+        NetworkManager.singleton.ServerChangeScene("fy_iceworld");
+        // NetworkSceneManager.Instance.ChangeLevel();
+    }
+
 }
