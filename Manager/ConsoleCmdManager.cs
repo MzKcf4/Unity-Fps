@@ -85,6 +85,13 @@ public class ConsoleCmdManager : NetworkBehaviour
         DeathMatchManager.Instance.RestartMatch();
     }
 
+    [QFSW.QC.Command("kill")]
+    public void KillSelf()
+    {
+        if(LocalPlayerContext.Instance.player.isLocalPlayer)
+            LocalPlayerContext.Instance.player.CmdKill();
+    }
+
     [QFSW.QC.Command("changelevel")]
     public void ChangeLevel()
     {
