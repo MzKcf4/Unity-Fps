@@ -57,7 +57,10 @@ public class FpsUiOptionMenu : MonoBehaviour
     
     public void ToggleOptionPanel()
     {
-        optionPanel.SetActive(!optionPanel.active);
+        bool newActiveState = !optionPanel.activeSelf;
+        optionPanel.SetActive(newActiveState);
+        // reverse of optionalPanel activeState.
+        LocalPlayerContext.Instance.TogglePlayerControl(!newActiveState);
     }
     
     public void LoadFromPlayerContext()

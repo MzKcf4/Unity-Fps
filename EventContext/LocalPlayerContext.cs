@@ -29,7 +29,8 @@ public class LocalPlayerContext : MonoBehaviour
 	public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
     public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
     public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
-    
+    // ----------------------------
+    private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
     
 	[HideInInspector] public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
@@ -56,6 +57,17 @@ public class LocalPlayerContext : MonoBehaviour
 
     private void SetupInputActionEvents()
     {
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.MouseLook);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Movement);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.WeaponPrimaryAction);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Slot1);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Slot2);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Slot3);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Reload);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Jump);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.WeaponSecondaryAction);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.PreviousWeapon);
+
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLook, OnMouseLookInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Movement, OnMovementInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponPrimaryAction, OnWeaponPrimaryActionInput);
@@ -66,8 +78,9 @@ public class LocalPlayerContext : MonoBehaviour
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Reload, OnWeaponReloadInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Jump, OnJump);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponSecondaryAction, OnWeaponSecondaryActionInputEvent);
-        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.PreviousWeapon, OnPreviousWeaponInput);
+        
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.TempDeathmatchWeaponMenu, OnTempDeathmatchWeaponMenuToggle);
     }
 
@@ -262,6 +275,23 @@ public class LocalPlayerContext : MonoBehaviour
         }
     }
 
+    public void TogglePlayerControl(bool isEnable)
+    {
+        if (isEnable)
+        {
+            foreach (InputAction inputAction in actionsToDisableInMenu)
+                inputAction.Enable();
+
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            foreach (InputAction inputAction in actionsToDisableInMenu)
+                inputAction.Disable();
+
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
 
     public void StoreAdditionalValue(string key , string value)
     {

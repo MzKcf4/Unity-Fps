@@ -47,7 +47,9 @@ public class DeathmatchWeaponSelectionUi : MonoBehaviour
     
     private void OnWeaponSelectionPanelToggle()
     {
-        weaponSelectionPanelTransform.gameObject.SetActive(!weaponSelectionPanelTransform.gameObject.activeSelf);
+        bool newState = !weaponSelectionPanelTransform.gameObject.activeSelf;
+        weaponSelectionPanelTransform.gameObject.SetActive(newState);
+        LocalPlayerContext.Instance.TogglePlayerControl(!newState);
     }
     
 }
