@@ -350,6 +350,11 @@ public partial class FpsPlayer : FpsCharacter
     protected override void OnHealthSync(int oldHealth, int newHealth)
     {
         base.OnHealthSync(oldHealth, newHealth);
-        LocalPlayerContext.Instance.OnHealthUpdate(newHealth, maxHealth);
+
+        if (isLocalPlayer)
+        {
+            LocalPlayerContext.Instance.OnHealthUpdate(newHealth, maxHealth);
+        }
+        
     }
 }
