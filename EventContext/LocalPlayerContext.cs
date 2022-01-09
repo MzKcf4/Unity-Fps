@@ -35,6 +35,7 @@ public class LocalPlayerContext : MonoBehaviour
 	[HideInInspector] public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
+    // This value will be directly used in PlayerContextCameraInput
     [HideInInspector] public float weaponRecoilImpulse = 0f;
     
     public PlayerSettingDto playerSettingDto;
@@ -53,6 +54,7 @@ public class LocalPlayerContext : MonoBehaviour
     void Start()
     {
         LoadPlayerSettings();
+        Application.targetFrameRate = 120;
     }
 
     private void SetupInputActionEvents()

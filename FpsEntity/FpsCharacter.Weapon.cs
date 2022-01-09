@@ -144,7 +144,11 @@ public partial class FpsCharacter
     [ClientRpc]
     public void RpcFireWeapon()
     {
-        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position);
+        if (fpsWeaponWorldSlot[activeWeaponSlot] == null) return;
+        Vector3 shootSoundPos = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform == null ? fpsWeaponWorldSlot[activeWeaponSlot].transform.position
+                                                                                             : fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
+
+        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , shootSoundPos);
         if(!isLocalPlayer)
         {
             fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
