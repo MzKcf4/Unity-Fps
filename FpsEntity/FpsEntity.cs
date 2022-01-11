@@ -101,18 +101,25 @@ public class FpsEntity : NetworkBehaviour
 	
 	private void ProcessDamageByBodyPart(DamageInfo damageInfo)
 	{
-		if(damageInfo.bodyPart == BodyPart.Leg)
-			damageInfo.damage = Mathf.RoundToInt(damageInfo.damage * 0.7f);
-		else if (damageInfo.bodyPart == BodyPart.Head)
-			damageInfo.damage *= 2;
-	}
+        if (damageInfo.bodyPart == BodyPart.Leg)
+            damageInfo.damage = Mathf.RoundToInt(damageInfo.damage * 0.7f);
+        else if (damageInfo.bodyPart == BodyPart.Head)
+            damageInfo.damage = Mathf.RoundToInt(damageInfo.damage * 3.5f);
+
+    }
 	
 	[ClientRpc]
 	protected virtual void RpcTakeDamage(DamageInfo damageInfo)
 	{
 		
 	}
-	
+
+    [Command]
+    public void CmdKill()
+    {
+        Kill();
+    }
+
 	[Server]
 	public virtual void Kill()
 	{

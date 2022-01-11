@@ -35,7 +35,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_metaDefault==null || _metaDefault.IsDeleted) _metaDefault=BGRepo.I.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(4670630178216230562,6096936188895372698));
+			if(_metaDefault==null || _metaDefault.IsDeleted) _metaDefault=BGRepo.I.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(4670630178216230562UL,6096936188895372698UL));
 			return _metaDefault;
 		}
 	}
@@ -290,7 +290,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_name==null || _ufle12jhs77_f_name.IsDeleted) _ufle12jhs77_f_name=(BansheeGz.BGDatabase.BGFieldEntityName) MetaDefault.GetField(new BGId(5074220435775288759,6103681286880476341));
+			if(_ufle12jhs77_f_name==null || _ufle12jhs77_f_name.IsDeleted) _ufle12jhs77_f_name=(BansheeGz.BGDatabase.BGFieldEntityName) MetaDefault.GetField(new BGId(5074220435775288759UL,6103681286880476341UL));
 			return _ufle12jhs77_f_name;
 		}
 	}
@@ -299,7 +299,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_base_damage==null || _ufle12jhs77_f_base_damage.IsDeleted) _ufle12jhs77_f_base_damage=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4890035645047449932,3090094229568220042));
+			if(_ufle12jhs77_f_base_damage==null || _ufle12jhs77_f_base_damage.IsDeleted) _ufle12jhs77_f_base_damage=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4890035645047449932UL,3090094229568220042UL));
 			return _ufle12jhs77_f_base_damage;
 		}
 	}
@@ -308,7 +308,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_range_modifier==null || _ufle12jhs77_f_range_modifier.IsDeleted) _ufle12jhs77_f_range_modifier=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4683219957302565823,13678527264954651022));
+			if(_ufle12jhs77_f_range_modifier==null || _ufle12jhs77_f_range_modifier.IsDeleted) _ufle12jhs77_f_range_modifier=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4683219957302565823UL,13678527264954651022UL));
 			return _ufle12jhs77_f_range_modifier;
 		}
 	}
@@ -317,7 +317,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_is_semi_auto==null || _ufle12jhs77_f_is_semi_auto.IsDeleted) _ufle12jhs77_f_is_semi_auto=(BansheeGz.BGDatabase.BGFieldBool) MetaDefault.GetField(new BGId(4840471375314749571,6716578820605775798));
+			if(_ufle12jhs77_f_is_semi_auto==null || _ufle12jhs77_f_is_semi_auto.IsDeleted) _ufle12jhs77_f_is_semi_auto=(BansheeGz.BGDatabase.BGFieldBool) MetaDefault.GetField(new BGId(4840471375314749571UL,6716578820605775798UL));
 			return _ufle12jhs77_f_is_semi_auto;
 		}
 	}
@@ -326,7 +326,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_clip_size==null || _ufle12jhs77_f_clip_size.IsDeleted) _ufle12jhs77_f_clip_size=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5527103663651466065,10923072305087813514));
+			if(_ufle12jhs77_f_clip_size==null || _ufle12jhs77_f_clip_size.IsDeleted) _ufle12jhs77_f_clip_size=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5527103663651466065UL,10923072305087813514UL));
 			return _ufle12jhs77_f_clip_size;
 		}
 	}
@@ -335,7 +335,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_pallet_per_shot==null || _ufle12jhs77_f_pallet_per_shot.IsDeleted) _ufle12jhs77_f_pallet_per_shot=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5368421919854404419,1784747819817563808));
+			if(_ufle12jhs77_f_pallet_per_shot==null || _ufle12jhs77_f_pallet_per_shot.IsDeleted) _ufle12jhs77_f_pallet_per_shot=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5368421919854404419UL,1784747819817563808UL));
 			return _ufle12jhs77_f_pallet_per_shot;
 		}
 	}
@@ -344,7 +344,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_recoil==null || _ufle12jhs77_f_recoil.IsDeleted) _ufle12jhs77_f_recoil=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5306463085079295087,6167952524468047003));
+			if(_ufle12jhs77_f_recoil==null || _ufle12jhs77_f_recoil.IsDeleted) _ufle12jhs77_f_recoil=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5306463085079295087UL,6167952524468047003UL));
 			return _ufle12jhs77_f_recoil;
 		}
 	}
@@ -353,7 +353,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_camera_shake==null || _ufle12jhs77_f_camera_shake.IsDeleted) _ufle12jhs77_f_camera_shake=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5719258023115973339,11089364542864385422));
+			if(_ufle12jhs77_f_camera_shake==null || _ufle12jhs77_f_camera_shake.IsDeleted) _ufle12jhs77_f_camera_shake=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5719258023115973339UL,11089364542864385422UL));
 			return _ufle12jhs77_f_camera_shake;
 		}
 	}
@@ -362,7 +362,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread==null || _ufle12jhs77_f_spread.IsDeleted) _ufle12jhs77_f_spread=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5052825553567064992,7269493519236057988));
+			if(_ufle12jhs77_f_spread==null || _ufle12jhs77_f_spread.IsDeleted) _ufle12jhs77_f_spread=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5052825553567064992UL,7269493519236057988UL));
 			return _ufle12jhs77_f_spread;
 		}
 	}
@@ -371,7 +371,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_spread_move==null || _ufle12jhs77_f_spread_move.IsDeleted) _ufle12jhs77_f_spread_move=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5728888798148707652,11861507793609491092));
+			if(_ufle12jhs77_f_spread_move==null || _ufle12jhs77_f_spread_move.IsDeleted) _ufle12jhs77_f_spread_move=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5728888798148707652UL,11861507793609491092UL));
 			return _ufle12jhs77_f_spread_move;
 		}
 	}
@@ -380,7 +380,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_draw_time==null || _ufle12jhs77_f_draw_time.IsDeleted) _ufle12jhs77_f_draw_time=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5071738783371732345,8331559641230338984));
+			if(_ufle12jhs77_f_draw_time==null || _ufle12jhs77_f_draw_time.IsDeleted) _ufle12jhs77_f_draw_time=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5071738783371732345UL,8331559641230338984UL));
 			return _ufle12jhs77_f_draw_time;
 		}
 	}
@@ -389,7 +389,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_shoot_interval==null || _ufle12jhs77_f_shoot_interval.IsDeleted) _ufle12jhs77_f_shoot_interval=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5349967516016039171,17838869606908931495));
+			if(_ufle12jhs77_f_shoot_interval==null || _ufle12jhs77_f_shoot_interval.IsDeleted) _ufle12jhs77_f_shoot_interval=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5349967516016039171UL,17838869606908931495UL));
 			return _ufle12jhs77_f_shoot_interval;
 		}
 	}
@@ -398,7 +398,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_reload_time==null || _ufle12jhs77_f_reload_time.IsDeleted) _ufle12jhs77_f_reload_time=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4900973595100836928,14431906305716465030));
+			if(_ufle12jhs77_f_reload_time==null || _ufle12jhs77_f_reload_time.IsDeleted) _ufle12jhs77_f_reload_time=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4900973595100836928UL,14431906305716465030UL));
 			return _ufle12jhs77_f_reload_time;
 		}
 	}
@@ -407,7 +407,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_reload_time_pallet_start==null || _ufle12jhs77_f_reload_time_pallet_start.IsDeleted) _ufle12jhs77_f_reload_time_pallet_start=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5558194620638298767,6203067537317166008));
+			if(_ufle12jhs77_f_reload_time_pallet_start==null || _ufle12jhs77_f_reload_time_pallet_start.IsDeleted) _ufle12jhs77_f_reload_time_pallet_start=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(5558194620638298767UL,6203067537317166008UL));
 			return _ufle12jhs77_f_reload_time_pallet_start;
 		}
 	}
@@ -416,7 +416,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_reload_time_pallet_insert==null || _ufle12jhs77_f_reload_time_pallet_insert.IsDeleted) _ufle12jhs77_f_reload_time_pallet_insert=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4911405929281830021,2494390527557722499));
+			if(_ufle12jhs77_f_reload_time_pallet_insert==null || _ufle12jhs77_f_reload_time_pallet_insert.IsDeleted) _ufle12jhs77_f_reload_time_pallet_insert=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4911405929281830021UL,2494390527557722499UL));
 			return _ufle12jhs77_f_reload_time_pallet_insert;
 		}
 	}
@@ -425,7 +425,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_reload_time_pallet_end==null || _ufle12jhs77_f_reload_time_pallet_end.IsDeleted) _ufle12jhs77_f_reload_time_pallet_end=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4687962139478950321,17673524966107817662));
+			if(_ufle12jhs77_f_reload_time_pallet_end==null || _ufle12jhs77_f_reload_time_pallet_end.IsDeleted) _ufle12jhs77_f_reload_time_pallet_end=(BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4687962139478950321UL,17673524966107817662UL));
 			return _ufle12jhs77_f_reload_time_pallet_end;
 		}
 	}
@@ -434,7 +434,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_category==null || _ufle12jhs77_f_category.IsDeleted) _ufle12jhs77_f_category=(BansheeGz.BGDatabase.BGFieldEnum) MetaDefault.GetField(new BGId(5530380322779058955,2417539453599107204));
+			if(_ufle12jhs77_f_category==null || _ufle12jhs77_f_category.IsDeleted) _ufle12jhs77_f_category=(BansheeGz.BGDatabase.BGFieldEnum) MetaDefault.GetField(new BGId(5530380322779058955UL,2417539453599107204UL));
 			return _ufle12jhs77_f_category;
 		}
 	}
@@ -443,7 +443,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_reload_type==null || _ufle12jhs77_f_reload_type.IsDeleted) _ufle12jhs77_f_reload_type=(BansheeGz.BGDatabase.BGFieldEnum) MetaDefault.GetField(new BGId(5292676369794396765,3228840254846382227));
+			if(_ufle12jhs77_f_reload_type==null || _ufle12jhs77_f_reload_type.IsDeleted) _ufle12jhs77_f_reload_type=(BansheeGz.BGDatabase.BGFieldEnum) MetaDefault.GetField(new BGId(5292676369794396765UL,3228840254846382227UL));
 			return _ufle12jhs77_f_reload_type;
 		}
 	}
@@ -452,7 +452,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_progression_tier==null || _ufle12jhs77_f_progression_tier.IsDeleted) _ufle12jhs77_f_progression_tier=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5154641768473479024,4415341554901312417));
+			if(_ufle12jhs77_f_progression_tier==null || _ufle12jhs77_f_progression_tier.IsDeleted) _ufle12jhs77_f_progression_tier=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5154641768473479024UL,4415341554901312417UL));
 			return _ufle12jhs77_f_progression_tier;
 		}
 	}
@@ -461,7 +461,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_dm_kill_score==null || _ufle12jhs77_f_dm_kill_score.IsDeleted) _ufle12jhs77_f_dm_kill_score=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4694662279016321779,11883779653410052013));
+			if(_ufle12jhs77_f_dm_kill_score==null || _ufle12jhs77_f_dm_kill_score.IsDeleted) _ufle12jhs77_f_dm_kill_score=(BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4694662279016321779UL,11883779653410052013UL));
 			return _ufle12jhs77_f_dm_kill_score;
 		}
 	}
@@ -470,7 +470,7 @@ public partial class E_weapon_info : BGEntity
 	{
 		get
 		{
-			if(_ufle12jhs77_f_active==null || _ufle12jhs77_f_active.IsDeleted) _ufle12jhs77_f_active=(BansheeGz.BGDatabase.BGFieldBool) MetaDefault.GetField(new BGId(5660476538095711682,17912296700270086335));
+			if(_ufle12jhs77_f_active==null || _ufle12jhs77_f_active.IsDeleted) _ufle12jhs77_f_active=(BansheeGz.BGDatabase.BGFieldBool) MetaDefault.GetField(new BGId(5660476538095711682UL,17912296700270086335UL));
 			return _ufle12jhs77_f_active;
 		}
 	}

@@ -23,6 +23,7 @@ public partial class FpsPlayer : FpsCharacter
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
     [HideInInspector] private PlayerContextCameraInput cameraInput;
+    [SerializeField] private CMF.CameraController cameraController;
 	
     // ----------- View Layer ------------- //
 	[SerializeField]
@@ -177,6 +178,11 @@ public partial class FpsPlayer : FpsCharacter
         {
             painShockCooldown.StartCooldown();
             playerController.movementSpeed = 0f;
+
+            if (UiDamageIndicatorManager.Instance != null && damageInfo.attacker != null)
+            {
+                UiDamageIndicatorManager.Instance.CreateIndicator(cameraController.transform, damageInfo.attacker.transform);
+            }
         }
 	}
     
