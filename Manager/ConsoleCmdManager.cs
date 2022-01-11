@@ -97,7 +97,19 @@ public class ConsoleCmdManager : NetworkBehaviour
     {
         if (!isServer) return;
         NetworkManager.singleton.ServerChangeScene("fy_iceworld");
-        // NetworkSceneManager.Instance.ChangeLevel();
     }
 
+    [QFSW.QC.Command("changelevel_2")]
+    public void ChangeLevel_2()
+    {
+        if (!isServer) return;
+        NetworkManager.singleton.ServerChangeScene("aim_allpistols");
+    }
+
+    [QFSW.QC.Command("db_reload")]
+    public void ReloadDB()
+    {
+        if (!isServer) return;
+        CoreGameManager.Instance.ReloadDatabase();
+    }
 }

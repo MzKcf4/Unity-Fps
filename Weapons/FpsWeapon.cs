@@ -96,6 +96,8 @@ public class FpsWeapon
     
     public void Reset()
     {
+        // Fetch again as there could be live-update
+        FetchDataFromDb();
         currentClip = clipSize;
         primaryActionState = KeyPressState.Released;
         secondaryActionState = KeyPressState.Released;

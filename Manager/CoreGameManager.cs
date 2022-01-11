@@ -231,4 +231,18 @@ public class CoreGameManager : NetworkBehaviour
         foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
             LocalSpawnManager.Instance.SpawnBloodFx(hitInfo.damageInfo.hitPoint);
     }
+
+    [Server]
+    public void ReloadDatabase()
+    {
+        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(true);
+        RpcReloadDatabase();
+    }
+
+    [ClientRpc]
+    public void RpcReloadDatabase()
+    {
+        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(true);
+    }
+
 }
