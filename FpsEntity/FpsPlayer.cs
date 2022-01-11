@@ -206,7 +206,10 @@ public partial class FpsPlayer : FpsCharacter
     protected void LocalFireWeapon(Vector3 fromPos , Vector3 forwardVec)
     {
         HitInfoDto hitInfoDto = CoreGameManager.Instance.DoLocalWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
-        if(hitInfoDto.hitEntityInfoDtoList != null && hitInfoDto.hitEntityInfoDtoList.Count > 0)
+        if (hitInfoDto == null || hitInfoDto.IsHitNothing())
+            return;
+
+        if( hitInfoDto.hitEntityInfoDtoList != null && hitInfoDto.hitEntityInfoDtoList.Count > 0)
         {
             UiHitMarker.Instance.ShowHitMarker();
         }

@@ -53,9 +53,9 @@ public partial class FpsPlayer : FpsCharacter
         Vector3 fromPos = Camera.main.transform.position;
         Vector3 forwardVec = Camera.main.transform.forward;
 
-        if (GetActiveWeapon().weaponCategory == WeaponCategory.Melee) return;
+        if (GetActiveWeapon().weaponCategory != WeaponCategory.Melee)
+            ApplyRecoil();
 
-        ApplyRecoil();
         LocalFireWeapon(fromPos , forwardVec);
     }
     

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Kit.Physic;
 
 // FpsCharacter.Weapon
 public partial class FpsCharacter
@@ -16,9 +17,15 @@ public partial class FpsCharacter
     // Currently should be available to Local FpsPlayer only !
     public FpsWeaponView fpsWeaponView;
     public FpsWeaponWorldModel[] fpsWeaponWorldSlot = new FpsWeaponWorldModel[Constants.WEAPON_SLOT_MAX];
+    [SerializeField] public RaycastHelper meleeRaycastHelper;
     
     private void Start_Weapon()
     {
+        if (meleeRaycastHelper == null)
+        {
+            meleeRaycastHelper = GetComponentInChildren<RaycastHelper>();
+        }
+
         if(isClient && !isLocalPlayer)
         {
             // Process initial SyncList payload , load the weapon GameObjects for existing players.
@@ -144,7 +151,7 @@ public partial class FpsCharacter
     [ClientRpc]
     public void RpcFireWeapon()
     {
-        if (fpsWeaponWorldSlot[activeWeaponSlot] == null) return;
+        if (activeWeaponSlot == -1 || fpsWeaponWorldSlot[activeWeaponSlot] == null) return;
         Vector3 shootSoundPos = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform == null ? fpsWeaponWorldSlot[activeWeaponSlot].transform.position
                                                                                              : fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
 

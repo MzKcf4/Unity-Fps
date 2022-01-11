@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using BansheeGz.BGDatabase;
+using Kit.Physic;
 
 public class CoreGameManager : NetworkBehaviour
 {
@@ -77,6 +79,10 @@ public class CoreGameManager : NetworkBehaviour
     
     public HitInfoDto DoLocalWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
+        if (fpsWeapon.weaponCategory == WeaponCategory.Melee)
+            return DoMeleeWeaponRaycast(character, fpsWeapon);
+
+        // Non-melee handling
         float spread = processSpread(fpsWeapon , character);
         int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
         
@@ -127,6 +133,73 @@ public class CoreGameManager : NetworkBehaviour
         }
         
         // RpcSpawnFx(hitWallRayList , hitCharacterRayList);
+        return hitInfoDto;
+    }
+
+    public HitInfoDto DoMeleeWeaponRaycast(FpsCharacter fpsCharacter, FpsWeapon fpsWeapon)
+    {
+        RaycastHelper meleeRaycastHelper = fpsCharacter.meleeRaycastHelper;
+        if (meleeRaycastHelper == null)
+            return null;
+
+        meleeRaycastHelper.CheckPhysic();
+        IEnumerable<Collider> hits = meleeRaycastHelper.GetOverlapColliders();
+        if (hits == null) 
+            return null;
+
+        float shortestDist = float.MaxValue;
+        GameObject cloestObject = null;
+
+        foreach (Collider hit in hits)
+        {
+            float newDistance = Vector3.Distance(hit.gameObject.transform.position, fpsCharacter.transform.position);
+            if (newDistance < shortestDist)
+            {
+                shortestDist = newDistance;
+                cloestObject = hit.gameObject;
+            }
+        }
+        if (cloestObject == null)
+            return null;
+
+        // Gather the hit points from valid hits on walls / entities
+        List<HitWallInfoDto> hitWallDtoList = new List<HitWallInfoDto>();
+        List<HitEntityInfoDto> hitEntityDtoList = new List<HitEntityInfoDto>();
+
+        HitInfoDto hitInfoDto = new HitInfoDto(hitEntityDtoList, hitWallDtoList);
+
+        // Hits wall
+        if ((1 << cloestObject.layer) == MASK_WALL.value)
+        {
+            hitWallDtoList.Add(new HitWallInfoDto());
+        }
+        else
+        {
+            // Else should expect hitting hitbox
+            FpsHitbox enemyHitBox = cloestObject.GetComponent<FpsHitbox>();
+            FpsEntity hitEntity = enemyHitBox.fpsEntity;
+
+            if (hitEntity is FpsCharacter)
+            {
+                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
+                if (hitTeam == fpsCharacter.team)
+                    return null;
+            }
+
+            if (hitEntity != null)
+            {
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox, enemyHitBox.transform.position);
+                HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
+                {
+                    attackerIdentity = fpsCharacter.netIdentity,
+                    victimIdentity = hitEntity.netIdentity,
+                    damageInfo = dmgInfo
+                };
+
+                hitEntityDtoList.Add(hitEntityInfoDto);
+            }
+
+        }
         return hitInfoDto;
     }
     

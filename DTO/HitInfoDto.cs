@@ -15,4 +15,10 @@ public class HitInfoDto
         this.hitEntityInfoDtoList = hitEntityInfoDtoList;
         this.hitWallInfoDtoList = hitWallInfoDtoList;
     }
+
+    public bool IsHitNothing()
+    {
+        return (hitEntityInfoDtoList == null || hitEntityInfoDtoList.Count == 0)
+            && (hitWallInfoDtoList == null || hitWallInfoDtoList.Count == 0);
+    }
 }
