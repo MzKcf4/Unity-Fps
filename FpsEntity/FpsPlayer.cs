@@ -20,6 +20,8 @@ public partial class FpsPlayer : FpsCharacter
     private ActionCooldown painShockCooldown = new ActionCooldown(){ interval = 0.1f};
 	
     public GameObject viewCamera;
+    // The anti-clipping camera 
+    [SerializeField] Camera weaponViewCamera;
     public GameObject fpCameraContainer;
     public GameObject tpCameraContainer;
     [HideInInspector] private PlayerContextCameraInput cameraInput;

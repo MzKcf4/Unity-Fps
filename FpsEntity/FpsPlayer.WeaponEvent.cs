@@ -36,6 +36,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleScope(true);
         LocalPlayerContext.Instance.ToggleScope(true);
         cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseZoomedSpeed();
+        weaponViewCamera.enabled = false;
     }
     
     private void OnWeaponUnScopeEvent()
@@ -44,6 +45,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleScope(false);
         LocalPlayerContext.Instance.ToggleScope(false);
         cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
+        weaponViewCamera.enabled = true;
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
