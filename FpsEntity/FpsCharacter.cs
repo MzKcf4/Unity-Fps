@@ -11,7 +11,7 @@ using Animancer;
 
 public abstract partial class FpsCharacter : FpsEntity
 {
-
+    protected CharacterCommonResources characterCommonResources;
     protected FpsModel fpsModel;
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
@@ -33,6 +33,7 @@ public abstract partial class FpsCharacter : FpsEntity
     public override void OnStartClient()
     {
         base.OnStartClient();
+        characterCommonResources = WeaponAssetManager.Instance.GetCharacterCommonResources();
     }
     
     protected override void Awake()
@@ -108,6 +109,12 @@ public abstract partial class FpsCharacter : FpsEntity
     protected override void RpcTakeDamage(DamageInfo damageInfo)
     {
         LocalSpawnManager.Instance.SpawnBloodFx(damageInfo.hitPoint);
+
+        AudioClip hurtSoundClip =
+            damageInfo.bodyPart == BodyPart.Head ? Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtHeadShotSoundList)
+                                                 : Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtSoundList);
+
+        AudioManager.Instance.PlaySoundAtPosition(hurtSoundClip, damageInfo.hitPoint);
     }
     
     [Server]

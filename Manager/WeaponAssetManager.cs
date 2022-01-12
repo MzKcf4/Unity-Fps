@@ -6,6 +6,7 @@ public class WeaponAssetManager : MonoBehaviour
 {
     public static WeaponAssetManager Instance;
     public WeaponNameToResourceConfig weaponNameToResourceConfig;
+    public CharacterCommonResources characterCommonResources;
     public GameObject weaponMuzzleFeedbackPrefab;
     
     void Awake()
@@ -16,5 +17,10 @@ public class WeaponAssetManager : MonoBehaviour
     public WeaponResources GetWeaponResouce(string weaponName)
     {
         return weaponNameToResourceConfig.GetWeaponResource(weaponName);
+    }
+
+    public CharacterCommonResources GetCharacterCommonResources()
+    {
+        return characterCommonResources;
     }
 }
