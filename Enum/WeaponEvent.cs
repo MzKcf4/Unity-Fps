@@ -6,6 +6,7 @@ public enum WeaponEvent
 {
     AmmoUpdate,
     Draw,
+    OutOfAmmo,
     Shoot,
     Reload,
     Reload_End,

@@ -125,7 +125,8 @@ public class FpsWeapon
         HandleWeaponStateCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
         {
-            if(weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
+            CheckAmmoAndAutoReload();
+            if (weaponState == WeaponState.Idle && primaryActionState != KeyPressState.Released)
             {
                 DoWeaponPrimaryAction();
             }
@@ -201,6 +202,14 @@ public class FpsWeapon
             // Otherwise should always reset to Idle
             weaponState = WeaponState.Idle;
         }
+    }
+
+    private void CheckAmmoAndAutoReload()
+    {
+        if (!isOutOfAmmo() || primaryActionState != KeyPressState.Released || weaponState != WeaponState.Idle)
+            return;
+
+        DoWeaponReload();
     }
 
     public void UpdateWeaponPrimaryActionState(KeyPressState keyPressState)
@@ -282,15 +291,32 @@ public class FpsWeapon
     
     public void DoWeaponPrimaryAction()
     {
-        if(!CanFire())  return;
-        DoWeaponFire();
+        if(!CanTriggerFire())  
+            return;
+
+        if (isOutOfAmmo())
+            DoWeaponFireOutOfAmmo();
+        else
+            DoWeaponFire();
+        
     }
-    
+
+    public void DoWeaponFireOutOfAmmo()
+    {
+        ResetWeaponSecondaryState();
+        cooldownUntilIdle.StartCooldown(shootInterval);
+        weaponState = WeaponState.Shooting;
+        // Return here to keep steady sound of empty clip
+        EmitWeaponViewEvent(WeaponEvent.OutOfAmmo);
+        return;
+    }
+
     public void DoWeaponFire()
     {
         EmitWeaponViewEvent(WeaponEvent.Shoot);
         ResetWeaponSecondaryState();
         cooldownUntilIdle.StartCooldown(shootInterval);
+
         weaponState = WeaponState.Shooting;
         if (isSemiAuto)
         {
@@ -316,7 +342,7 @@ public class FpsWeapon
         // weaponWorldModel.ShootProjectile(dest);
     }
                 
-    public bool CanFire()
+    public bool CanTriggerFire()
     {
         if (weaponCategory == WeaponCategory.Melee)
             return weaponState == WeaponState.Idle;
@@ -324,7 +350,7 @@ public class FpsWeapon
         {
             if (isSemiAuto && isPrimayActionWatingRelease) 
                 return false;
-            return weaponState == WeaponState.Idle && currentClip > 0;
+            return weaponState == WeaponState.Idle;
         }
             
     }
@@ -346,5 +372,10 @@ public class FpsWeapon
     {
         return Vector3.zero;
         // return weaponWorldModel.muzzleTransform.position;
+    }
+
+    private bool isOutOfAmmo()
+    {
+        return currentClip <= 0 && weaponCategory != WeaponCategory.Melee;
     }
 }

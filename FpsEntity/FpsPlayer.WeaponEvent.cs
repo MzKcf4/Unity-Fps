@@ -4,16 +4,16 @@ using UnityEngine;
 
 public partial class FpsPlayer : FpsCharacter
 {
-
+    
     public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
         if(!isLocalPlayer)  return;
         
         // Send the event to weaponView for animations
         PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
-        
+
         // Process events for other logic / UI
-        if(evt == WeaponEvent.Shoot)
+        if (evt == WeaponEvent.Shoot)
             OnWeaponFireEvent();
         else if (evt == WeaponEvent.Scope)
             OnWeaponScopeEvent();
@@ -23,6 +23,8 @@ public partial class FpsPlayer : FpsCharacter
             OnWeaponReloadEvent();
         else if (evt == WeaponEvent.AmmoUpdate)
             UpdateAmmoDisplay();
+        else if (evt == WeaponEvent.OutOfAmmo)
+            OnTriggerEmptyAmmo();
     }
         
     private void OnWeaponReloadEvent()
@@ -70,5 +72,11 @@ public partial class FpsPlayer : FpsCharacter
     {
         Crosshair.Instance.DoLerp();
         LocalPlayerContext.Instance.ShakeCamera();
+    }
+
+    private void OnTriggerEmptyAmmo()
+    {
+        AudioClip emptyClip = WeaponAssetManager.Instance.weaponCommonResources.emptyAmmoClip;
+        AudioManager.Instance.localPlayerAudioSource.PlayOneShot(emptyClip);
     }
 }

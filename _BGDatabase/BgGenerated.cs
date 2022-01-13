@@ -65,6 +65,17 @@ public partial class E_weapon_info : BGEntity
 			_f_name[Index] = value;
 		}
 	}
+	public System.String f_display_name
+	{
+		get
+		{
+			return _f_display_name[Index];
+		}
+		set
+		{
+			_f_display_name[Index] = value;
+		}
+	}
 	public System.Int32 f_base_damage
 	{
 		get
@@ -292,6 +303,15 @@ public partial class E_weapon_info : BGEntity
 		{
 			if(_ufle12jhs77_f_name==null || _ufle12jhs77_f_name.IsDeleted) _ufle12jhs77_f_name=(BansheeGz.BGDatabase.BGFieldEntityName) MetaDefault.GetField(new BGId(5074220435775288759UL,6103681286880476341UL));
 			return _ufle12jhs77_f_name;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
+	public static BansheeGz.BGDatabase.BGFieldString _f_display_name
+	{
+		get
+		{
+			if(_ufle12jhs77_f_display_name==null || _ufle12jhs77_f_display_name.IsDeleted) _ufle12jhs77_f_display_name=(BansheeGz.BGDatabase.BGFieldString) MetaDefault.GetField(new BGId(4955762843518930318UL,15689018675223417987UL));
+			return _ufle12jhs77_f_display_name;
 		}
 	}
 	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_base_damage;
