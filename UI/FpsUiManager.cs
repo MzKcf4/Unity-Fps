@@ -56,12 +56,14 @@ public class FpsUiManager : MonoBehaviour
 		healthText.SetText(newHealth + "/" + maxHealth);
 	}
     
-    public void AddNewKillListing(string killer , string killed)
+    public void AddNewKillListing(DamageInfo damageInfo, string victim)
     {
         GameObject killListingObj = Instantiate(killListingPrefab , killFeedPanel.transform);
         killListingObj.transform.SetAsLastSibling();
         KillListing killListing = killListingObj.GetComponent<KillListing>();
-        killListing.SetNames(killer , killed);
+
+		E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(damageInfo.damageWeaponName);
+		killListing.SetKillInfo(damageInfo.damageSource, victim , dbWeaponInfo.f_display_name);
     }
 	
 	protected void OnProgressionUpdate()

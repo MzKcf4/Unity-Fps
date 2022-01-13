@@ -55,6 +55,7 @@ public class FpsWeapon
     public int dmKillScore = 5;
     
     [HideInInspector] public FpsCharacter owner;
+    public string displayName = "";
     
     public FpsWeapon(){}
     
@@ -92,6 +93,8 @@ public class FpsWeapon
         
         dmKillScore = dbWeaponInfo.f_dm_kill_score;
         isSemiAuto = dbWeaponInfo.f_is_semi_auto;
+
+        displayName = dbWeaponInfo.f_display_name;
     }
     
     public void Reset()

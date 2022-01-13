@@ -7,6 +7,7 @@ public class KillListing : MonoBehaviour
 {
     [SerializeField] Text killerDisplay;
     [SerializeField] Text killedDisplay;
+    [SerializeField] Text weaponDisplay;
     
     void Start()
     {
@@ -17,11 +18,12 @@ public class KillListing : MonoBehaviour
     void Update()
     {
         
-    }
-    
-    public void SetNames(string killer , string killed)
+    }    
+
+    public void SetKillInfo(string killer, string victim, string killWeapon)
     {
         killerDisplay.text = killer;
-        killedDisplay.text = killed;
+        killedDisplay.text = victim;
+        weaponDisplay.text = "[" + killWeapon + "]";
     }
 }

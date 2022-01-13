@@ -131,7 +131,7 @@ public abstract partial class FpsCharacter : FpsEntity
         base.RpcKilled(damageInfo);
         
         SetControllableState(false);
-        FpsUiManager.Instance.AddNewKillListing(damageInfo.damageSource , characterName);
+        FpsUiManager.Instance.AddNewKillListing(damageInfo , characterName);
     }
     
     protected void SetControllableState(bool controllable)
