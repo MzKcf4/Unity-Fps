@@ -4,6 +4,7 @@ using UnityEngine;
 using Animancer;
 using MoreMountains.Feedbacks;
 
+[RequireComponent(typeof(Animator),typeof(AnimancerComponent))]
 public class FpsWeaponViewModel : MonoBehaviour
 {
     [SerializeField] public Vector3 offsetFromView = Vector3.zero;
@@ -28,6 +29,11 @@ public class FpsWeaponViewModel : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void SetWeaponResources(WeaponResources weaponResources)
+    {
+        this.weaponResources = weaponResources;
     }
     
     public void HandleWeaponEvent(WeaponEvent evt)

@@ -44,10 +44,11 @@ public class FpsWeaponView : MonoBehaviour
         activeWeaponViewModel.HandleWeaponEvent(evt);
     }
     
-    public void AddViewWeaponNew(GameObject weaponViewPrefab, int slot)
+    public void AddViewWeaponNew(WeaponResources weaponResources, int slot)
     {
-        GameObject weaponViewObj = Instantiate(weaponViewPrefab , transform);
+        GameObject weaponViewObj = Instantiate(weaponResources.weaponViewPrefab, transform);
         FpsWeaponViewModel fpsWeaponViewModel = weaponViewObj.GetComponent<FpsWeaponViewModel>();
+        fpsWeaponViewModel.SetWeaponResources(weaponResources);
         fpsWeaponViewModel.transform.localPosition = fpsWeaponViewModel.offsetFromView;
         fpsWeaponViewModel.gameObject.SetActive(false);
         weaponViewModelSlots[slot] = fpsWeaponViewModel;
