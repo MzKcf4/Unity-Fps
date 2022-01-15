@@ -52,7 +52,7 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
         }
 
         // Set points for bot to strafe
-        if (fpsBot.IsReachedDesination())
+        if (CanStrafe() && fpsBot.IsReachedDesination())
         {
             fpsBot.SetDestination(PickRandomStrafePoint());
         }
@@ -86,5 +86,10 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
         randomPoint.y = fpsBot.transform.position.y;
 
         return randomPoint + fpsBot.transform.position;
+    }
+
+    private bool CanStrafe()
+    {
+        return fpsBot.GetActiveWeapon().weaponCategory != WeaponCategory.Sniper;
     }
 }

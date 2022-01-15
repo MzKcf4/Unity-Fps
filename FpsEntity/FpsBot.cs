@@ -64,9 +64,16 @@ public partial class FpsBot : FpsCharacter
     public override void Respawn()
     {
         base.Respawn();
-        // Reset the dto data for FSM
-        botFsmDto.Clear();
-        TransitToState(BotStateEnum.Wandering);
+        if (isServer)
+        {
+            // Reset the dto data for FSM
+            botFsmDto.Clear();
+            TransitToState(BotStateEnum.Wandering);
+
+            string newWeaponId = WeaponAssetManager.Instance.GetRandomActiveWeaponId();
+            ServerGetWeapon(newWeaponId, 0);
+            RpcGetWeapon(newWeaponId, 0);
+        }
     }
 
     private void RecoverSpeed()
