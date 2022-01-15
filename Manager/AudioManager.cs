@@ -11,6 +11,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] public AudioSource localPlayerAudioSource;
     
     [SerializeField] private AudioMixerGroup audioMixerMasterGroup;
+    private int currentAudioSourceIdx = 0;
     
     void Awake()
     {
@@ -32,9 +33,10 @@ public class AudioManager : MonoBehaviour
     
     public void PlaySoundAtPosition(AudioClip audioClip , Vector3 position)
     {
-        AudioSource audioSource = GetAvailableAudioSource();
+        AudioSource audioSource = audioSourceList[currentAudioSourceIdx];
         audioSource.transform.position = position;
         audioSource.PlayOneShot(audioClip);
+        currentAudioSourceIdx = currentAudioSourceIdx + 1 == audioSourceList.Count ? 0 : currentAudioSourceIdx++;
     }
     
     private AudioSource GetAvailableAudioSource()
