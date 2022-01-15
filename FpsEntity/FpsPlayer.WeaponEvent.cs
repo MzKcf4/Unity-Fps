@@ -10,7 +10,7 @@ public partial class FpsPlayer : FpsCharacter
         if(!isLocalPlayer)  return;
         
         // Send the event to weaponView for animations
-        PlayerWeaponViewContext.Instance.EmitWeaponEvent(evt);
+        LocalPlayerContext.Instance.EmitWeaponEvent(evt);
 
         // Process events for other logic / UI
         if (evt == WeaponEvent.Shoot)

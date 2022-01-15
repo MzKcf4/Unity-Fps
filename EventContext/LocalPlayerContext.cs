@@ -31,8 +31,10 @@ public class LocalPlayerContext : MonoBehaviour
     public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
     // ----------------------------
     private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
-    
-	[HideInInspector] public FpsPlayer player;
+
+    public UnityEvent<WeaponEvent> onWeaponEventUpdate = new UnityEvent<WeaponEvent>();
+
+    [HideInInspector] public FpsPlayer player;
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
     // This value will be directly used in PlayerContextCameraInput
@@ -204,9 +206,14 @@ public class LocalPlayerContext : MonoBehaviour
 	{
 		onHealthUpdateEvent.Invoke(newHealth, maxHealth);
 	}
-        
+
     // ============================================================================================
-    
+
+    public void EmitWeaponEvent(WeaponEvent newEvent)
+    {
+        onWeaponEventUpdate.Invoke(newEvent);
+    }
+
     public void LoadPlayerSettings()
     {
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);

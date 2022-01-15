@@ -195,7 +195,7 @@ public partial class FpsCharacter
         // ----------- View ( Local Player only ) -----------------
         if(isLocalPlayer)
         {
-            fpsWeaponView.AddViewWeaponNew(weaponResource.weaponViewPrefab, slot);
+            fpsWeaponView.AddViewWeaponNew(weaponResource, slot);
         }
     }
         

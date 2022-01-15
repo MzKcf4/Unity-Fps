@@ -17,7 +17,7 @@ public class FpsWeaponView : MonoBehaviour
     void Awake()
     {
         arm = GetComponentInChildren<ArmBoneToWeaponBone>();
-        PlayerWeaponViewContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
+        LocalPlayerContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
     }
     
     // Start is called before the first frame update
