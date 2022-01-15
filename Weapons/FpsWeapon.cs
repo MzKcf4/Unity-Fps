@@ -317,7 +317,10 @@ public class FpsWeapon
     public void DoWeaponFire()
     {
         EmitWeaponViewEvent(WeaponEvent.Shoot);
-        ResetWeaponSecondaryState();
+
+        if(isSemiAuto)
+            ResetWeaponSecondaryState();
+
         cooldownUntilIdle.StartCooldown(shootInterval);
 
         weaponState = WeaponState.Shooting;
