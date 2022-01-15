@@ -58,13 +58,17 @@ public class FpsUiManager : MonoBehaviour
     
     public void AddNewKillListing(DamageInfo damageInfo, string victim)
     {
+		if(string.IsNullOrEmpty(damageInfo.damageWeaponName))
+				return;
+
         GameObject killListingObj = Instantiate(killListingPrefab , killFeedPanel.transform);
         killListingObj.transform.SetAsLastSibling();
         KillListing killListing = killListingObj.GetComponent<KillListing>();
 
 		E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(damageInfo.damageWeaponName);
-		killListing.SetKillInfo(damageInfo.damageSource, victim , dbWeaponInfo.f_display_name);
-    }
+		killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name);
+		
+	}
 	
 	protected void OnProgressionUpdate()
 	{
