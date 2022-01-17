@@ -10,6 +10,17 @@ public class WaypointMarker : MonoBehaviour
         Renderer r = GetComponent<Renderer>();
         if(r != null)
             r.enabled = false;
+
+        FallToGround();
+    }
+
+    private void FallToGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 100f, LayerMask.GetMask(Constants.LAYER_GROUND))) {
+            transform.position = hit.point;
+        }
+        
     }
 
     // Update is called once per frame
