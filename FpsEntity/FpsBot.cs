@@ -176,8 +176,13 @@ public partial class FpsBot : FpsCharacter
             {
                 spreadMultiplier *= 5f;
             }
-            Vector3 shootDirection = Utils.GetDirection( fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, lookAtTransform.position);
-            CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position, shootDirection);
+
+            Vector3 startPosition = fpsWeaponWorldSlot[activeWeaponSlot].transform.position;
+            if (fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform != null)
+                startPosition = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
+
+            Vector3 shootDirection = Utils.GetDirection(startPosition, lookAtTransform.position);
+            CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , startPosition, shootDirection);
             // ----------------------------------------------- //
             RpcFireWeapon();
         }
