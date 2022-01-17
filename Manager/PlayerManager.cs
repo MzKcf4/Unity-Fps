@@ -7,8 +7,8 @@ public class PlayerManager : NetworkBehaviour
 {
 	public static PlayerManager Instance;
     
-    public List<Transform> teamASpawns = new List<Transform>();
-    public List<Transform> teamBSpawns = new List<Transform>();
+    private List<Transform> teamASpawns = new List<Transform>();
+    private List<Transform> teamBSpawns = new List<Transform>();
     	
     [SerializeField] GameObject botPrefab;
     [SerializeField] GameObject botPrefab_B;
@@ -20,7 +20,17 @@ public class PlayerManager : NetworkBehaviour
 	
     void Start()
     {
-        
+        GameObject[] teamASpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_A_SPAWN);
+
+        foreach (GameObject obj in teamASpawnObjects)
+            teamASpawns.Add(obj.transform);
+
+
+        GameObject[] teamBSpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_B_SPAWN);
+
+        foreach (GameObject obj in teamBSpawnObjects)
+            teamBSpawns.Add(obj.transform);
+
     }
 
     void Update()
