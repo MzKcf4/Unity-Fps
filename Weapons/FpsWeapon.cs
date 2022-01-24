@@ -102,10 +102,7 @@ public class FpsWeapon
         // Fetch again as there could be live-update
         FetchDataFromDb();
         currentClip = clipSize;
-        primaryActionState = KeyPressState.Released;
-        secondaryActionState = KeyPressState.Released;
-
-        weaponSecondaryState = WeaponSecondaryState.None;
+        ResetActionState();
     }
     
     public void ResetActionState()
@@ -118,6 +115,7 @@ public class FpsWeapon
             weaponSecondaryState = WeaponSecondaryState.None;
             EmitWeaponViewEvent(WeaponEvent.UnScope);
         }
+        isPrimayActionWatingRelease = false;
     }
     
     public void ManualUpdate()
