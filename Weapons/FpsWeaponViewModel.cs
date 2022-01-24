@@ -23,6 +23,15 @@ public class FpsWeaponViewModel : MonoBehaviour
     void Start()
     {
         audioSource = AudioManager.Instance.localPlayerAudioSource;
+        if (!muzzleFeedbacks)
+        {
+            ViewMuzzleMarker marker = GetComponentInChildren<ViewMuzzleMarker>();
+            if (marker && WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab)
+            {
+                GameObject muzzleFeedbackObject = Instantiate(WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab, marker.transform);
+                muzzleFeedbacks = muzzleFeedbackObject.GetComponent<MMFeedbacks>();
+            }
+        }
     }
 
     // Update is called once per frame

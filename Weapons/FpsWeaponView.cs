@@ -5,10 +5,7 @@ using Animancer;
 using MoreMountains.Feedbacks;
 
 public class FpsWeaponView : MonoBehaviour
-{
-    private AnimancerComponent animancer;
-    private MMFeedbacks muzzleFeedbacks;
-    
+{    
     [SerializeField] private ArmBoneToWeaponBone arm;
     public FpsWeaponViewModel[] weaponViewModelSlots = new FpsWeaponViewModel[Constants.WEAPON_SLOT_MAX];
     
@@ -18,12 +15,12 @@ public class FpsWeaponView : MonoBehaviour
     {
         arm = GetComponentInChildren<ArmBoneToWeaponBone>();
         LocalPlayerContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
+        
     }
     
-    // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame

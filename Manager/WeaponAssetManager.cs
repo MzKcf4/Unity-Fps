@@ -8,6 +8,7 @@ public class WeaponAssetManager : MonoBehaviour
     public CharacterCommonResources characterCommonResources;
     public WeaponCommonResources weaponCommonResources;
     public GameObject weaponMuzzleFeedbackPrefab;
+    public GameObject weaponMuzzleFeedbackViewPrefab;
 
     private List<string> activeWeaponIdList = new List<string>();
     
