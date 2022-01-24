@@ -65,7 +65,7 @@ public class FpsWeapon
         FetchDataFromDb();
         currentClip = clipSize;
         secondaryActionCooldown.interval = secondaryActionInterval;
-        this.weaponResouces = WeaponAssetManager.Instance.GetWeaponResouce(weaponName);
+        this.weaponResouces = StreamingAssetManager.Instance.GetWeaponResouce(weaponName);
     }
         
     private void FetchDataFromDb()
