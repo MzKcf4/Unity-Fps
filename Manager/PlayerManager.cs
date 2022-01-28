@@ -91,7 +91,6 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
-
     [Server]
     public void RespawnAndTeleport(FpsCharacter fpsCharacter)
     {
@@ -106,10 +105,17 @@ public class PlayerManager : NetworkBehaviour
         {
             fpsCharacter.transform.position = spawnPos;
         }
-        
-            
+
+        SetSpawnProtection(fpsCharacter);
     }
-    
+
+    [Server]
+    public void SetSpawnProtection(FpsEntity fpsEntity)
+    {
+        fpsEntity.SetGodmode(true);
+        StartCoroutine(RemoveGodModeCoroutine(fpsEntity));
+    }
+
     [Server]
     public void QueueRespawn(FpsCharacter fpsCharacter)
     {
@@ -123,7 +129,15 @@ public class PlayerManager : NetworkBehaviour
         if(fpsCharacter != null)
             RespawnAndTeleport(fpsCharacter);
     }
-    
+
+    IEnumerator RemoveGodModeCoroutine(FpsEntity fpsEntity)
+    {
+        yield return new WaitForSeconds(3);
+
+        if (fpsEntity != null)
+            fpsEntity.SetGodmode(false);
+    }
+
     private Transform GetSpawnTransform(TeamEnum team)
     {
         if(team == TeamEnum.Blue)

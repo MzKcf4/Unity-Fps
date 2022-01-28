@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using UnityEngine.Events;
+using HighlightPlus;
 
 public class FpsEntity : NetworkBehaviour
 {
@@ -11,18 +12,22 @@ public class FpsEntity : NetworkBehaviour
 	
 	[SerializeField] protected List<Behaviour> serverBehaviours;
 	[SerializeField] protected List<GameObject> serverGameObjects;
-	
-	[SyncVar(hook = nameof(OnHealthSync))] 
+
+    protected HighlightEffect highlightEffect;
+
+    [SyncVar(hook = nameof(OnHealthSync))] 
     public int health = 100;
 
 	[SyncVar] public int maxHealth = 100;
-    [SyncVar] public bool isGodMode = false;
+
+    [SyncVar(hook = nameof(OnGodModeUpdate))]
+    public bool isGodMode = false;
 	
 	public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
 	
     protected virtual void Awake()
     {
-        
+        highlightEffect = GetComponent<HighlightEffect>();
     }
 	
     // Start is called before the first frame update
@@ -144,6 +149,18 @@ public class FpsEntity : NetworkBehaviour
     {
         RpcKilled(damageInfo);
         onKilledEvent.Invoke(gameObject);
+    }
+
+    [Server]
+    public virtual void SetGodmode(bool isGodMode) 
+    {
+        this.isGodMode = isGodMode;
+    }
+
+    protected virtual void OnGodModeUpdate(bool oldValue , bool newValue) 
+    {
+        if (!highlightEffect) return;
+        highlightEffect.SetHighlighted(newValue);
     }
 	    
     [ClientRpc]
