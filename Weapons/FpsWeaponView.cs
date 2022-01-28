@@ -43,6 +43,10 @@ public class FpsWeaponView : MonoBehaviour
     
     public void AddViewWeaponNew(WeaponResources weaponResources, int slot)
     {
+        if (weaponViewModelSlots[slot] != null)
+        {
+            Destroy(weaponViewModelSlots[slot].gameObject, 0.5f);
+        }
         GameObject weaponViewObj = Instantiate(weaponResources.weaponViewPrefab, transform);
         FpsWeaponViewModel fpsWeaponViewModel = weaponViewObj.GetComponent<FpsWeaponViewModel>();
         fpsWeaponViewModel.SetWeaponResources(weaponResources);

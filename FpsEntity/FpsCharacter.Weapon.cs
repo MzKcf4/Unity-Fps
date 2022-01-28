@@ -183,7 +183,13 @@ public partial class FpsCharacter
         weaponSlots[slot] = fpsWeapon;
 
         // ----------------World------------------
-        WeaponResources weaponResource = WeaponAssetManager.Instance.GetWeaponResouce(weaponName);
+        // Check if the slot already has weapon , if yes , destroy the existing weapon
+        if (fpsWeaponWorldSlot[slot] != null)
+        {
+            Destroy(fpsWeaponWorldSlot[slot].gameObject , 0.5f);
+        }
+
+        WeaponResources weaponResource = StreamingAssetManager.Instance.GetWeaponResouce(weaponName);
         GameObject weaponWorldObject = GameObject.Instantiate(weaponResource.weaponWorldPrefab, weaponRootTransform);
         weaponWorldObject.transform.localPosition = Vector3.zero;
         weaponWorldObject.gameObject.SetActive(false);
