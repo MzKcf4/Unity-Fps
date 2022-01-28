@@ -92,12 +92,15 @@ public class DeathMatchManager : NetworkBehaviour
     {
         if(fpsCharacter.isLocalPlayer)
         {
-            string weaponName = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON , "csgo_ak47");
-            
-            if(fpsCharacter.HasWeapon(weaponName))
-                return;
-            
-            fpsCharacter.CmdGetWeapon(weaponName , 0);
+            string weaponNamePrimary = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON , "csgo_ak47");
+            string weaponNameSecondary = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON_SECONDARY, "csgo_deagle");
+
+            if (!fpsCharacter.HasWeapon(weaponNamePrimary))
+                fpsCharacter.CmdGetWeapon(weaponNamePrimary, 0);
+
+            if (!fpsCharacter.HasWeapon(weaponNameSecondary))
+                fpsCharacter.CmdGetWeapon(weaponNameSecondary, 1);
+
         }
     }
     

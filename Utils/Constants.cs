@@ -33,4 +33,5 @@ public class Constants
     public static readonly string SETTING_KEY_CROSSHAIR_LERP = "CrosshairLerp";
 
     public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON = "dm_selected_weapon";
+    public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON_SECONDARY = "dm_selected_weapon_secondary";
 }
