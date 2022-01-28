@@ -106,7 +106,8 @@ public class LocalPlayerContext : MonoBehaviour
 	
 	public void ShakeCamera()
 	{
-        weaponRecoilImpulse = player.GetActiveWeapon().recoil;
+        if (!player.GetActiveWeapon().isSemiAuto)
+            weaponRecoilImpulse = player.GetActiveWeapon().currentRecoil;
         
 		if(cameraShake == null)	return;
         cameraShake.GenerateImpulse(Camera.main.transform.forward * player.GetActiveWeapon().cameraShake);
@@ -278,7 +279,6 @@ public class LocalPlayerContext : MonoBehaviour
     {
         playerSettingDto.mouseSpeedZoomed = newSpeed;
     }
-    
 
     public void OnCrosshairSizeChanged(CrosshairSizeEnum newSize)
     {

@@ -41,7 +41,7 @@ public class FpsWeapon
     private float drawTime = 2f;
 
     // Shoot mode
-    private bool isSemiAuto = false;
+    public bool isSemiAuto = false;
     private bool isPrimayActionWatingRelease = false;
     
     [HideInInspector] public float rangeModifier = 1f;
@@ -51,6 +51,7 @@ public class FpsWeapon
     
     public float spread = 0f;
     public float recoil = 0f;
+    public float currentRecoil = 0f;
     public float cameraShake = 0f;
     public int dmKillScore = 5;
     
@@ -116,6 +117,7 @@ public class FpsWeapon
             EmitWeaponViewEvent(WeaponEvent.UnScope);
         }
         isPrimayActionWatingRelease = false;
+        currentRecoil = 0f;
     }
     
     public void ManualUpdate()
@@ -220,6 +222,7 @@ public class FpsWeapon
         {
             // Reset the flag when received 'released' input
             isPrimayActionWatingRelease = false;
+            currentRecoil = 0f;
         }
     }
 
@@ -330,8 +333,20 @@ public class FpsWeapon
         if (weaponCategory == WeaponCategory.Melee) return;
 
         currentClip--;
+        IncreaseRecoil();
         EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         
+    }
+
+    private void IncreaseRecoil()
+    {
+        if (isSemiAuto) return;
+        if (currentRecoil >= recoil)    return;
+
+        currentRecoil += recoil / 4;
+
+        if (currentRecoil > recoil)
+            currentRecoil = recoil;
     }
     
     // Temp way for bot to use weapon's cooldown
