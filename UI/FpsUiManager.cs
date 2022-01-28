@@ -33,7 +33,7 @@ public class FpsUiManager : MonoBehaviour
     {
 	    LocalPlayerContext.Instance.onWeaponShootEvent.AddListener(OnWeaponShoot);
 	    LocalPlayerContext.Instance.onHealthUpdateEvent.AddListener(OnHealthUpdate);
-	    ProgressionManager.Instance.onProgressUpdateEvent.AddListener(OnProgressionUpdate);
+	    // ProgressionManager.Instance.onProgressUpdateEvent.AddListener(OnProgressionUpdate);
     }
 
     void Update()
@@ -66,7 +66,8 @@ public class FpsUiManager : MonoBehaviour
         KillListing killListing = killListingObj.GetComponent<KillListing>();
 
 		E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(damageInfo.damageWeaponName);
-		killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name);
+		bool isHeadshot = damageInfo.bodyPart == BodyPart.Head;
+		killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name, isHeadshot);
 		
 	}
 	
