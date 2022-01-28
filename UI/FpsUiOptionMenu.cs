@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.UI;
 
 public class FpsUiOptionMenu : MonoBehaviour
 {
@@ -18,7 +19,10 @@ public class FpsUiOptionMenu : MonoBehaviour
     public SliderManager audioSlider;
     public SliderManager mouseSpeedSlider;
     public SliderManager mouseSpeedScopedSlider;
-    
+
+    [SerializeField] public Toggle crosshairLerpToggle;
+    [SerializeField] public HorizontalSelector crosshairSizeSelector;
+
     void Start()
     {
         applyButton.clickEvent.AddListener( () => LocalPlayerContext.Instance.SavePlayerSettings());
@@ -36,7 +40,14 @@ public class FpsUiOptionMenu : MonoBehaviour
         mouseMenuButton.clickEvent.AddListener( () => SwitchToMousePanel());
         mouseSpeedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedChanged(newSpeed));
         mouseSpeedScopedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedZoomedChanged(newSpeed));
-        
+
+        // ------ Crosshair ---- //
+        crosshairLerpToggle.onValueChanged.AddListener(isLerp => LocalPlayerContext.Instance.OnCrosshairLerpChanged(isLerp));
+        crosshairSizeSelector.onValueChanged.AddListener(idx => {
+            CrosshairSizeEnum crosshairSize = idx == 0 ? CrosshairSizeEnum.Small : CrosshairSizeEnum.Standard;
+            LocalPlayerContext.Instance.OnCrosshairSizeChanged(crosshairSize);
+        });
+
         LocalPlayerContext.Instance.onOptionMenuToggleEvent.AddListener(ToggleOptionPanel);
         
         LoadFromPlayerContext();
@@ -75,5 +86,13 @@ public class FpsUiOptionMenu : MonoBehaviour
         
         mouseSpeedScopedSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.mouseSpeedZoomed);
         mouseSpeedScopedSlider.UpdateUI();
+
+        crosshairLerpToggle.isOn = playerSettingDto.isLerpCrosshair;
+
+        if (playerSettingDto.crosshairSize == CrosshairSizeEnum.Small)
+            crosshairSizeSelector.index = 0;
+        else
+            crosshairSizeSelector.index = 1;
+        crosshairSizeSelector.UpdateUI();
     }
 }

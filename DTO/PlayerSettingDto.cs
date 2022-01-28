@@ -7,7 +7,9 @@ public class PlayerSettingDto
     public float audioMasterVolume;
     public float mouseSpeed;
     public float mouseSpeedZoomed;
-    
+    public CrosshairSizeEnum crosshairSize;
+    public bool isLerpCrosshair;
+
     public string playerName;
 
     public float GetConvertedMouseSpeed() 

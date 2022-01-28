@@ -50,7 +50,6 @@ public class LocalPlayerContext : MonoBehaviour
         playerSettingDto = new PlayerSettingDto();
         playerInputActions = new PlayerInputActions();
         SetupInputActionEvents();
-        DontDestroyOnLoad(gameObject);
 	}
     
     void Start()
@@ -219,14 +218,22 @@ public class LocalPlayerContext : MonoBehaviour
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
         float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10);
         float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3);
+        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10f);
+        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3f);
         string playerName = ES3.Load<string>(Constants.SETTING_KEY_PLAYER_NAME);
-        
+        CrosshairSizeEnum crosshairSize = ES3.Load<CrosshairSizeEnum>(Constants.SETTING_KEY_CROSSHAIR_SIZE , CrosshairSizeEnum.Standard);
+        bool isLerpCrosshair = ES3.Load<bool>(Constants.SETTING_KEY_CROSSHAIR_LERP , true);
+
         playerSettingDto.audioMasterVolume = masterVolume;
         playerSettingDto.mouseSpeed = mouseSpeed;       // CameraInput's default mouse sensitivity 0.001
         playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
         playerSettingDto.playerName = playerName;
+        playerSettingDto.crosshairSize = crosshairSize;
+        playerSettingDto.isLerpCrosshair = isLerpCrosshair;
         
         audioMixerMaster.SetFloat("volume" , masterVolume);
+        Crosshair.Instance.SetSize(crosshairSize);
+        Crosshair.Instance.SetLerp(isLerpCrosshair);
     }
     
     public void SavePlayerSettings()
@@ -236,8 +243,11 @@ public class LocalPlayerContext : MonoBehaviour
         ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, playerSettingDto.mouseSpeedZoomed);
         ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
         
+        ES3.Save<CrosshairSizeEnum>(Constants.SETTING_KEY_CROSSHAIR_SIZE, playerSettingDto.crosshairSize);
+        ES3.Save<bool>(Constants.SETTING_KEY_CROSSHAIR_LERP, playerSettingDto.isLerpCrosshair);
+
         // A fast way to apply settings , when already in game
-        if(player != null)
+        if (player != null)
             player.LoadLocalPlayerSettings();
     }
     
@@ -269,6 +279,19 @@ public class LocalPlayerContext : MonoBehaviour
         playerSettingDto.mouseSpeedZoomed = newSpeed;
     }
     
+
+    public void OnCrosshairSizeChanged(CrosshairSizeEnum newSize)
+    {
+        playerSettingDto.crosshairSize = newSize;
+        Crosshair.Instance.SetSize(newSize);
+    }
+
+    public void OnCrosshairLerpChanged(bool isLerp)
+    {
+        playerSettingDto.isLerpCrosshair = isLerp;
+        Crosshair.Instance.SetLerp(isLerp);
+    }
+
     public void OnTempDeathmatchWeaponMenuToggle(InputAction.CallbackContext value)
     {
         if(value.started)
