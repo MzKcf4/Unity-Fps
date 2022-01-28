@@ -9,5 +9,6 @@ public enum WeaponCategory
     Pistol,
     Sniper,
     Smg,
-    Melee
+    Melee,
+    Mg
 }
