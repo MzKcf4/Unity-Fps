@@ -70,6 +70,7 @@ public partial class FpsPlayer : FpsCharacter
             
             CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
             CmdGetWeapon("csgo_ak47" , 0);
+            CmdGetWeapon("csgo_deagle", 1);
             CmdGetWeapon("csgo_knife_butterfly", 2);
         }
 	    else
@@ -84,11 +85,30 @@ public partial class FpsPlayer : FpsCharacter
         
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
-    
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+    }
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        team = TeamEnum.Blue;
+        ServerContext.Instance.playerList.Add(this);   
+    }
+
+    [Command]
+    public void CmdTeleportToSpawnPoint()
+    {
+        PlayerManager.Instance.TeleportToSpawnPoint(this);
+    }
+
     [Command]
     public void CmdSetupPlayer(string playerName)
     {
         this.characterName = playerName;
+        PlayerManager.Instance.TeleportToSpawnPoint(this);
     }
     
     public void LoadLocalPlayerSettings()

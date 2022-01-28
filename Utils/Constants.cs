@@ -7,8 +7,12 @@ public class Constants
 	public static readonly string TAG_PLAYER = "Player";
 	public static readonly string TAG_ENEMY = "Enemy";
     public static readonly string TAG_CHAR_WEAPON_ROOT = "CharWeaponRoot";
-	
-	public static readonly string LAYER_DEFAULT = "Default";
+    public static readonly string TAG_BOT_WAYPOINT = "BotWaypoint";
+    public static readonly string TAG_TEAM_A_SPAWN = "TeamA_Spawn";
+    public static readonly string TAG_TEAM_B_SPAWN = "TeamB_Spawn";
+    public static readonly string TAG_MUZZLE_VIEW = "Muzzle";
+
+    public static readonly string LAYER_DEFAULT = "Default";
 	public static readonly string LAYER_HITBOX = "Hitbox";
     public static readonly string LAYER_GROUND = "Ground";
     public static readonly string LAYER_LOCAL_PLAYER_MODEL = "LocalPlayerModel";
@@ -28,7 +32,6 @@ public class Constants
     public static readonly string SETTING_KEY_MOUSE_SPEED = "MouseSpeed";
     public static readonly string SETTING_KEY_MOUSE_SPEED_ZOOMED = "MouseSpeedZoomed";
     public static readonly string SETTING_KEY_PLAYER_NAME = "PlayerName";
-    
     public static readonly string SETTING_KEY_CROSSHAIR_SIZE = "CrosshairSize";
     public static readonly string SETTING_KEY_CROSSHAIR_LERP = "CrosshairLerp";
 

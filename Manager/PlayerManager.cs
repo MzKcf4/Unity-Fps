@@ -13,23 +13,13 @@ public class PlayerManager : NetworkBehaviour
     [SerializeField] GameObject botPrefab;
     [SerializeField] GameObject botPrefab_B;
     
-	void Awake()
+    void Awake()
 	{
 		Instance = this;
-	}
+    }
 	
     void Start()
     {
-        GameObject[] teamASpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_A_SPAWN);
-
-        foreach (GameObject obj in teamASpawnObjects)
-            teamASpawns.Add(obj.transform);
-
-
-        GameObject[] teamBSpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_B_SPAWN);
-
-        foreach (GameObject obj in teamBSpawnObjects)
-            teamBSpawns.Add(obj.transform);
 
     }
 
@@ -75,7 +65,7 @@ public class PlayerManager : NetworkBehaviour
 	[Server]
 	public void TeleportToSpawnPoint(FpsPlayer player)
 	{
-		Transform spawn = Utils.GetRandomElement<Transform>(teamASpawns);
+        Transform spawn = GetSpawnTransform(TeamEnum.Blue);
         player.TargetDoTeleport(player.netIdentity.connectionToClient, spawn.position + transform.up);
 	}
 
@@ -140,9 +130,32 @@ public class PlayerManager : NetworkBehaviour
 
     private Transform GetSpawnTransform(TeamEnum team)
     {
+        if (teamASpawns.Count == 0 || teamBSpawns.Count == 0)
+        {
+            FindSpawnsOnMap();
+        }
+
         if(team == TeamEnum.Blue)
             return Utils.GetRandomElement<Transform>(teamASpawns);
         else
             return Utils.GetRandomElement<Transform>(teamBSpawns);
+    }
+
+    private void FindSpawnsOnMap()
+    {
+        teamASpawns = new List<Transform>();
+        teamBSpawns = new List<Transform>();
+
+        GameObject[] teamASpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_A_SPAWN);
+
+        foreach (GameObject obj in teamASpawnObjects)
+            teamASpawns.Add(obj.transform);
+
+
+        GameObject[] teamBSpawnObjects = GameObject.FindGameObjectsWithTag(Constants.TAG_TEAM_B_SPAWN);
+
+        foreach (GameObject obj in teamBSpawnObjects)
+            teamBSpawns.Add(obj.transform);
+        
     }
 }
