@@ -16,19 +16,20 @@ public abstract partial class FpsCharacter : FpsEntity
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
     [SerializeField] protected Transform lookAtTransform; 
-    [SyncVar] public string characterName;
     
-    [SyncVar] public CharacterStateEnum currState;
     [SerializeField] protected CharacterResources charRes;
     
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
     
-    protected MovementDirection currMoveDir = MovementDirection.None;
-        
+    [SyncVar] public string characterName;
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.Blue;
-    
+    [SyncVar] protected MovementDirection currMoveDir = MovementDirection.None;
+    [SyncVar] public CharacterStateEnum currState;
+
+    protected MovementDirection prevMoveDir = MovementDirection.None;
+    protected CharacterStateEnum prevCharState = CharacterStateEnum.None;
 
     protected AudioSource audioSourceWeapon;
     protected AudioSource audioSourceCharacter;

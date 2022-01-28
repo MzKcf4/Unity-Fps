@@ -327,7 +327,6 @@ public partial class FpsPlayer : FpsCharacter
         if(isLocalPlayer)
         {
             Vector3 controllerVelocity = playerController.GetMovementVelocity();
-            CmdSetVelocity(controllerVelocity);
             currentVelocity = controllerVelocity;
         }
         return currentVelocity;

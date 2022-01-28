@@ -28,9 +28,17 @@ public partial class FpsCharacter
     
     protected virtual void Update_Animation()
     {
-        UpdateMovementDir();
+        if (isServer)
+        {
+            UpdateMovementDir();
+            if (prevMoveDir != currMoveDir || prevCharState != currState)
+            {
+                prevMoveDir = currMoveDir;
+                prevCharState = currState;
+            }
+        }
+
         HandleMovementAnimation();
-        
     }
     
     protected virtual void UpdateMovementDir()
@@ -71,14 +79,14 @@ public partial class FpsCharacter
         return !IsDead() && 
         (currState != CharacterStateEnum.Idle && 
             currState != CharacterStateEnum.Dead && 
-            GetMovementVelocity().magnitude == 0f);
+            GetMovementVelocity().magnitude <= 0.01f);
     }
     
     private bool CanPlayRunAnimation()
     {
         return !IsDead() && 
         (currState != CharacterStateEnum.Dead &&
-            GetMovementVelocity().magnitude > 0f);
+            GetMovementVelocity().magnitude > 0.01f);
     }
     
     protected void PlayAnimation(ClipTransition clip, int layer)
