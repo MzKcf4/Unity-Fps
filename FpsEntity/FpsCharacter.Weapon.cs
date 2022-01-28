@@ -155,8 +155,10 @@ public partial class FpsCharacter
         Vector3 shootSoundPos = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform == null ? fpsWeaponWorldSlot[activeWeaponSlot].transform.position
                                                                                              : fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
 
-        AudioManager.Instance.PlaySoundAtPosition(GetActiveWeapon().GetShootSound() , shootSoundPos);
-        if(!isLocalPlayer)
+        audioSourceWeapon.Stop();
+        audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
+        
+        if (!isLocalPlayer)
         {
             fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
             RpcFireWeapon_Animation();
@@ -179,7 +181,7 @@ public partial class FpsCharacter
         FpsWeapon fpsWeapon = new FpsWeapon(weaponName);
         fpsWeapon.owner = this;
         weaponSlots[slot] = fpsWeapon;
-        
+
         // ----------------World------------------
         WeaponResources weaponResource = WeaponAssetManager.Instance.GetWeaponResouce(weaponName);
         GameObject weaponWorldObject = GameObject.Instantiate(weaponResource.weaponWorldPrefab, weaponRootTransform);

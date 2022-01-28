@@ -13,28 +13,29 @@ public class LocalPlayerContext : MonoBehaviour
     // [SerializeField] InputActionAsset playerInputActionAsset;
     private PlayerInputActions playerInputActions;
     private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
-    
-	// ----- Input events : events fired when corresponding input key pressed -----
-	public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
-    public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
-    
-    public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
-    public UnityEvent<InputAction.CallbackContext> mouseLookInputEvent = new UnityEvent<InputAction.CallbackContext>();
-	public UnityEvent weaponReloadInputEvent = new UnityEvent();
-	public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
-    public UnityEvent previousWeaponInputEvent = new UnityEvent();
-	// ---------------
-	public UnityEvent onWeaponShootEvent = new UnityEvent();
-	public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
-	public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
-    public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
-    public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
+
+    // ----- Input events : events fired when corresponding input key pressed -----
+    [HideInInspector] public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
+    [HideInInspector] public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
+
+    [HideInInspector] public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
+    [HideInInspector] public UnityEvent<InputAction.CallbackContext> mouseLookInputEvent = new UnityEvent<InputAction.CallbackContext>();
+    [HideInInspector] public UnityEvent weaponReloadInputEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
+    [HideInInspector] public UnityEvent previousWeaponInputEvent = new UnityEvent();
+    // ---------------
+    [HideInInspector] public UnityEvent onWeaponShootEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
+    [HideInInspector] public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
+    [HideInInspector] public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
     // ----------------------------
     private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
 
-    public UnityEvent<WeaponEvent> onWeaponEventUpdate = new UnityEvent<WeaponEvent>();
+    [HideInInspector] public UnityEvent<WeaponEvent> onWeaponEventUpdate = new UnityEvent<WeaponEvent>();
 
     [HideInInspector] public FpsPlayer player;
+
 	private CinemachineImpulseSource cameraShake;
 	private CinemachineVirtualCamera virtualCamera;
     // This value will be directly used in PlayerContextCameraInput
@@ -43,8 +44,14 @@ public class LocalPlayerContext : MonoBehaviour
     public PlayerSettingDto playerSettingDto;
     public AudioMixer audioMixerMaster;
     public AudioMixerGroup audioMixerGroup;
-    
-	void Awake()
+    [SerializeField] public AudioMixerGroup audioMixerMasterGroup;
+    public AudioSource localPlayerAudioSource;
+
+    // --------------
+    [SerializeField] public Canvas inGameDynamicCanvas;
+    [SerializeField] public Canvas inGameCanvas;
+
+    void Awake()
 	{
 		Instance = this;
         playerSettingDto = new PlayerSettingDto();
@@ -111,7 +118,6 @@ public class LocalPlayerContext : MonoBehaviour
         
 		if(cameraShake == null)	return;
         cameraShake.GenerateImpulse(Camera.main.transform.forward * player.GetActiveWeapon().cameraShake);
-        
 	}
     
     public float TakeWeaponRecoilImpulse()
@@ -217,8 +223,6 @@ public class LocalPlayerContext : MonoBehaviour
     public void LoadPlayerSettings()
     {
         float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
-        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10);
-        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3);
         float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10f);
         float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3f);
         string playerName = ES3.Load<string>(Constants.SETTING_KEY_PLAYER_NAME);
@@ -243,7 +247,6 @@ public class LocalPlayerContext : MonoBehaviour
         ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED, playerSettingDto.mouseSpeed);
         ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, playerSettingDto.mouseSpeedZoomed);
         ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
-        
         ES3.Save<CrosshairSizeEnum>(Constants.SETTING_KEY_CROSSHAIR_SIZE, playerSettingDto.crosshairSize);
         ES3.Save<bool>(Constants.SETTING_KEY_CROSSHAIR_LERP, playerSettingDto.isLerpCrosshair);
 

@@ -22,7 +22,8 @@ public class FpsWeaponViewModel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        audioSource = AudioManager.Instance.localPlayerAudioSource;
+        audioSource = LocalPlayerContext.Instance.localPlayerAudioSource;
+        
         if (!muzzleFeedbacks)
         {
             ViewMuzzleMarker marker = GetComponentInChildren<ViewMuzzleMarker>();

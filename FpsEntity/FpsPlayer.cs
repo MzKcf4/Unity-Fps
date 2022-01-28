@@ -8,9 +8,6 @@ using Animancer;
 public partial class FpsPlayer : FpsCharacter
 {
 	[SerializeField]
-	private ProgressionWeaponConfig progressionWeaponConfig;
-
-	[SerializeField]
 	private Transform weaponViewParent;
     
 	[SerializeField]
@@ -44,18 +41,19 @@ public partial class FpsPlayer : FpsCharacter
     private int previousActiveWeaponSlot = -1;
     // This is the one attached to the fpsCamera , sync the position of LookAt to this so as to sync the character rotation.
     [SerializeField] Transform localPlayerLookAt;
-        
-	protected override void Start()
+
+    [HideInInspector] public AudioSource audioSourceLocalPlayer;
+
+    protected override void Start()
 	{
 		base.Start();
         painShockCooldown.interval = 0.06f;
         
 	    if(isLocalPlayer)
 	    {
-	    	progressionWeaponConfig.InitializeWeaponList();
-            
 	    	LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
+
 	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             cameraInput = GetComponentInChildren<PlayerContextCameraInput>();
@@ -78,18 +76,13 @@ public partial class FpsPlayer : FpsCharacter
 	    {
             
 	    }
-        
-        if(isServer)
+
+        if (isClient)
         {
-            team = TeamEnum.Blue;
-            ServerContext.Instance.playerList.Add(this);
-            // *ToFix* Teleport only , since 'Respawn' will cause null on client side 
-            PlayerManager.Instance.TeleportToSpawnPoint(this);
+            InitializeLocalAudioSource();
         }
         
-
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
-        
 	}
     
     [Command]
@@ -101,12 +94,20 @@ public partial class FpsPlayer : FpsCharacter
     public void LoadLocalPlayerSettings()
     {
         cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
-        
-        AudioManager.Instance.localPlayerAudioSource.transform.SetParent(cameraInput.transform);
-        AudioManager.Instance.localPlayerAudioSource.transform.localPosition = Vector3.zero;
     }
-    
-	protected override void Update()
+
+    private void InitializeLocalAudioSource()
+    {
+        audioSourceLocalPlayer = gameObject.AddComponent<AudioSource>();
+        audioSourceLocalPlayer.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
+        audioSourceLocalPlayer.playOnAwake = false;
+        audioSourceLocalPlayer.transform.SetParent(cameraInput.transform);
+        audioSourceLocalPlayer.transform.localPosition = Vector3.zero;
+        LocalPlayerContext.Instance.localPlayerAudioSource = audioSourceLocalPlayer;
+    }
+
+
+    protected override void Update()
     {
 	    base.Update();
         if(isLocalPlayer)
@@ -242,7 +243,6 @@ public partial class FpsPlayer : FpsCharacter
     [TargetRpc]
     public void TargetSpawnDamageText(NetworkConnection target, int damage, Vector3 position , bool isHeadshot)
     {
-        Debug.Log(target.identity.gameObject);
         LocalSpawnManager.Instance.SpawnDamageText(damage, position + Vector3.up , isHeadshot);
     }
     // ==================================================== //

@@ -30,10 +30,17 @@ public abstract partial class FpsCharacter : FpsEntity
     [SyncVar] public TeamEnum team = TeamEnum.Blue;
     
 
+    protected AudioSource audioSourceWeapon;
+    protected AudioSource audioSourceCharacter;
+
     public override void OnStartClient()
     {
         base.OnStartClient();
         characterCommonResources = WeaponAssetManager.Instance.GetCharacterCommonResources();
+        audioSourceWeapon = gameObject.AddComponent<AudioSource>();
+        audioSourceCharacter = gameObject.AddComponent<AudioSource>();
+        InitializeAudioSource(audioSourceWeapon);
+        InitializeAudioSource(audioSourceCharacter);
     }
     
     protected override void Awake()
@@ -114,7 +121,7 @@ public abstract partial class FpsCharacter : FpsEntity
             damageInfo.bodyPart == BodyPart.Head ? Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtHeadShotSoundList)
                                                  : Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtSoundList);
 
-        AudioManager.Instance.PlaySoundAtPosition(hurtSoundClip, damageInfo.hitPoint);
+        audioSourceCharacter.PlayOneShot(hurtSoundClip);
     }
     
     [Server]
@@ -221,5 +228,13 @@ public abstract partial class FpsCharacter : FpsEntity
     protected virtual void OnDestroy()
     {
         SharedContext.Instance.RemoveCharacter(this);
+    }
+
+    protected void InitializeAudioSource(AudioSource audioSource)
+    {
+        audioSource.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0.5f;
+        audioSource.spread = 1f;
     }
 }

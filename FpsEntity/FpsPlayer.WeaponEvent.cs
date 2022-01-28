@@ -77,6 +77,6 @@ public partial class FpsPlayer : FpsCharacter
     private void OnTriggerEmptyAmmo()
     {
         AudioClip emptyClip = WeaponAssetManager.Instance.weaponCommonResources.emptyAmmoClip;
-        AudioManager.Instance.localPlayerAudioSource.PlayOneShot(emptyClip);
+        LocalPlayerContext.Instance.localPlayerAudioSource.PlayOneShot(emptyClip);
     }
 }

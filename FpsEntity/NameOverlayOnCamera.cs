@@ -51,7 +51,7 @@ public class NameOverlayOnCamera: MonoBehaviour
     {
         if(dictCharToNameText.ContainsKey(fpsCharacter))    return;
         
-        GameObject nameOverlayObj = Instantiate(nameOverlayPrefab , LocalContext.Instance.dynamicCanvas.transform);
+        GameObject nameOverlayObj = Instantiate(nameOverlayPrefab , LocalPlayerContext.Instance.inGameDynamicCanvas.transform);
         TextMeshProUGUI textMesh = nameOverlayObj.GetComponent<TextMeshProUGUI>();
         textMesh.SetText(fpsCharacter.characterName);
         

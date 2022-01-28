@@ -45,8 +45,7 @@ public class LocalSpawnManager : MonoBehaviour
     public void SpawnDamageText(int damage, Vector3 position, bool isHeadshot)
     {
         Transform objTransform = PoolManager.Pools["FX"].Spawn(damageTextPrefab, position, Quaternion.identity);
-        objTransform.SetParent(LocalContext.Instance.dynamicCanvas.transform);
-        // objTransform.localPosition = Vector3.zero;
+        objTransform.SetParent(LocalPlayerContext.Instance.inGameDynamicCanvas.transform);
 
         DamageText damageText = objTransform.GetComponent<DamageText>();
         damageText.Initialize(damage, position, isHeadshot);
