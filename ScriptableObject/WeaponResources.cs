@@ -13,7 +13,7 @@ public class WeaponResources : SerializedScriptableObject
     public GameObject weaponViewPrefab;
     public GameObject weaponWorldPrefab;
     
-	public Dictionary<string , AudioClip> dictWeaponSounds;
+	public Dictionary<string , AudioClip> dictWeaponSounds = new Dictionary<string, AudioClip>();
 
 	public ClipTransition drawClip;
 	public ClipTransition idleClip;
