@@ -27,13 +27,8 @@ public class Constants
 	public static readonly int WEAPON_SLOT_2 = 1;
 	public static readonly int WEAPON_SLOT_3 = 2;
 	public static readonly int WEAPON_SLOT_MAX = 3;
-    
-    public static readonly string SETTING_KEY_AUDIO_MASTER_VOLUME = "AudioMasterVolume";
-    public static readonly string SETTING_KEY_MOUSE_SPEED = "MouseSpeed";
-    public static readonly string SETTING_KEY_MOUSE_SPEED_ZOOMED = "MouseSpeedZoomed";
-    public static readonly string SETTING_KEY_PLAYER_NAME = "PlayerName";
-    public static readonly string SETTING_KEY_CROSSHAIR_SIZE = "CrosshairSize";
-    public static readonly string SETTING_KEY_CROSSHAIR_LERP = "CrosshairLerp";
+
+    public static readonly string SETTING_KEY_LOCAL_PLAYER_SETTINGS = "LocalPlayerSetting";
 
     public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON = "dm_selected_weapon";
     public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON_SECONDARY = "dm_selected_weapon_secondary";

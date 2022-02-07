@@ -37,7 +37,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
         LocalPlayerContext.Instance.ToggleScope(true);
-        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseZoomedSpeed();
+        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
         weaponViewCamera.enabled = false;
     }
     
@@ -46,7 +46,7 @@ public partial class FpsPlayer : FpsCharacter
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
         LocalPlayerContext.Instance.ToggleScope(false);
-        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
+        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetMouseSpeed();
         weaponViewCamera.enabled = true;
     }
     

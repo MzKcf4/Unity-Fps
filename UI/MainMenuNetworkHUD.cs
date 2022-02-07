@@ -21,10 +21,11 @@ public class MainMenuNetworkHUD : MonoBehaviour
             inputFieldAddress.text = "localhost";
         else
             inputFieldAddress.text = NetworkManager.singleton.networkAddress;
-        
-        if( LocalPlayerContext.Instance && !string.IsNullOrEmpty(LocalPlayerContext.Instance.playerSettingDto.playerName))
-            inputFieldPlayerName.text = LocalPlayerContext.Instance.playerSettingDto.playerName;
-        
+
+        if (LocalPlayerSettingManager.Instance && !string.IsNullOrEmpty(LocalPlayerSettingManager.Instance.GetPlayerName()))
+            inputFieldPlayerName.text = LocalPlayerSettingManager.Instance.GetPlayerName();
+
+
         btnHost.onClick.AddListener(HostServer);
         btnConnect.onClick.AddListener(ConnectToServer);
     }
@@ -37,14 +38,14 @@ public class MainMenuNetworkHUD : MonoBehaviour
     
     public void HostServer()
     {
-        LocalPlayerContext.Instance.UpdatePlayerName(inputFieldPlayerName.text);
+        LocalPlayerSettingManager.Instance.UpdatePlayerName(inputFieldPlayerName.text);
         
         NetworkManager.singleton.StartHost();
     }
     
     public void ConnectToServer()
     {
-        LocalPlayerContext.Instance.UpdatePlayerName(inputFieldPlayerName.text);
+        LocalPlayerSettingManager.Instance.UpdatePlayerName(inputFieldPlayerName.text);
         
         NetworkManager.singleton.StartClient();
         NetworkManager.singleton.networkAddress = inputFieldAddress.text;

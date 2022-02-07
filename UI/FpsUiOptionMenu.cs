@@ -25,28 +25,18 @@ public class FpsUiOptionMenu : MonoBehaviour
 
     void Start()
     {
-        applyButton.clickEvent.AddListener( () => LocalPlayerContext.Instance.SavePlayerSettings());
+        LocalPlayerSettingManager.Instance.OnPlayerSettingUpdateEvent.AddListener(LoadFromPlayerContext);
+
+        applyButton.clickEvent.AddListener(SaveValuesToPlayerSetting);
         resetButton.clickEvent.AddListener( () => {
-            LocalPlayerContext.Instance.LoadPlayerSettings();
-            audioSlider.UpdateUI();
+            LocalPlayerSettingManager.Instance.LoadPlayerSettings(true);
         });
         
         // ------- Audio ------- //
         audioMenuButton.clickEvent.AddListener( () => SwitchToAudioPanel());
-        audioSlider.sliderEvent.AddListener( newVol => LocalPlayerContext.Instance.OnAudioVolumeChanged(newVol));
-        
-        
+ 
         // ------ Mouse -------// 
         mouseMenuButton.clickEvent.AddListener( () => SwitchToMousePanel());
-        mouseSpeedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedChanged(newSpeed));
-        mouseSpeedScopedSlider.sliderEvent.AddListener(newSpeed => LocalPlayerContext.Instance.OnMouseSpeedZoomedChanged(newSpeed));
-
-        // ------ Crosshair ---- //
-        crosshairLerpToggle.onValueChanged.AddListener(isLerp => LocalPlayerContext.Instance.OnCrosshairLerpChanged(isLerp));
-        crosshairSizeSelector.onValueChanged.AddListener(idx => {
-            CrosshairSizeEnum crosshairSize = idx == 0 ? CrosshairSizeEnum.Small : CrosshairSizeEnum.Standard;
-            LocalPlayerContext.Instance.OnCrosshairSizeChanged(crosshairSize);
-        });
 
         LocalPlayerContext.Instance.onOptionMenuToggleEvent.AddListener(ToggleOptionPanel);
         
@@ -76,7 +66,7 @@ public class FpsUiOptionMenu : MonoBehaviour
     
     public void LoadFromPlayerContext()
     {
-        PlayerSettingDto playerSettingDto = LocalPlayerContext.Instance.playerSettingDto;
+        PlayerSettingDto playerSettingDto = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings();
         
         audioSlider.mainSlider.SetValueWithoutNotify(playerSettingDto.audioMasterVolume);
         audioSlider.UpdateUI();
@@ -94,5 +84,17 @@ public class FpsUiOptionMenu : MonoBehaviour
         else
             crosshairSizeSelector.index = 1;
         crosshairSizeSelector.UpdateUI();
+    }
+
+    private void SaveValuesToPlayerSetting()
+    {
+        PlayerSettingDto playerSettingDto = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings();
+        playerSettingDto.audioMasterVolume = audioSlider.mainSlider.value;
+        playerSettingDto.mouseSpeed = mouseSpeedSlider.mainSlider.value;
+        playerSettingDto.mouseSpeedZoomed = mouseSpeedScopedSlider.mainSlider.value;
+        playerSettingDto.isLerpCrosshair = crosshairLerpToggle.isOn;
+        playerSettingDto.crosshairSize = crosshairSizeSelector.index == 0 ? CrosshairSizeEnum.Small : CrosshairSizeEnum.Standard;
+
+        LocalPlayerSettingManager.Instance.SavePlayerSettings();
     }
 }

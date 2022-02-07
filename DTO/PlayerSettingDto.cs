@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class PlayerSettingDto
 {
-    public float audioMasterVolume;
-    public float mouseSpeed;
-    public float mouseSpeedZoomed;
-    public CrosshairSizeEnum crosshairSize;
-    public bool isLerpCrosshair;
+    public float audioMasterVolume = -25f;
+    public float mouseSpeed = 12f;
+    public float mouseSpeedZoomed = 3f;
+    public CrosshairSizeEnum crosshairSize = CrosshairSizeEnum.Small;
+    public bool isLerpCrosshair = false;
 
     public string playerName;
 
@@ -21,4 +21,5 @@ public class PlayerSettingDto
     {
         return mouseSpeedZoomed / 10000f;
     }
+
 }

@@ -53,8 +53,9 @@ public partial class FpsPlayer : FpsCharacter
 	    {
 	    	LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
+            LocalPlayerSettingManager.Instance.OnPlayerSettingUpdateEvent.AddListener(LoadLocalPlayerSettings);
 
-	    	fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
+            fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
             cameraInput = GetComponentInChildren<PlayerContextCameraInput>();
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
@@ -113,7 +114,7 @@ public partial class FpsPlayer : FpsCharacter
     
     public void LoadLocalPlayerSettings()
     {
-        cameraInput.mouseInputMultiplier = localPlayerSettingDto.GetConvertedMouseSpeed();
+        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings().GetConvertedMouseSpeed();
     }
 
     private void InitializeLocalAudioSource()

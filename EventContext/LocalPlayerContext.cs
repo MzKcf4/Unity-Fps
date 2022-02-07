@@ -10,7 +10,6 @@ using System;
 public class LocalPlayerContext : MonoBehaviour
 {
 	public static LocalPlayerContext Instance;
-    // [SerializeField] InputActionAsset playerInputActionAsset;
     private PlayerInputActions playerInputActions;
     private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
 
@@ -44,7 +43,6 @@ public class LocalPlayerContext : MonoBehaviour
     public PlayerSettingDto playerSettingDto;
     public AudioMixer audioMixerMaster;
     public AudioMixerGroup audioMixerGroup;
-    [SerializeField] public AudioMixerGroup audioMixerMasterGroup;
     public AudioSource localPlayerAudioSource;
 
     // --------------
@@ -61,7 +59,6 @@ public class LocalPlayerContext : MonoBehaviour
     
     void Start()
     {
-        LoadPlayerSettings();
         Application.targetFrameRate = 120;
     }
 
@@ -220,79 +217,10 @@ public class LocalPlayerContext : MonoBehaviour
         onWeaponEventUpdate.Invoke(newEvent);
     }
 
-    public void LoadPlayerSettings()
-    {
-        float masterVolume = ES3.Load<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, -40f);
-        float mouseSpeed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED, 10f);
-        float mouseSpeedZoomed = ES3.Load<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, 3f);
-        string playerName = ES3.Load<string>(Constants.SETTING_KEY_PLAYER_NAME);
-        CrosshairSizeEnum crosshairSize = ES3.Load<CrosshairSizeEnum>(Constants.SETTING_KEY_CROSSHAIR_SIZE , CrosshairSizeEnum.Standard);
-        bool isLerpCrosshair = ES3.Load<bool>(Constants.SETTING_KEY_CROSSHAIR_LERP , true);
-
-        playerSettingDto.audioMasterVolume = masterVolume;
-        playerSettingDto.mouseSpeed = mouseSpeed;       // CameraInput's default mouse sensitivity 0.001
-        playerSettingDto.mouseSpeedZoomed = mouseSpeedZoomed;
-        playerSettingDto.playerName = playerName;
-        playerSettingDto.crosshairSize = crosshairSize;
-        playerSettingDto.isLerpCrosshair = isLerpCrosshair;
-        
-        audioMixerMaster.SetFloat("volume" , masterVolume);
-        Crosshair.Instance.SetSize(crosshairSize);
-        Crosshair.Instance.SetLerp(isLerpCrosshair);
-    }
-    
-    public void SavePlayerSettings()
-    {
-        ES3.Save<float>(Constants.SETTING_KEY_AUDIO_MASTER_VOLUME, playerSettingDto.audioMasterVolume);
-        ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED, playerSettingDto.mouseSpeed);
-        ES3.Save<float>(Constants.SETTING_KEY_MOUSE_SPEED_ZOOMED, playerSettingDto.mouseSpeedZoomed);
-        ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
-        ES3.Save<CrosshairSizeEnum>(Constants.SETTING_KEY_CROSSHAIR_SIZE, playerSettingDto.crosshairSize);
-        ES3.Save<bool>(Constants.SETTING_KEY_CROSSHAIR_LERP, playerSettingDto.isLerpCrosshair);
-
-        // A fast way to apply settings , when already in game
-        if (player != null)
-            player.LoadLocalPlayerSettings();
-    }
-    
-    public void UpdatePlayerName(string newName)
-    {
-        playerSettingDto.playerName = newName;
-        ES3.Save<string>(Constants.SETTING_KEY_PLAYER_NAME, playerSettingDto.playerName);
-    }
-	
     public void OnOptionMenuToggleInput(InputAction.CallbackContext value)
     {
-        if(value.started)
+        if (value.started)
             onOptionMenuToggleEvent.Invoke();
-    }
-    
-    public void OnAudioVolumeChanged(float newVolumn)
-    {
-        audioMixerMaster.SetFloat("volume" , newVolumn);
-        playerSettingDto.audioMasterVolume = newVolumn;
-    }
-
-    public void OnMouseSpeedChanged(float newSpeed)
-    {
-        playerSettingDto.mouseSpeed = newSpeed;
-    }
-    
-    public void OnMouseSpeedZoomedChanged(float newSpeed)
-    {
-        playerSettingDto.mouseSpeedZoomed = newSpeed;
-    }
-
-    public void OnCrosshairSizeChanged(CrosshairSizeEnum newSize)
-    {
-        playerSettingDto.crosshairSize = newSize;
-        Crosshair.Instance.SetSize(newSize);
-    }
-
-    public void OnCrosshairLerpChanged(bool isLerp)
-    {
-        playerSettingDto.isLerpCrosshair = isLerp;
-        Crosshair.Instance.SetLerp(isLerp);
     }
 
     public void OnTempDeathmatchWeaponMenuToggle(InputAction.CallbackContext value)
