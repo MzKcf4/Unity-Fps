@@ -12,7 +12,7 @@ public class FpsWeaponViewModel : MonoBehaviour
     private MMFeedbacks muzzleFeedbacks;
     private AnimancerComponent animancer;
     private AudioSource audioSource;
-    
+
     void Awake()
     {
         animancer = GetComponent<AnimancerComponent>();
@@ -23,13 +23,30 @@ public class FpsWeaponViewModel : MonoBehaviour
     void Start()
     {
         audioSource = LocalPlayerContext.Instance.localPlayerAudioSource;
-        
-        if (!muzzleFeedbacks)
+        AttachMuzzleFeedback();
+
+
+    }
+
+    private void AttachMuzzleFeedback()
+    {
+        if (muzzleFeedbacks || !WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab)
+            return;
+
+        ViewMuzzleMarker marker = GetComponentInChildren<ViewMuzzleMarker>();
+        if (marker)
         {
-            ViewMuzzleMarker marker = GetComponentInChildren<ViewMuzzleMarker>();
-            if (marker && WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab)
-            {
-                GameObject muzzleFeedbackObject = Instantiate(WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab, marker.transform);
+            GameObject muzzleFeedbackObject = Instantiate(WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab, marker.transform);
+            muzzleFeedbacks = muzzleFeedbackObject.GetComponent<MMFeedbacks>();
+        }
+        else
+        {
+            Transform flashTransform = transform.FirstOrDefault(x => {
+                return x.name.Contains("flash");
+            });
+
+            if (flashTransform != null) {
+                GameObject muzzleFeedbackObject = Instantiate(WeaponAssetManager.Instance.weaponMuzzleFeedbackViewPrefab, flashTransform);
                 muzzleFeedbacks = muzzleFeedbackObject.GetComponent<MMFeedbacks>();
             }
         }
@@ -70,15 +87,24 @@ public class FpsWeaponViewModel : MonoBehaviour
     {
         if(weaponResources == null || weaponResources.dictWeaponSounds == null)
             return;
-        
-        if(!weaponResources.dictWeaponSounds.ContainsKey(name))
+
+        if (!weaponResources.dictWeaponSounds.ContainsKey(name))
+        {
             Debug.Log("Sound resource key not found : " + name);
-        
+            return;
+        }
+
         audioSource.PlayOneShot(weaponResources.dictWeaponSounds[name]);
     }
     
     public void AniEvent_PlayWeaponSound(string name)
     {
         PlayWeaponSound(name);
+    }
+
+    private void OnEnable()
+    {
+        if (muzzleFeedbacks)
+            muzzleFeedbacks.StopFeedbacks();
     }
 }

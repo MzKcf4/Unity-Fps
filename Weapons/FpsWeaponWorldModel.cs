@@ -12,7 +12,6 @@ public class FpsWeaponWorldModel : MonoBehaviour
     private MMFeedbacks muzzleFeedbacks;
     public Transform muzzleTransform;
     public GameObject bulletPrefab;
-    
     void Awake()
     {
         
@@ -21,6 +20,7 @@ public class FpsWeaponWorldModel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        
         GameObject muzzleFeedbackPrefab = WeaponAssetManager.Instance.weaponMuzzleFeedbackPrefab;
         if (muzzleTransform != null)
         {
@@ -45,5 +45,11 @@ public class FpsWeaponWorldModel : MonoBehaviour
     {
         if(muzzleFeedbacks && muzzleTransform)
             muzzleFeedbacks.PlayFeedbacks();
+    }
+
+    private void OnEnable()
+    {
+        if (muzzleFeedbacks)
+            muzzleFeedbacks.StopFeedbacks();
     }
 }
