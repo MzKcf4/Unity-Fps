@@ -230,9 +230,12 @@ public partial class FpsPlayer : FpsCharacter
     protected void LocalFireWeapon(Vector3 fromPos , Vector3 forwardVec)
     {
         HitInfoDto hitInfoDto = CoreGameManager.Instance.DoLocalWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
-        if (hitInfoDto == null || hitInfoDto.IsHitNothing())
+        if (hitInfoDto == null || hitInfoDto.IsHitNothing()) 
+        {
+            CmdHandleHitInfo(null);
             return;
-
+        }
+            
         if( hitInfoDto.hitEntityInfoDtoList != null && hitInfoDto.hitEntityInfoDtoList.Count > 0)
         {
             UiHitMarker.Instance.ShowHitMarker();
@@ -244,18 +247,21 @@ public partial class FpsPlayer : FpsCharacter
     [Command]
     public void CmdHandleHitInfo(HitInfoDto hitInfoDto)
     {
-        foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
+        if (hitInfoDto != null)
         {
-            FpsEntity hitEntity = hitInfo.victimIdentity.gameObject.GetComponent<FpsEntity>();
-            if(hitEntity)
+            foreach (HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
             {
-                hitEntity.TakeDamage(hitInfo.damageInfo);
-                // Only send to the damage dealer
-                TargetSpawnDamageText(hitInfo.attackerIdentity.connectionToClient, hitInfo.damageInfo.damage, hitInfo.damageInfo.hitPoint , hitInfo.damageInfo.bodyPart == BodyPart.Head);
+                FpsEntity hitEntity = hitInfo.victimIdentity.gameObject.GetComponent<FpsEntity>();
+                if (hitEntity)
+                {
+                    hitEntity.TakeDamage(hitInfo.damageInfo);
+                    // Only send to the damage dealer
+                    TargetSpawnDamageText(hitInfo.attackerIdentity.connectionToClient, hitInfo.damageInfo.damage, hitInfo.damageInfo.hitPoint, hitInfo.damageInfo.bodyPart == BodyPart.Head);
+                }
             }
-        }
 
-        CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
+            CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
+        }
         
         // Audio / Muzzle effects
         RpcFireWeapon();
@@ -292,6 +298,7 @@ public partial class FpsPlayer : FpsCharacter
         {
             // Unscope the weapon on death
             OnWeaponUnScopeEvent();
+            GetActiveWeapon().ResetActionState();
         }
     }
     
@@ -305,7 +312,7 @@ public partial class FpsPlayer : FpsCharacter
     {
         base.SetRagdollState(isRagdollState);
                 
-        // Also disable the Mover's collider so it won't fly to sky
+        // Disable the Mover's collider/rigidbody so it won't fly to sky
         GetComponent<CapsuleCollider>().enabled = isRagdollState ? false : true;
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         
