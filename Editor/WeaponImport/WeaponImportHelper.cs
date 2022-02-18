@@ -6,14 +6,15 @@ using System.IO;
 using Animancer;
 using System.Text.RegularExpressions;
 
-
 public class WeaponImportHelper
 {
+    private static readonly string WEAPON_PREFAB_ASSET_PATH = "Assets/FpsResources/Prefabs/Weapons";
     private static HashSet<string> targetSequenceSet = new HashSet<string>()
     {
         "idle",
         "idle1",
         "shoot1",
+        "fire",
         "draw",
         "reload",
         // L4D2
@@ -23,29 +24,51 @@ public class WeaponImportHelper
     };
 
     [MenuItem("Assets/Auto populate weapon resource")]
-    public static void TestReadFile()
+    public static void PopulateWeaponResourceByQc()
     {
         Object selectedObject = Selection.activeObject;
-        
+        string ext = Path.GetFileName(AssetDatabase.GetAssetPath(selectedObject));
+        if (!ext.Contains(".qc")) {
+            Debug.LogError("Only .qc file is supported");
+            return;
+        }
+
+        WeaponImportContext context = new WeaponImportContext();
+
         // ----- Initialize the paths ------------ //
-        string currentFolderAssetPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedObject));
-        string qcFileFullPath = Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(selectedObject));
-
-        string weaponResourceTemplateAssetPath = Path.Combine(currentFolderAssetPath, "newWeaponResources.asset");
-        WeaponResources weaponResources = (WeaponResources)AssetDatabase.LoadAssetAtPath(weaponResourceTemplateAssetPath, typeof(WeaponResources));
-
-        string currentFolderPath = Path.GetDirectoryName(qcFileFullPath);
+        PopulatePath(selectedObject, context);
 
         // ------- Read the qc file and gets all events ------ //
-        List<SequenceEventInfo> sequenceEventInfoList = ParseQcFile(qcFileFullPath);
+        List<SequenceEventInfo> sequenceEventInfoList = ParseQcFile(context.qcFileSystemPath);
 
         //  Find AnimationClips in /Animation Folder
-        PopulateAnimationClipFromQc(sequenceEventInfoList, weaponResources, currentFolderPath, currentFolderAssetPath);
+        PopulateAnimationClipFromQc(sequenceEventInfoList, context);
 
-        // ----------------Audio Clips------------------
-        PopulateAudioClipInResource(sequenceEventInfoList, weaponResources, currentFolderPath, currentFolderAssetPath);
+        // ----------------Audio Clips------------------ //
+        PopulateAudioClipInResource(sequenceEventInfoList, context);
+
+        // ----------------Create prefab---------------- //
+        CreateWeaponPrefab(context);
 
         AssetDatabase.Refresh();
+        Debug.Log("Weapon import for " + context.weaponName + " completed !");
+    }
+
+    private static void PopulatePath(Object selectedObject , WeaponImportContext context) 
+    {
+        context.weaponName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(selectedObject));
+        context.modelFolderAssetPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedObject));
+        context.qcFileSystemPath = Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(selectedObject));
+        context.modelFolderFileSystemPath = Path.GetDirectoryName(context.qcFileSystemPath);
+
+        string weaponResourceAssetPath = Path.Combine(context.modelFolderAssetPath, context.weaponName + ".asset");
+        context.weaponResources = (WeaponResources)AssetDatabase.LoadAssetAtPath(weaponResourceAssetPath, typeof(WeaponResources));
+
+        string vModelFileName = context.weaponName + "_v" + ".fbx";
+        context.vModelAssetPath = Path.Combine(context.modelFolderAssetPath, vModelFileName);
+
+        string wModelFileName = context.weaponName + "_w" + ".fbx";
+        context.wModelAssetPath = Path.Combine(context.modelFolderAssetPath, wModelFileName);
     }
 
     private static bool ExistsInTargetSet(string name)
@@ -70,8 +93,10 @@ public class WeaponImportHelper
             {
                 // Find the name of the sequence , inside the "";
                 string sequenceName = Regex.Match(line, "\"([^\"]*)\"").ToString().Replace("\"", "");
-                if (!targetSequenceSet.Contains(sequenceName))
-                    continue;
+                Debug.Log("Parsing " + sequenceName + " in QC file");
+
+                // if (!IsTargetSequenceSet(sequenceName))
+                // continue;
 
                 SequenceEventInfo sequenceEventInfo = new SequenceEventInfo()
                 {
@@ -88,6 +113,16 @@ public class WeaponImportHelper
         return sequenceEventInfoList;
     }
 
+    private static bool IsTargetSequenceSet(string sequenceName)
+    {
+        foreach (string targetSequence in targetSequenceSet)
+        {
+            if (sequenceName.Contains(targetSequence))
+                return true;
+        }
+        return false;
+    }
+
     private static int ParseQcSequence(string[] fileLines, int startLine, SequenceEventInfo sequenceEventInfo)
     {
         Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
@@ -100,7 +135,7 @@ public class WeaponImportHelper
             // fps should indicates the end of sequence.
             if (line.Contains("fps"))
                 break;
-
+             
             // 'event 5004' means play sound
             if (line.Contains("event 5004"))
             {
@@ -113,6 +148,17 @@ public class WeaponImportHelper
                 dictFrameToSoundName.Add(frame, soundName);
                 Debug.Log("Added " + frame + " : " + soundName);
             }
+            else if (line.Contains("AE_CL_PLAYSOUND"))
+            {
+                // 0   1    2              3    4   5
+                // { event AE_CL_PLAYSOUND 6 "bolt" }
+                string[] eventParts = line.Split(' ');
+
+                int frame = int.Parse(eventParts[3]);
+                string soundName = eventParts[4].Replace("\"", "");
+                dictFrameToSoundName.Add(frame, soundName);
+                Debug.Log("Added " + frame + " : " + soundName);
+            }
 
             lineParsed++;
         }
@@ -122,19 +168,25 @@ public class WeaponImportHelper
         return lineParsed;
     }
 
-
-    private static void PopulateAnimationClipFromQc(List<SequenceEventInfo> sequenceEventInfoList, WeaponResources weaponResources, string currentFolderPath, string currentFolderAssetPath)
+    private static void PopulateAnimationClipFromQc(List<SequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
     {
-        string animationFolder = Path.Combine(currentFolderPath, "Animations");
+        string animationFolder = Path.Combine(context.modelFolderFileSystemPath, "Animations");
         DirectoryInfo dirInfo = new DirectoryInfo(animationFolder);
         FileInfo[] animationFileInfos = dirInfo.GetFiles("*.anim", SearchOption.TopDirectoryOnly);
         foreach (FileInfo fileInfo in animationFileInfos)
         {
-            if (!ExistsInTargetSet(fileInfo.Name))
-                continue;
-            string assetPath = Path.Combine(currentFolderAssetPath, "Animations", fileInfo.Name);
+            // Populate EVERY animation files when it got events defined.
+            string assetPath = Path.Combine(context.modelFolderAssetPath, "Animations", fileInfo.Name);
+            Debug.Log("Handling animation events for " + fileInfo.Name);
 
             SequenceEventInfo sequenceEventInfo = GetRelatedSequenceEventInfo(assetPath, sequenceEventInfoList);
+            if (sequenceEventInfo == null)
+            {
+                Debug.Log("Skipped " + fileInfo.Name);
+                continue;
+            }
+                
+
             AnimationClip animationClip = (AnimationClip)AssetDatabase.LoadAssetAtPath(assetPath, typeof(AnimationClip));
             AnimationEvent[] createdEvents = CreateAnimationEvents(sequenceEventInfo);
             AnimationUtility.SetAnimationEvents(animationClip, createdEvents);
@@ -142,14 +194,14 @@ public class WeaponImportHelper
             // ----- Map to ClipTransitions --- //
             if (fileInfo.Name.Contains("idle"))
             {
-                weaponResources.idleClip.Clip = animationClip;
+                context.weaponResources.idleClip.Clip = animationClip;
             }
             else if (fileInfo.Name.Contains("reload"))
-                weaponResources.reloadClip.Clip = animationClip;
+                context.weaponResources.reloadClip.Clip = animationClip;
             else if (fileInfo.Name.Contains("shoot"))
-                weaponResources.shootClip.Clip = animationClip;
+                context.weaponResources.shootClip.Clip = animationClip;
             else if (fileInfo.Name.Contains("draw"))
-                weaponResources.drawClip.Clip = animationClip;
+                context.weaponResources.drawClip.Clip = animationClip;
         }
     }
 
@@ -182,11 +234,12 @@ public class WeaponImportHelper
         return animationEventList.ToArray();
     }
 
-
-    private static void PopulateAudioClipInResource(List<SequenceEventInfo> sequenceEventInfoList, WeaponResources weaponResources, string currentFolderPath, string currentFolderAssetPath)
+    private static void PopulateAudioClipInResource(List<SequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
     {
+        WeaponResources weaponResources = context.weaponResources;
+
         weaponResources.dictWeaponSounds = new Dictionary<string, AudioClip>();
-        string soundFolder = Path.Combine(currentFolderPath, "Sounds");
+        string soundFolder = Path.Combine(context.modelFolderFileSystemPath, "Sounds");
         DirectoryInfo soundDirInfo = new DirectoryInfo(soundFolder);
         FileInfo[] soundFileInfos = soundDirInfo.GetFiles("*.wav", SearchOption.TopDirectoryOnly);
         foreach (SequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
@@ -203,7 +256,7 @@ public class WeaponImportHelper
                     if (fileInfo.Name.Contains(soundName))
                     {
                         found = true;
-                        string assetPath = Path.Combine(currentFolderAssetPath, "Sounds", fileInfo.Name);
+                        string assetPath = Path.Combine(context.modelFolderAssetPath, "Sounds", fileInfo.Name);
                         AudioClip clip = (AudioClip)AssetDatabase.LoadAssetAtPath(assetPath, typeof(AudioClip));
                         if (!weaponResources.dictWeaponSounds.ContainsKey(soundName))
                             weaponResources.dictWeaponSounds.Add(soundName, clip);
@@ -222,7 +275,30 @@ public class WeaponImportHelper
             weaponResources.dictWeaponSounds.Add("fire", null);
 
     }
-    
+
+    private static void CreateWeaponPrefab(WeaponImportContext context)
+    {
+        // ------ v model ------- //
+        GameObject vModelFbx = (GameObject)AssetDatabase.LoadMainAssetAtPath(context.vModelAssetPath);
+        GameObject vModelInstance = (GameObject)PrefabUtility.InstantiatePrefab(vModelFbx);
+        vModelInstance.AddComponent(typeof(FpsWeaponViewModel));
+        Utils.ChangeLayerRecursively(vModelInstance, Constants.LAYER_FIRST_PERSON_VIEW, true);
+        string vModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_v_variant.prefab");
+        var vModelVariant = PrefabUtility.SaveAsPrefabAsset(vModelInstance, vModelSavePath);
+
+        // ----- w model -------- //
+        GameObject wModelFbx = (GameObject)AssetDatabase.LoadMainAssetAtPath(context.wModelAssetPath);
+        GameObject wModelInstance = (GameObject)PrefabUtility.InstantiatePrefab(wModelFbx);
+        wModelInstance.AddComponent(typeof(FpsWeaponWorldModel));
+        string wModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_w_variant.prefab");
+        var wModelVariant = PrefabUtility.SaveAsPrefabAsset(wModelInstance, wModelSavePath);
+
+        // set prefab to weaponResource
+        WeaponResources weaponResources = context.weaponResources;
+        weaponResources.weaponViewPrefab = vModelVariant;
+        weaponResources.weaponWorldPrefab = wModelVariant;
+        weaponResources.weaponId = context.weaponName;
+    }
 
     class SequenceEventInfo
     {
