@@ -41,7 +41,9 @@ public class FpsWeaponViewModel : MonoBehaviour
         else
         {
             Transform flashTransform = transform.FirstOrDefault(x => {
-                return x.name.Contains("flash");
+                return x.name.Contains("flash") 
+                        // INS2
+                        || x.name.Contains("A_Muzzle");
             });
 
             if (flashTransform != null) {
