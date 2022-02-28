@@ -8,19 +8,36 @@ using System.Text.RegularExpressions;
 
 public class WeaponImportHelper
 {
-    private static readonly string WEAPON_PREFAB_ASSET_PATH = "Assets/FpsResources/Prefabs/Weapons";
-    private static HashSet<string> targetSequenceSet = new HashSet<string>()
+    enum AnimType 
     {
-        "idle",
-        "idle1",
-        "shoot1",
+        ANIM_IDLE,
+        ANIM_FIRE,
+        ANIM_RELOAD,
+        ANIM_DRAW,
+        ANIM_RELOAD_PALLET_START,
+        ANIM_RELOAD_PALLET_INSERT,
+        ANIM_RELOAD_PALLET_END,
+    }
+    private static readonly string WEAPON_PREFAB_ASSET_PATH = "Assets/FpsResources/Prefabs/Weapons";
+
+    private static List<string> fireSoundNameList = new List<string>()
+    {
         "fire",
-        "draw",
-        "reload",
-        // L4D2
-        "reload_layer",
-        "deploy_layer",
-        "shoot_layer"
+        "shoot",
+        "shoot1",
+        "fp"
+    };
+
+    private static Dictionary<AnimType, List<string>> dictAnimTypeToNameList = new Dictionary<AnimType, List<string>>()
+    {
+        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1"  } },
+        { AnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot" , "shoot1", "shoot_1" , "shoot_layer" } },
+        { AnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload_layer"  } },
+        { AnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy_layer" , "draw_first"  } },
+        { AnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
+        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert"} },
+        { AnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end"} },
+
     };
 
     [MenuItem("Assets/Auto populate weapon resource")]
@@ -38,6 +55,8 @@ public class WeaponImportHelper
         // ----- Initialize the paths ------------ //
         PopulatePath(selectedObject, context);
 
+        // ----- Create the weapon resource ----- //
+
         // ------- Read the qc file and gets all events ------ //
         List<SequenceEventInfo> sequenceEventInfoList = ParseQcFile(context.qcFileSystemPath);
 
@@ -49,7 +68,8 @@ public class WeaponImportHelper
 
         // ----------------Create prefab---------------- //
         CreateWeaponPrefab(context);
-
+        
+        EditorUtility.SetDirty(context.weaponResources);
         AssetDatabase.Refresh();
         Debug.Log("Weapon import for " + context.weaponName + " completed !");
     }
@@ -61,24 +81,18 @@ public class WeaponImportHelper
         context.qcFileSystemPath = Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(selectedObject));
         context.modelFolderFileSystemPath = Path.GetDirectoryName(context.qcFileSystemPath);
 
+        // string weaponResourceAssetPath = Path.Combine(context.modelFolderAssetPath, context.weaponName + ".asset");
+        context.weaponResources = ScriptableObject.CreateInstance<WeaponResources>();
         string weaponResourceAssetPath = Path.Combine(context.modelFolderAssetPath, context.weaponName + ".asset");
-        context.weaponResources = (WeaponResources)AssetDatabase.LoadAssetAtPath(weaponResourceAssetPath, typeof(WeaponResources));
+        string name = AssetDatabase.GenerateUniqueAssetPath(weaponResourceAssetPath);
+        AssetDatabase.CreateAsset(context.weaponResources, name);
+        // (WeaponResources)AssetDatabase.LoadAssetAtPath(weaponResourceAssetPath, typeof(WeaponResources));
 
         string vModelFileName = context.weaponName + "_v" + ".fbx";
         context.vModelAssetPath = Path.Combine(context.modelFolderAssetPath, vModelFileName);
 
         string wModelFileName = context.weaponName + "_w" + ".fbx";
         context.wModelAssetPath = Path.Combine(context.modelFolderAssetPath, wModelFileName);
-    }
-
-    private static bool ExistsInTargetSet(string name)
-    {
-        foreach (string targetName in targetSequenceSet)
-        {
-            if (name.Contains(targetName))
-                return true;
-        }
-        return false;
     }
 
     private static List<SequenceEventInfo> ParseQcFile(string qcFilePath)
@@ -95,9 +109,6 @@ public class WeaponImportHelper
                 string sequenceName = Regex.Match(line, "\"([^\"]*)\"").ToString().Replace("\"", "");
                 Debug.Log("Parsing " + sequenceName + " in QC file");
 
-                // if (!IsTargetSequenceSet(sequenceName))
-                // continue;
-
                 SequenceEventInfo sequenceEventInfo = new SequenceEventInfo()
                 {
                     sequenceName = sequenceName
@@ -113,16 +124,6 @@ public class WeaponImportHelper
         return sequenceEventInfoList;
     }
 
-    private static bool IsTargetSequenceSet(string sequenceName)
-    {
-        foreach (string targetSequence in targetSequenceSet)
-        {
-            if (sequenceName.Contains(targetSequence))
-                return true;
-        }
-        return false;
-    }
-
     private static int ParseQcSequence(string[] fileLines, int startLine, SequenceEventInfo sequenceEventInfo)
     {
         Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
@@ -134,7 +135,13 @@ public class WeaponImportHelper
             string line = fileLines[i];
             // fps should indicates the end of sequence.
             if (line.Contains("fps"))
+            {
+                //  0    1
+                // fps 42.5
+                string[] fpsParts = line.Split(' ');
+                sequenceEventInfo.fpsMultiplier = float.Parse(fpsParts[1]) / 24f;
                 break;
+            }
              
             // 'event 5004' means play sound
             if (line.Contains("event 5004"))
@@ -186,22 +193,60 @@ public class WeaponImportHelper
                 continue;
             }
                 
-
             AnimationClip animationClip = (AnimationClip)AssetDatabase.LoadAssetAtPath(assetPath, typeof(AnimationClip));
             AnimationEvent[] createdEvents = CreateAnimationEvents(sequenceEventInfo);
             AnimationUtility.SetAnimationEvents(animationClip, createdEvents);
 
             // ----- Map to ClipTransitions --- //
-            if (fileInfo.Name.Contains("idle"))
+            MapAnimClipToWeaponResource(Path.GetFileNameWithoutExtension(fileInfo.Name), animationClip, context.weaponResources, sequenceEventInfo);
+        }
+    }
+
+    private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, SequenceEventInfo sequenceEventInfo)
+    {
+        foreach (KeyValuePair<AnimType, List<string>> entry in dictAnimTypeToNameList)
+        {
+            AnimType animType = entry.Key;
+            List<string> possibleNameList = entry.Value;
+
+            if (!string.IsNullOrEmpty(possibleNameList.Find(str => fileName.EndsWith(str))))
             {
-                context.weaponResources.idleClip.Clip = animationClip;
-            }
-            else if (fileInfo.Name.Contains("reload"))
-                context.weaponResources.reloadClip.Clip = animationClip;
-            else if (fileInfo.Name.Contains("shoot"))
-                context.weaponResources.shootClip.Clip = animationClip;
-            else if (fileInfo.Name.Contains("draw"))
-                context.weaponResources.drawClip.Clip = animationClip;
+                if (animType == AnimType.ANIM_IDLE)
+                    clip.wrapMode = WrapMode.Loop;
+
+                ClipTransition clipTransitionToMap = null;
+                if (AnimType.ANIM_DRAW == animType)
+                    clipTransitionToMap = weaponResources.drawClip;
+                else if (AnimType.ANIM_IDLE == animType)
+                    clipTransitionToMap = weaponResources.idleClip;
+                else if (AnimType.ANIM_FIRE == animType)
+                    clipTransitionToMap = weaponResources.shootClip;
+                else if (AnimType.ANIM_RELOAD == animType)
+                    clipTransitionToMap = weaponResources.reloadClip;
+                else if (AnimType.ANIM_RELOAD_PALLET_START == animType)
+                    clipTransitionToMap = weaponResources.palletReload_StartClip;
+                else if (AnimType.ANIM_RELOAD_PALLET_INSERT == animType)
+                    clipTransitionToMap = weaponResources.palletReload_InsertClip;
+                else if (AnimType.ANIM_RELOAD_PALLET_END == animType)
+                    clipTransitionToMap = weaponResources.palletReload_EndClip;
+                else
+                    continue;
+
+                clipTransitionToMap.Clip = clip;
+                clipTransitionToMap.Speed = sequenceEventInfo.fpsMultiplier;
+                
+                /*
+                if (AnimType.ANIM_DRAW == animType)
+                    weaponResources.drawClip.Clip = clip;
+                else if (AnimType.ANIM_IDLE == animType)
+                    weaponResources.idleClip.Clip = clip;
+                else if (AnimType.ANIM_FIRE == animType)
+                    weaponResources.shootClip.Clip = clip;
+                else if (AnimType.ANIM_RELOAD == animType)
+                    weaponResources.reloadClip.Clip = clip;
+                */
+                Debug.Log("Mapped " + fileName + " to " + animType);
+            } 
         }
     }
 
@@ -209,7 +254,7 @@ public class WeaponImportHelper
     {
         foreach (SequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
         {
-            if (animationClipName.Contains(sequenceEventInfo.sequenceName))
+            if (Path.GetFileNameWithoutExtension(animationClipName).EndsWith(sequenceEventInfo.sequenceName))
                 return sequenceEventInfo;
         }
         return null;
@@ -228,6 +273,7 @@ public class WeaponImportHelper
             evt.functionName = "AniEvent_PlayWeaponSound";
             evt.stringParameter = soundName;
 
+            Debug.Log("Added animation event " + soundName + " at frame " + frame);
             animationEventList.Add(evt);
         }
 
@@ -272,7 +318,23 @@ public class WeaponImportHelper
 
         // Manually adds a "fire" key to resource
         if (!weaponResources.dictWeaponSounds.ContainsKey("fire"))
-            weaponResources.dictWeaponSounds.Add("fire", null);
+        {
+            bool found = false;
+            foreach (FileInfo fileInfo in soundFileInfos)
+            {
+                if (!string.IsNullOrEmpty(fireSoundNameList.Find(str => fileInfo.Name.Contains(str))))
+                {
+                    found = true;
+                    string assetPath = Path.Combine(context.modelFolderAssetPath, "Sounds", fileInfo.Name);
+                    AudioClip clip = (AudioClip)AssetDatabase.LoadAssetAtPath(assetPath, typeof(AudioClip));
+                    weaponResources.dictWeaponSounds.Add("fire", clip);
+                    break;
+                }
+            }
+            if(!found)
+                weaponResources.dictWeaponSounds.Add("fire", null);
+        }
+        
 
     }
 
@@ -285,6 +347,7 @@ public class WeaponImportHelper
         Utils.ChangeLayerRecursively(vModelInstance, Constants.LAYER_FIRST_PERSON_VIEW, true);
         string vModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_v_variant.prefab");
         var vModelVariant = PrefabUtility.SaveAsPrefabAsset(vModelInstance, vModelSavePath);
+        Object.DestroyImmediate(vModelInstance);
 
         // ----- w model -------- //
         GameObject wModelFbx = (GameObject)AssetDatabase.LoadMainAssetAtPath(context.wModelAssetPath);
@@ -292,6 +355,7 @@ public class WeaponImportHelper
         wModelInstance.AddComponent(typeof(FpsWeaponWorldModel));
         string wModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_w_variant.prefab");
         var wModelVariant = PrefabUtility.SaveAsPrefabAsset(wModelInstance, wModelSavePath);
+        Object.DestroyImmediate(wModelInstance);
 
         // set prefab to weaponResource
         WeaponResources weaponResources = context.weaponResources;
@@ -303,6 +367,7 @@ public class WeaponImportHelper
     class SequenceEventInfo
     {
         public string sequenceName;
+        public float fpsMultiplier;
         public Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
         public Dictionary<string, AudioClip> dictNameToAudioClip = new Dictionary<string, AudioClip>();
     }
