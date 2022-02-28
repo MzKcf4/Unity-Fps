@@ -17,6 +17,7 @@ public class DeathMatchManager : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI uiTextScoreBlue;
     [SerializeField] private TextMeshProUGUI uiTextScoreRed;
     [SerializeField] private TextMeshProUGUI uiTextScoreTarget;
+    [SerializeField] private AudioClip roundEndClip;
     
     void Awake()
     {
@@ -26,7 +27,7 @@ public class DeathMatchManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        targetScore = 500;
+        targetScore = 1500;
         ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
     }
     
@@ -35,6 +36,13 @@ public class DeathMatchManager : NetworkBehaviour
         base.OnStartClient();
         UpdateUiScore(currentScoreBlue , currentScoreRed , targetScore);
         SharedContext.Instance.characterSpawnEvent.AddListener(OnCharacterSpawn);
+    }
+
+    [Server]
+    public void UpdateTargetScore(int newScore)
+    {
+        targetScore = newScore;
+        RpcUpdateScore(currentScoreBlue, currentScoreRed, targetScore);
     }
         
     [Server]
@@ -60,12 +68,41 @@ public class DeathMatchManager : NetworkBehaviour
             currentScoreBlue += killScore;
         
         RpcUpdateScore(currentScoreBlue , currentScoreRed , targetScore);
+        CheckWinCondition();
     }
     
     private void CheckWinCondition(){
-        if(currentScoreBlue >= targetScore || currentScoreRed >= targetScore)
+        if (currentScoreBlue >= targetScore || currentScoreRed >= targetScore)
+        {
             isMatchActive = false;
-            
+            RpcRoundEnd(currentScoreBlue >= targetScore);
+            PlayerManager.Instance.KickAllBot();
+        }   
+    }
+
+    [ClientRpc]
+    private void RpcRoundEnd(bool isBlueWin)
+    {
+        if (isLocalPlayer && roundEndClip != null)
+        {
+            if (LocalPlayerContext.Instance.localPlayerAudioSource)
+            {
+                LocalPlayerContext.Instance.localPlayerAudioSource.PlayOneShot(roundEndClip);
+            }
+
+            if (isBlueWin)
+            {
+                uiTextScoreBlue.text = "Blue team wins";
+                uiTextScoreRed.text = "";
+                uiTextScoreTarget.text = "";
+            }
+            else
+            {
+                uiTextScoreBlue.text = "";
+                uiTextScoreRed.text = "Blue team wins";
+                uiTextScoreTarget.text = "";
+            }
+        }
     }
     
     private int GetWeaponKillScore(string weaponName)
@@ -83,23 +120,40 @@ public class DeathMatchManager : NetworkBehaviour
     
     private void UpdateUiScore(int newBlue , int newRed , int newTarget)
     {
-        uiTextScoreTarget.text = newTarget.ToString();
-        uiTextScoreBlue.text = newBlue.ToString();
-        uiTextScoreRed.text = newRed.ToString();
+        if (currentScoreBlue >= targetScore)
+        {
+            uiTextScoreBlue.text = "Blue team wins";
+            uiTextScoreRed.text = "";
+            uiTextScoreTarget.text = "";
+        }
+        else if (currentScoreRed >= targetScore)
+        {
+            uiTextScoreBlue.text = "";
+            uiTextScoreRed.text = "Blue team wins";
+            uiTextScoreTarget.text = "";
+        }
+        else
+        {
+            uiTextScoreTarget.text = newTarget.ToString();
+            uiTextScoreBlue.text = newBlue.ToString();
+            uiTextScoreRed.text = newRed.ToString();
+        }
     }
     
     private void OnCharacterSpawn(FpsCharacter fpsCharacter)
     {
-        if(fpsCharacter.isLocalPlayer)
+
+        if(fpsCharacter.isLocalPlayer && fpsCharacter is FpsHumanoidCharacter)
         {
+            FpsHumanoidCharacter humanoidCharacter = (FpsHumanoidCharacter)fpsCharacter;
             string weaponNamePrimary = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON , "csgo_ak47");
             string weaponNameSecondary = LocalPlayerContext.Instance.GetAdditionalValue(Constants.ADDITIONAL_KEY_DM_SELECTED_WEAPON_SECONDARY, "csgo_deagle");
 
-            if (!fpsCharacter.HasWeapon(weaponNamePrimary))
-                fpsCharacter.CmdGetWeapon(weaponNamePrimary, 0);
+            if (!humanoidCharacter.HasWeapon(weaponNamePrimary))
+                humanoidCharacter.CmdGetWeapon(weaponNamePrimary, 0);
 
-            if (!fpsCharacter.HasWeapon(weaponNameSecondary))
-                fpsCharacter.CmdGetWeapon(weaponNameSecondary, 1);
+            if (!humanoidCharacter.HasWeapon(weaponNameSecondary))
+                humanoidCharacter.CmdGetWeapon(weaponNameSecondary, 1);
 
         }
     }
