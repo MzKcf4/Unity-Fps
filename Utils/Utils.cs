@@ -15,7 +15,7 @@ public class Utils
         hits = Physics.RaycastAll(originPos ,directionWithSpread, 100.0f , mask);
         
         // ascending distance
-        List<RaycastHit> sortedHits = hits.OrderBy(hit => Vector3.Distance(fromPos , hit.transform.position)).ToList();
+        List<RaycastHit> sortedHits = hits.OrderBy(hit => Vector3.Distance(fromPos , hit.point)).ToList();
         
         foreach(RaycastHit hit in sortedHits)
         {
