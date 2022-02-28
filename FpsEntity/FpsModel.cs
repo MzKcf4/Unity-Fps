@@ -9,8 +9,8 @@ Indicates the ragdoll object
 
 public class FpsModel : MonoBehaviour
 {
-    public FpsEntity controllerEntity;
-    public SkinnedMeshRenderer bodyRenderer;
+    [HideInInspector] public FpsEntity controllerEntity;
+    private SkinnedMeshRenderer bodyRenderer;
     private AimController finalIkAimController;
     private AimIK finalIkAimIk;
     
@@ -28,18 +28,31 @@ public class FpsModel : MonoBehaviour
     {
         
     }
+
+    public void SetRendererLayer(string layerName)
+    {
+        if (!bodyRenderer) return;
+
+        gameObject.layer = LayerMask.NameToLayer(layerName);
+    }
     
     public void SetLookAtTransform(Transform transform)
     {
         lookAtTransform = transform;
-        
-        finalIkAimController.target = transform;
-        ((IKSolverAim)finalIkAimIk.GetIKSolver()).target = transform;
+
+        if (finalIkAimController)
+        {
+            finalIkAimController.target = transform;
+            ((IKSolverAim)finalIkAimIk.GetIKSolver()).target = transform;
+        }
     }
     
     public void ToggleLookAt(bool enable)
     {
-        finalIkAimController.enabled = enable;
-        finalIkAimIk.enabled = enable;
+        if (finalIkAimController)
+        {
+            finalIkAimController.enabled = enable;
+            finalIkAimIk.enabled = enable;
+        }
     }
 }

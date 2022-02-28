@@ -83,7 +83,9 @@ public class FpsUiOptionMenu : MonoBehaviour
             crosshairSizeSelector.index = 0;
         else
             crosshairSizeSelector.index = 1;
-        crosshairSizeSelector.UpdateUI();
+
+        if(crosshairSizeSelector.gameObject.activeInHierarchy)
+            crosshairSizeSelector.UpdateUI();
     }
 
     private void SaveValuesToPlayerSetting()

@@ -11,7 +11,7 @@ public class CoreGameManager : NetworkBehaviour
     private static LayerMask MASK_HITBOX;
     private static LayerMask MASK_WALL;
     private static LayerMask MASK_HITBOX_AND_WALL;
-    
+
     void Awake()
     {
         Instance = this;
@@ -23,7 +23,24 @@ public class CoreGameManager : NetworkBehaviour
         MASK_WALL = LayerMask.GetMask(Constants.LAYER_GROUND);
         MASK_HITBOX_AND_WALL = (1 << MASK_HITBOX.value) | (1 << MASK_WALL.value);
     }
-    
+
+    public void SpawnGameModeManager(GameModeEnum gameMode)
+    {
+        GameObject mgrObj;
+
+        if (GameModeEnum.Debug == gameMode)
+            mgrObj = Instantiate(WeaponAssetManager.Instance.debugGameModePrefab);
+        else if (GameModeEnum.Monster == gameMode)
+        {
+            mgrObj = Instantiate(WeaponAssetManager.Instance.monsterGameModePrefab);
+            NetworkServer.Spawn(Instantiate(WeaponAssetManager.Instance.debugGameModePrefab));
+        }
+        else
+            mgrObj = Instantiate(WeaponAssetManager.Instance.gunGameManagerPrefab);
+        
+        NetworkServer.Spawn(mgrObj);
+    }
+
     [Server]
     public void DoWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
@@ -37,13 +54,13 @@ public class CoreGameManager : NetworkBehaviour
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
             RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
-            
+
             if(hitInfo == null)
                 continue;
                 
             GameObject objOnHit = hitInfo.hitObject;
             // Hits wall
-            if( (1 << objOnHit.layer) == MASK_WALL.value)
+            if ( (1 << objOnHit.layer) == MASK_WALL.value)
             {
                 hitWallRayList.Add(hitInfo.asHitPointInfoDto());
                 continue;
@@ -77,7 +94,7 @@ public class CoreGameManager : NetworkBehaviour
         RpcSpawnFx(hitWallRayList , hitCharacterRayList);
     }
     
-    public HitInfoDto DoLocalWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
+    public HitInfoDto DoLocalWeaponRaycast(FpsHumanoidCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
         if (fpsWeapon.weaponCategory == WeaponCategory.Melee)
             return DoMeleeWeaponRaycast(character, fpsWeapon);
@@ -95,12 +112,11 @@ public class CoreGameManager : NetworkBehaviour
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
             RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
-            
-            if(hitInfo == null)
+            if (hitInfo == null)
                 continue;
             GameObject objOnHit = hitInfo.hitObject;
             // Hits wall
-            if( (1 << objOnHit.layer) == MASK_WALL.value)
+            if ( (1 << objOnHit.layer) == MASK_WALL.value)
             {
                 hitWallDtoList.Add(hitInfo.asHitWallInfoDto());
                 continue;
@@ -108,6 +124,9 @@ public class CoreGameManager : NetworkBehaviour
             
             // Else should expect hitting hitbox
             FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
+            if (enemyHitBox == null)
+                return null;
+            
             FpsEntity hitEntity = enemyHitBox.fpsEntity;
                 
             if(hitEntity is FpsCharacter)
@@ -132,11 +151,10 @@ public class CoreGameManager : NetworkBehaviour
             }
         }
         
-        // RpcSpawnFx(hitWallRayList , hitCharacterRayList);
         return hitInfoDto;
     }
 
-    public HitInfoDto DoMeleeWeaponRaycast(FpsCharacter fpsCharacter, FpsWeapon fpsWeapon)
+    public HitInfoDto DoMeleeWeaponRaycast(FpsHumanoidCharacter fpsCharacter, FpsWeapon fpsWeapon)
     {
         RaycastHelper meleeRaycastHelper = fpsCharacter.meleeRaycastHelper;
         if (meleeRaycastHelper == null)

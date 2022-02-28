@@ -12,8 +12,6 @@ public class MainMenuNetworkHUD : MonoBehaviour
     public TMP_InputField inputFieldAddress;
     public TMP_InputField inputFieldPlayerName;
     
-    // UpdatePlayerName
-    
     // Start is called before the first frame update
     void Start()
     {
@@ -26,8 +24,8 @@ public class MainMenuNetworkHUD : MonoBehaviour
             inputFieldPlayerName.text = LocalPlayerSettingManager.Instance.GetPlayerName();
 
 
-        btnHost.onClick.AddListener(HostServer);
-        btnConnect.onClick.AddListener(ConnectToServer);
+        btnHost.onClick.AddListener(DoHostServer);
+        btnConnect.onClick.AddListener(DoConnectToServer);
     }
 
     // Update is called once per frame
@@ -36,18 +34,18 @@ public class MainMenuNetworkHUD : MonoBehaviour
         
     }
     
-    public void HostServer()
+    public void DoHostServer()
     {
         LocalPlayerSettingManager.Instance.UpdatePlayerName(inputFieldPlayerName.text);
         
         NetworkManager.singleton.StartHost();
     }
     
-    public void ConnectToServer()
+    public void DoConnectToServer()
     {
         LocalPlayerSettingManager.Instance.UpdatePlayerName(inputFieldPlayerName.text);
         
-        NetworkManager.singleton.StartClient();
         NetworkManager.singleton.networkAddress = inputFieldAddress.text;
+        NetworkManager.singleton.StartClient();
     }
 }

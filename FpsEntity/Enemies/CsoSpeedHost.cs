@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class CsoSpeedHost : AbstractCsoEnemy
+public class CsoSpeedHost : FpsNpc
 {
 	[SerializeField]
 	private ActionCooldown stalkCooldown;
@@ -11,16 +11,20 @@ public class CsoSpeedHost : AbstractCsoEnemy
 	private bool isOnStalk = false;
 	public float stalkDuration = 5f;
 	
-	[SerializeField]
 	private SkinnedMeshRenderer renderer;
-	[SerializeField]
-	private Material normalMaterial;
-	[SerializeField]
-	private Material transparentMaterial;
-	
-	protected override void Start()
+
+	[SerializeField] private Material normalMaterial;
+	[SerializeField] private Material transparentMaterial;
+
+    protected override void Awake()
+    {
+        base.Awake();
+    }
+
+    protected override void Start()
 	{
 		base.Start();
+		renderer = GetComponentInChildren<SkinnedMeshRenderer>();
 	}
 
 	protected override void Update()
@@ -42,7 +46,8 @@ public class CsoSpeedHost : AbstractCsoEnemy
 			{
 				DoStalkEnd();
 			}
-			
+
+			if (IsDead()) return;
 			stalkCooldown.ReduceCooldown(Time.deltaTime);
 			if(!stalkCooldown.IsOnCooldown())
 			{

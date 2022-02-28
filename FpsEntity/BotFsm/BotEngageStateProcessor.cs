@@ -90,6 +90,7 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
 
     private bool CanStrafe()
     {
-        return fpsBot.GetActiveWeapon().weaponCategory != WeaponCategory.Sniper;
+        
+        return fpsBot.GetActiveWeapon() != null && fpsBot.GetActiveWeapon().weaponCategory != WeaponCategory.Sniper;
     }
 }

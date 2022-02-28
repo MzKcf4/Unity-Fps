@@ -23,6 +23,8 @@ public class FpsUiManager : MonoBehaviour
     private GameObject scopeContainer;
     [SerializeField]
     private GameObject crosshairContainer;
+	[SerializeField]
+	private GameObject infoPanelContainer;
 	
 	void Awake()
 	{
@@ -110,4 +112,9 @@ public class FpsUiManager : MonoBehaviour
     {
         crosshairContainer.SetActive(enable);
     }
+
+	public Transform GetInfoPanel() 
+	{
+		return infoPanelContainer.transform;
+	}
 }

@@ -9,6 +9,9 @@ public class WeaponAssetManager : MonoBehaviour
     public WeaponCommonResources weaponCommonResources;
     public GameObject weaponMuzzleFeedbackPrefab;
     public GameObject weaponMuzzleFeedbackViewPrefab;
+    public GameObject gunGameManagerPrefab;
+    public GameObject debugGameModePrefab;
+    public GameObject monsterGameModePrefab;
 
     private List<string> activeWeaponIdList = new List<string>();
     

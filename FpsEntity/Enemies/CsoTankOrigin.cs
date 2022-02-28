@@ -4,7 +4,7 @@ using UnityEngine;
 using Mirror;
 using Animancer;
 
-public class CsoTankOrigin : AbstractCsoEnemy
+public class CsoTankOrigin : FpsNpc
 {
 	// ----------------
 	[SerializeField]
@@ -12,13 +12,7 @@ public class CsoTankOrigin : AbstractCsoEnemy
 	private float berserkRemaining = 0f;
 	private bool isOnBerserk = false;
 	// ----------------
-	
-	protected override void Start()
-	{
-		base.Start();
-	}
-	
-	// Update is called once per frame
+
 	protected override void Update()
 	{
 		base.Update();
@@ -38,7 +32,9 @@ public class CsoTankOrigin : AbstractCsoEnemy
 			{
 				DoBerserkEnd();
 			}
-			
+
+			if (IsDead()) return;
+
 			berserkCooldown.ReduceCooldown(Time.deltaTime);
 			if(!berserkCooldown.IsOnCooldown())
 			{
@@ -52,12 +48,14 @@ public class CsoTankOrigin : AbstractCsoEnemy
 	{
 		isOnBerserk = true;
 		berserkRemaining = 8f;
+		MultiplySpeed(1.5f);
 		RpcDoBerserk();
 	}
 	
 	protected void DoBerserkEnd()
 	{
 		isOnBerserk = false;
+		MultiplySpeed((1f / 1.5f));
 		RpcDoBerserkEnd();
 	}
 	

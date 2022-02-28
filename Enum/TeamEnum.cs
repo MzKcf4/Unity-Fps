@@ -6,5 +6,6 @@ public enum TeamEnum
 {
     Blue,
     Red,
-    Spectator
+    Spectator,
+    Monster
 }

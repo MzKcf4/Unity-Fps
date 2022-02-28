@@ -8,8 +8,11 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 	static string[] partialBoneNames = new string[]
 	{
 		"Bip01_L_UpperArm",
+		// "Bip01_L_ForeTwist",
 		"Bip01_L_Forearm",
 		"Bip01_L_Hand",
+		
+
 		"Bip01_L_Finger0",
 		"Bip01_L_Finger01",
 		"Bip01_L_Finger02",
@@ -25,10 +28,12 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		"Bip01_L_Finger4",
 		"Bip01_L_Finger41",
 		"Bip01_L_Finger42",
-
+		
 		"Bip01_R_UpperArm",
+		// "Bip01_R_ForeTwist",
 		"Bip01_R_Forearm",
 		"Bip01_R_Hand",
+		
 		"Bip01_R_Finger0",
 		"Bip01_R_Finger01",
 		"Bip01_R_Finger02",
@@ -44,13 +49,16 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		"Bip01_R_Finger4",
 		"Bip01_R_Finger41",
 		"Bip01_R_Finger42"
+		
 	};
 	
 	static string[] partialBoneNamesTFA = new string[]
 	{
 		"L UpperArm",
+		// "L ForeTwist",
 		"L Forearm",
 		"L Hand",
+
 		"L Finger0",
 		"L Finger01",
 		"L Finger02",
@@ -68,8 +76,10 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		"L Finger42",
 		
 		"R UpperArm",
+		// "R ForeTwist",
 		"R Forearm",
 		"R Hand",
+
 		"R Finger0",
 		"R Finger01",
 		"R Finger02",
@@ -91,8 +101,10 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 	static string[] boneNames = new string[]
 	{
 		"ValveBiped.Bip01_L_UpperArm",
+		// "ValveBiped.Bip01_L_ForeTwist",
 		"ValveBiped.Bip01_L_Forearm",
 		"ValveBiped.Bip01_L_Hand",
+		
 		"ValveBiped.Bip01_L_Finger0",
 		"ValveBiped.Bip01_L_Finger01",
 		"ValveBiped.Bip01_L_Finger02",
@@ -110,8 +122,10 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		"ValveBiped.Bip01_L_Finger42",
 		
 		"ValveBiped.Bip01_R_UpperArm",
+		// "ValveBiped.Bip01_R_ForeTwist",
 		"ValveBiped.Bip01_R_Forearm",
 		"ValveBiped.Bip01_R_Hand",
+		
 		"ValveBiped.Bip01_R_Finger0",
 		"ValveBiped.Bip01_R_Finger01",
 		"ValveBiped.Bip01_R_Finger02",
@@ -127,18 +141,36 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		"ValveBiped.Bip01_R_Finger4",
 		"ValveBiped.Bip01_R_Finger41",
 		"ValveBiped.Bip01_R_Finger42"
+		
 	};
 
 	private Transform[] armBones;
 	private Transform[] targetBones;
 	public GameObject debugTarget;
+
+	private Vector3[] armBoneOriginalPos;
+	private Quaternion[] armBoneOriginalRot;
 	
 	void Awake()
 	{
 		armBones = FindBones(gameObject);
-		if(debugTarget != null)
+		saveOriginalBone();
+		if (debugTarget != null)
 		{
 			targetBones = FindBones(debugTarget);
+		}
+	}
+
+	private void saveOriginalBone()
+	{
+		armBoneOriginalPos = new Vector3[armBones.Length];
+		armBoneOriginalRot = new Quaternion[armBones.Length];
+		for (int i = 0; i < armBones.Length; i++)
+		{
+			if (armBones[i] == null)
+				continue;
+			armBoneOriginalPos[i] = armBones[i].localPosition;
+			armBoneOriginalRot[i] = armBones[i].rotation;
 		}
 	}
 	
@@ -150,16 +182,23 @@ public class ArmBoneToWeaponBone : MonoBehaviour
     	
     	for(int i = 0 ; i < armBones.Length ; i++)
     	{
-    		if(targetBones[i] == null)
+    		if(targetBones[i] == null || armBones[i] == null)
     		{
-    			armBones[i].localPosition = Vector3.zero;
-    			armBones[i].localRotation = Quaternion.identity;
-    		}
+				if (armBones != null)
+				{
+					// armBones[i].localPosition = Vector3.zero;
+					// armBones[i].localRotation = Quaternion.identity;
+					armBones[i].localPosition = armBoneOriginalPos[i];
+					armBones[i].rotation = armBoneOriginalRot[i];
+				}
+			}
     		else
     		{
-	    		armBones[i].position = targetBones[i].position;
-	    		armBones[i].rotation = targetBones[i].rotation;	
-    		}
+				armBones[i].position = targetBones[i].position;
+				// armBones[i].rotation = Quaternion.Euler(targetBones[i].eulerAngles.x + 180f, targetBones[i].eulerAngles.y, targetBones[i].eulerAngles.z);
+				armBones[i].rotation = targetBones[i].rotation;
+				// Debug.Log(armBones[i].rotation + " -- " + targetBones[i].rotation);
+			}
     	}
     }
     
@@ -175,17 +214,25 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 				string[] nameParts = x.name.Split('.');
 				if(nameParts.Length <= 1)
 					// TFA bones doesn't have the prefix
-					return x.Equals(partialBoneNamesTFA[i]);
+					return x.name.Equals(partialBoneNamesTFA[i]);
 				else
 				{
-					return nameParts[1].Equals(partialBoneNames[i]);
+					return nameParts[1].Equals(partialBoneNames[i] , System.StringComparison.OrdinalIgnoreCase);
 				}
 			});
-			
-			if(bone == null)
+
+			if(bone != null)
+				bones[i] = bone;
+
+			/*
+			if (bone == null)
 				Debug.LogWarning("Hand bone not found : " + boneName);
 			else
+			{
 				bones[i] = bone;
+			}
+			*/
+			
 		}
 		return bones;
 	}

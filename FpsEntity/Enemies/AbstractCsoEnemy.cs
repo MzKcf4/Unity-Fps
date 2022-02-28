@@ -4,6 +4,10 @@ using UnityEngine;
 using Animancer;
 using Mirror;
 
+
+
+
+
 public class AbstractCsoEnemy : FpsEnemy
 {
 	protected const int LAYER_BASE = 0;

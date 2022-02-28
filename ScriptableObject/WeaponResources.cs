@@ -15,10 +15,10 @@ public class WeaponResources : SerializedScriptableObject
     
 	public Dictionary<string , AudioClip> dictWeaponSounds = new Dictionary<string, AudioClip>();
 
-	public ClipTransition drawClip;
-	public ClipTransition idleClip;
-	public ClipTransition shootClip;
-	public ClipTransition reloadClip;
+    public ClipTransition drawClip = new ClipTransition();
+	public ClipTransition idleClip = new ClipTransition();
+	public ClipTransition shootClip = new ClipTransition();
+	public ClipTransition reloadClip = new ClipTransition();
 
     [FoldoutGroup("Shotgun")]
     public ClipTransition palletReload_StartClip;

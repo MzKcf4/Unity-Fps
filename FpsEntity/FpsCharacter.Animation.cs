@@ -10,20 +10,22 @@ public partial class FpsCharacter
     
     protected const int UPPER_LAYER = 0;
     protected const int LOWER_LAYER = 1;
-    
+
     private ClipTransition currentPlayingClip;
     
-    private void Start_Animation()
+    protected virtual void Start_Animation()
     {
         modelAnimancer.Layers[UPPER_LAYER].SetMask(charRes.upperBodyMask);
         modelAnimancer.Layers[LOWER_LAYER].SetMask(charRes.lowerBodyMask);
         
-        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip , 0.1f , FadeMode.FromStart);
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip, 0.1f);
+        modelAnimancer.Layers[LOWER_LAYER].Play(charRes.idleClip, 0.1f);
     }
     
-    protected void Respawn_Animation()
+    protected virtual void Respawn_Animation()
     {
-        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip , 0.1f , FadeMode.FromStart);
+        modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip , 0.1f);
+        modelAnimancer.Layers[LOWER_LAYER].Play(charRes.idleClip, 0.1f);
     }
     
     protected virtual void Update_Animation()
@@ -57,20 +59,20 @@ public partial class FpsCharacter
     
     protected virtual void HandleMovementAnimation()
     {
-        if(charRes == null) return;
+        if(charRes == null || IsDead()) return;
         
         if(currState == CharacterStateEnum.Idle)
-            PlayAnimation(charRes.idleClip, LOWER_LAYER);
+            PlayLocomotionAnimation(charRes.idleClip, LOWER_LAYER);
         else if(currState == CharacterStateEnum.Run)
         {
             if(currMoveDir == MovementDirection.Front)
-                PlayAnimation(charRes.runClip,LOWER_LAYER);
+                PlayLocomotionAnimation(charRes.runClip,LOWER_LAYER);
             else if(currMoveDir == MovementDirection.Back)
-                PlayAnimation(charRes.runClipBack,LOWER_LAYER);
+                PlayLocomotionAnimation(charRes.runClipBack,LOWER_LAYER);
             else if(currMoveDir == MovementDirection.Left)
-                PlayAnimation(charRes.runClipLeft,LOWER_LAYER);
+                PlayLocomotionAnimation(charRes.runClipLeft,LOWER_LAYER);
             else if(currMoveDir == MovementDirection.Right)
-                PlayAnimation(charRes.runClipRight,LOWER_LAYER);
+                PlayLocomotionAnimation(charRes.runClipRight,LOWER_LAYER);
         }
     }
     
@@ -91,11 +93,44 @@ public partial class FpsCharacter
     
     protected void PlayAnimation(ClipTransition clip, int layer)
     {
-        if(currentPlayingClip == clip)
+        PlayAnimation(clip, layer, null);
+    }
+
+    protected void PlayActionAnimation(ClipTransition clip, int layer , ClipTransition idleClip)
+    {
+        var state = modelAnimancer.Layers[layer].Play(clip, 0.1f, FadeMode.FromStart);
+        state.Events.OnEnd = () => { 
+            state.Layer.StartFade(0, 0.1f);
+            modelAnimancer.Layers[layer].Play(idleClip, 0.1f);
+        };
+    }
+
+    protected AnimancerState PlayLocomotionAnimation(ClipTransition clip, int layer)
+    {
+        return modelAnimancer.Layers[layer].Play(clip, 0.1f);
+    }
+
+    protected void PlayAnimation(ClipTransition clip, int layer , ClipTransition idleClip)
+    {
+        if (currentPlayingClip == clip)
             return;
-            
+        
         currentPlayingClip = clip;
-        modelAnimancer.Layers[layer].Play(clip , 0.1f , FadeMode.FromStart);
+        var state = modelAnimancer.Layers[layer].Play(clip, 0.1f, FadeMode.FromStart);
+        if (idleClip != null)
+        {
+            state.Events.OnEnd = () => PlayAnimation(idleClip, layer);
+        }
+        
+    }
+
+    protected void PlayFullBodyAnimation(ClipTransition clip)
+    {
+        modelAnimancer.Layers[UPPER_LAYER].Stop();
+        modelAnimancer.Layers[LOWER_LAYER].Stop();
+        currentPlayingClip = clip;
+        modelAnimancer.Layers[UPPER_LAYER].Play(clip, 0.1f , FadeMode.FromStart);
+        modelAnimancer.Layers[LOWER_LAYER].Play(clip, 0.1f , FadeMode.FromStart);
     }
 
     public void RpcFireWeapon_Animation()
@@ -107,4 +142,35 @@ public partial class FpsCharacter
     {
         modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyReloadClip);
     }
+
+    /*
+    protected void PlayAnimation(ClipTransition clip, int layer , ClipTransition idleClip)
+    {
+        /*
+        // From https://kybernetik.com.au/animancer/docs/examples/layers/
+        // Playing new clip while another one is playing
+        var state = modelAnimancer.Layers[layer].CurrentState;
+        if (state != null && state.Weight > 0 && state.Clip == clip.Clip)
+        {
+            // Create a copy of its state to let the original fade out properly
+            var time = state.Time;
+            state = modelAnimancer.Layers[layer].Play(clip, 0.1f);
+            //  give the new state the correct time
+            state.Time = time;
+            if (idleClip != null)
+            {
+
+                state.Events.OnEnd = () =>
+                {
+                    state.Layer.StartFade(0, 0.1f);
+                    PlayAnimation(idleClip, layer);
+                };
+            }
+            
+        }
+        else
+        {
+            modelAnimancer.Layers[layer].Play(clip, 0.1f);
+        }
+    */
 }

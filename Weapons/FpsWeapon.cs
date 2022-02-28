@@ -55,7 +55,7 @@ public class FpsWeapon
     public float cameraShake = 0f;
     public int dmKillScore = 5;
     
-    [HideInInspector] public FpsCharacter owner;
+    [HideInInspector] public FpsHumanoidCharacter owner;
     public string displayName = "";
     
     public FpsWeapon(){}

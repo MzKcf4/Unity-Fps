@@ -32,6 +32,7 @@ public class DamageText : MonoBehaviour
             textMesh.gameObject.SetActive(false);
         else
         {
+            textMesh.transform.localScale = new Vector3(3, 3, 3);
             textMesh.gameObject.SetActive(true);
         }
     }

@@ -40,10 +40,11 @@ public class LocalPlayerContext : MonoBehaviour
     // This value will be directly used in PlayerContextCameraInput
     [HideInInspector] public float weaponRecoilImpulse = 0f;
     
-    public PlayerSettingDto playerSettingDto;
     public AudioMixer audioMixerMaster;
     public AudioMixerGroup audioMixerGroup;
+
     public AudioSource localPlayerAudioSource;
+    public AudioSource localPlayerAnnoucementAudioSource;
 
     // --------------
     [SerializeField] public Canvas inGameDynamicCanvas;
@@ -52,7 +53,6 @@ public class LocalPlayerContext : MonoBehaviour
     void Awake()
 	{
 		Instance = this;
-        playerSettingDto = new PlayerSettingDto();
         playerInputActions = new PlayerInputActions();
         SetupInputActionEvents();
 	}
@@ -270,5 +270,10 @@ public class LocalPlayerContext : MonoBehaviour
             return defaultValue;
             
         return dictAdditionalInfo[key];
+    }
+
+    public void PlayAnnouncement(AudioClip clip)
+    {
+        localPlayerAnnoucementAudioSource.PlayOneShot(clip);
     }
 }

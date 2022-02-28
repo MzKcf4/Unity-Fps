@@ -64,13 +64,13 @@ public class ValveShockTrooper : FpsEnemy
 	
 	private void PlayAttackAnimation()
 	{
-		var upperState = animancer.Layers[LAYER_UPPER_BODY].Play(charRes.meleeClip);
-		upperState.Events.OnEnd = () => { animancer.Layers[LAYER_UPPER_BODY].Play(charRes.idleClipUpper);};
+		//var upperState = animancer.Layers[LAYER_UPPER_BODY].Play(charRes.meleeClip);
+		//upperState.Events.OnEnd = () => { animancer.Layers[LAYER_UPPER_BODY].Play(charRes.idleClipUpper);};
 	}
 	
 	private void PlayRangedAnimation()
 	{
-		var upperState = animancer.Layers[LAYER_UPPER_BODY].Play(charRes.rangedClip);
-		upperState.Events.OnEnd = () => { animancer.Layers[LAYER_UPPER_BODY].Play(charRes.idleClipUpper);};
+		//var upperState = animancer.Layers[LAYER_UPPER_BODY].Play(charRes.rangedClip);
+		//upperState.Events.OnEnd = () => { animancer.Layers[LAYER_UPPER_BODY].Play(charRes.idleClipUpper);};
 	}
 }

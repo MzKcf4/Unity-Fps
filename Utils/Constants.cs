@@ -10,14 +10,17 @@ public class Constants
     public static readonly string TAG_BOT_WAYPOINT = "BotWaypoint";
     public static readonly string TAG_TEAM_A_SPAWN = "TeamA_Spawn";
     public static readonly string TAG_TEAM_B_SPAWN = "TeamB_Spawn";
+    public static readonly string TAG_MONSTER_SPAWN = "Monster_Spawn";
     public static readonly string TAG_MUZZLE_VIEW = "Muzzle";
 
     public static readonly string LAYER_DEFAULT = "Default";
-	public static readonly string LAYER_HITBOX = "Hitbox";
+    public static readonly string LAYER_IGNORE_RAYCAST = "Ignore Raycast";
+    public static readonly string LAYER_HITBOX = "Hitbox";
     public static readonly string LAYER_GROUND = "Ground";
     public static readonly string LAYER_LOCAL_PLAYER_MODEL = "LocalPlayerModel";
     public static readonly string LAYER_LOCAL_PLAYER_HITBOX = "LocalPlayerHitbox";
     public static readonly string LAYER_CHARACTER_MODEL = "CharacterModel";
+    public static readonly string LAYER_FIRST_PERSON_VIEW = "FirstPersonView";
 
     public static readonly string LABEL_WEAPON_RESOURCE = "WeaponResource";
     

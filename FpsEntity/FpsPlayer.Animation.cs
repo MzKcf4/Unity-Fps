@@ -4,7 +4,7 @@ using UnityEngine;
 using Mirror;
 
 // FpsPlayer.Animation
-public partial class FpsPlayer : FpsCharacter
+public partial class FpsPlayer
 {
     protected override void Update_Animation()
     {

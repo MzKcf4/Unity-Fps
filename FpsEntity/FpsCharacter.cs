@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Animancer;
+using UnityEngine.Events;
 
 // A FpsCharacter should 
-// -  have a Humanoid model , with weaponRoot component defined in hand for weapon world model
-// -  be able to hold FpsWeapon
-// -  perform weapon action with FpsWeapon
+// -  have a model
+// -  be able to move
+// -  have animation
 
 public abstract partial class FpsCharacter : FpsEntity
 {
@@ -15,6 +16,7 @@ public abstract partial class FpsCharacter : FpsEntity
     protected FpsModel fpsModel;
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
+    protected bool canRagdoll = true;
     [SerializeField] protected Transform lookAtTransform; 
     
     [SerializeField] protected CharacterResources charRes;
@@ -30,7 +32,7 @@ public abstract partial class FpsCharacter : FpsEntity
 
     protected MovementDirection prevMoveDir = MovementDirection.None;
     protected CharacterStateEnum prevCharState = CharacterStateEnum.None;
-
+    
     protected AudioSource audioSourceWeapon;
     protected AudioSource audioSourceCharacter;
 
@@ -48,7 +50,6 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         base.Awake();
         
-        weaponRootTransform = GetComponentInChildren<CharacterWeaponRoot>().transform;
     }
     
     protected override void Start()
@@ -58,8 +59,7 @@ public abstract partial class FpsCharacter : FpsEntity
         SetRagdollState(false);
         
         SharedContext.Instance.RegisterCharacter(this);
-        
-        Start_Weapon();
+
         Start_Animation();
     }
     
@@ -79,17 +79,15 @@ public abstract partial class FpsCharacter : FpsEntity
         currState = CharacterStateEnum.None;
         SetHealth(maxHealth);
         SetControllableState(true);
+        SharedContext.Instance.characterSpawnEvent.Invoke(this);
         RpcRespawn();
-        RpcSwitchWeapon(activeWeaponSlot);
-        ResetAllWeapons();
     }
     
     [ClientRpc]
-    public void RpcRespawn()
+    public virtual void RpcRespawn()
     {
         SetControllableState(true);
         SetupComponentsByNetworkSetting();
-        ResetAllWeapons();
         Respawn_Animation();
         
         SharedContext.Instance.characterSpawnEvent.Invoke(this);
@@ -101,10 +99,8 @@ public abstract partial class FpsCharacter : FpsEntity
         base.Update();
         if(IsDead())    return;
 
-        Update_Weapon();
         Update_Animation();
     }
-
        
     [ClientRpc]
     protected void RpcPlayAnimation(ClipTransition clip)
@@ -159,38 +155,62 @@ public abstract partial class FpsCharacter : FpsEntity
         
     protected virtual void SetRagdollState(bool isRagdollState)
     {
-        if(modelAnimancer != null)
+        if (canRagdoll)
         {
-            modelAnimancer.enabled = isRagdollState ? false : true;
-            modelObject.GetComponent<Animator>().enabled = isRagdollState ? false : true;
-            
-            if(!isRagdollState)
+            if (modelAnimancer != null)
             {
-                modelObject.transform.localPosition = Vector3.zero;
-                modelObject.transform.localEulerAngles = Vector3.zero;
+                modelAnimancer.enabled = isRagdollState ? false : true;
+                modelObject.GetComponent<Animator>().enabled = isRagdollState ? false : true;
+
+                if (!isRagdollState)
+                {
+                    modelObject.transform.localPosition = Vector3.zero;
+                    modelObject.transform.localEulerAngles = Vector3.zero;
+                }
+            }
+
+            if (fpsModel != null)
+            {
+                fpsModel.ToggleLookAt(!isRagdollState);
+            }
+
+
+            // Don't turn the bounding capsule collider in model-root to ragdoll , only children
+            Rigidbody[] rbJoints = modelObject.GetComponentsInChildren<Rigidbody>(true);
+            foreach (Rigidbody rb in rbJoints)
+            {
+                rb.isKinematic = isRagdollState ? false : true;
+                rb.useGravity = isRagdollState ? true : false;
             }
         }
-        
-        if(fpsModel != null)
+
+        // The capsule collider of character
+        Collider boundCollider = GetComponent<Collider>();
+        boundCollider.isTrigger = isRagdollState ? true : false;
+
+        FpsHitbox[] hitboxes = modelObject.GetComponentsInChildren<FpsHitbox>(true);
+        foreach (FpsHitbox hitbox in hitboxes)
         {
-            fpsModel.ToggleLookAt(!isRagdollState);
+            Collider c = hitbox.GetComponent<Collider>();
+            c.isTrigger = isRagdollState ? false : true;
+            c.gameObject.layer = isRagdollState ? LayerMask.NameToLayer(Constants.LAYER_IGNORE_RAYCAST)
+                                    : LayerMask.NameToLayer(GetHitboxLayerName());
         }
             
-        // Don't turn the bounding capsule collider in model-root to ragdoll , only children
-        Rigidbody[] rbJoints = modelObject.GetComponentsInChildren<Rigidbody>(true);
-        foreach(Rigidbody rb in rbJoints)
-        {
-            rb.isKinematic = isRagdollState ? false : true;
-            rb.useGravity = isRagdollState ? true : false;         
-        }
-        
-        Collider[] jointColliders = modelObject.GetComponentsInChildren<Collider>(true);
-        foreach(Collider c in jointColliders)
-        {
-            c.isTrigger = isRagdollState ? false : true;
-        }
+        modelObject.gameObject.layer = isRagdollState ? LayerMask.NameToLayer(Constants.LAYER_IGNORE_RAYCAST)
+                                                      : LayerMask.NameToLayer(GetModelLayerName());
     }
-    
+
+    protected virtual string GetModelLayerName()
+    {
+        return Constants.LAYER_CHARACTER_MODEL;
+    }
+
+    protected virtual string GetHitboxLayerName()
+    {
+        return Constants.LAYER_HITBOX;
+    }
+
     protected MovementDirection GetMovementDirection()
     {
         Vector3 vecNormalized = GetMovementVelocity().normalized;

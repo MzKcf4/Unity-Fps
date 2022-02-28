@@ -8,7 +8,7 @@ using Pathfinding;
 using Animancer;
 using RootMotion.FinalIK;
 
-public partial class FpsBot : FpsCharacter
+public partial class FpsBot : FpsHumanoidCharacter
 {
     public bool aiEnabled = true;
     public bool aiIgnoreEnemy = false;
@@ -39,10 +39,6 @@ public partial class FpsBot : FpsCharacter
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
             
-            
-            ServerGetWeapon("csgo_ak47" , 0);
-            RpcGetWeapon("csgo_ak47" , 0);
-            
             Start_Fsm();
         }
         if(objAttachToModel != null)
@@ -70,9 +66,11 @@ public partial class FpsBot : FpsCharacter
             botFsmDto.Clear();
             TransitToState(BotStateEnum.Wandering);
 
+            /*
             string newWeaponId = WeaponAssetManager.Instance.GetRandomActiveWeaponId();
             ServerGetWeapon(newWeaponId, 0);
             RpcGetWeapon(newWeaponId, 0);
+            */
         }
     }
 

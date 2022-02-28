@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class FpsPlayer : FpsCharacter
+public partial class FpsPlayer
 {
     
     public override void ProcessWeaponEventUpdate(WeaponEvent evt)

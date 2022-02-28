@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 public class BotReactToUnknownDamageStateProcessor : AbstractBotStateProcessor
 {
-    private readonly ActionCooldown aimToDmgSourceTimer = new ActionCooldown { interval = 0.2f };
+    private readonly ActionCooldown aimToDmgSourceTimer = new ActionCooldown { interval = 1.5f };
 
     public BotReactToUnknownDamageStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) : base(fpsBot, botFsmDto)
     {

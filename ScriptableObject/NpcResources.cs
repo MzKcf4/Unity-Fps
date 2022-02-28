@@ -7,14 +7,19 @@ using Animancer;
 [CreateAssetMenu]
 public class NpcResources : SerializedScriptableObject
 {
+	public GameObject modelPrefab;
 	public AvatarMask upperBodyMask;
+	public AvatarMask lowerBodyMask;
 	
 	public AudioClip hurtAudio;
 	public AudioClip deathAudio;
-	
+
+	public bool canMelee;
+	public bool canRange;
+
 	public ClipTransition meleeClip;
 	public ClipTransition rangedClip;
-	public ClipTransition idleClipUpper;
+	public ClipTransition idleClip;
 	public ClipTransition runClip;
 	public ClipTransition walkClip;
 	public List<ClipTransition> deathClips;

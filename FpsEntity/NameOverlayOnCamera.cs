@@ -69,7 +69,14 @@ public class NameOverlayOnCamera: MonoBehaviour
         
     public void SyncAllWithContext()
     {
-        foreach(FpsCharacter fpsCharacter in SharedContext.Instance.characterList)
+        UiNameOverlay[] existingOverlay = LocalPlayerContext.Instance.inGameDynamicCanvas.GetComponentsInChildren<UiNameOverlay>();
+        if (existingOverlay != null)
+        {
+            foreach (UiNameOverlay overlay in existingOverlay)
+                Destroy(overlay.gameObject);
+        }
+
+        foreach (FpsCharacter fpsCharacter in SharedContext.Instance.characterList)
         {
             OnCharacterJoin(fpsCharacter);
         }

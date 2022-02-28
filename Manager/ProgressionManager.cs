@@ -24,6 +24,7 @@ public class ProgressionManager : NetworkBehaviour
 	public int currentStage = 0;
 	public int maxEnemyCount = 10;
 	
+	
 	public bool canSpawn = false;
 	[SyncVar] public int stageCurrentKills = 0;
 	[SyncVar] public int stageTargetKills = 10;

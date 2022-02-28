@@ -34,6 +34,21 @@ public class SharedContext : NetworkBehaviour
             characterRemoveEvent.Invoke(fpsCharacter);
         }
     }
+
+    public void ClearList()
+    {
+        List<FpsCharacter> dupList = new List<FpsCharacter>(characterList);
+        foreach (FpsCharacter fpsCharacter in dupList) 
+        {
+            RemoveCharacter(fpsCharacter);
+        }
+        characterList.Clear();
+    }
+
+    public List<FpsCharacter> GetCharacters(TeamEnum team)
+    {
+        return characterList.FindAll(character => character.team == team);
+    }
     
     [ClientRpc]
     public void RpcRemoveCharacter(FpsCharacter fpsCharacter)

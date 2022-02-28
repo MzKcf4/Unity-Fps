@@ -5,7 +5,7 @@ using Mirror;
 using CMF;
 using Animancer;
 
-public partial class FpsPlayer : FpsCharacter
+public partial class FpsPlayer : FpsHumanoidCharacter
 {
 	[SerializeField]
 	private Transform weaponViewParent;
@@ -35,7 +35,6 @@ public partial class FpsPlayer : FpsCharacter
 	private AnimationClip viewLeftMoveClip;
 	// ------------------------------------- //
     
-    private PlayerSettingDto localPlayerSettingDto;
     private FpsWeaponPlayerInputHandler weaponInputHandler;
 
     private int previousActiveWeaponSlot = -1;
@@ -43,7 +42,9 @@ public partial class FpsPlayer : FpsCharacter
     [SerializeField] Transform localPlayerLookAt;
 
     [HideInInspector] public AudioSource audioSourceLocalPlayer;
+    [HideInInspector] public AudioSource audioSourceAnnouncement;
 
+    
     protected override void Start()
 	{
 		base.Start();
@@ -66,23 +67,15 @@ public partial class FpsPlayer : FpsCharacter
             // The children are LocalPlayerHitBox , so that bot can raycast on them
             Utils.ReplaceLayerRecursively(fpsModel.gameObject ,Constants.LAYER_HITBOX, Constants.LAYER_LOCAL_PLAYER_HITBOX);
             
-            localPlayerSettingDto = LocalPlayerContext.Instance.playerSettingDto;
             LoadLocalPlayerSettings();
             
-            CmdSetupPlayer(LocalPlayerContext.Instance.playerSettingDto.playerName);
-            CmdGetWeapon("csgo_ak47" , 0);
-            CmdGetWeapon("csgo_deagle", 1);
+            CmdSetupPlayer(LocalPlayerSettingManager.Instance.GetPlayerName());
             CmdGetWeapon("csgo_knife_butterfly", 2);
         }
 	    else
 	    {
             
 	    }
-
-        if (isClient)
-        {
-            InitializeLocalAudioSource();
-        }
         
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
@@ -108,23 +101,29 @@ public partial class FpsPlayer : FpsCharacter
     [Command]
     public void CmdSetupPlayer(string playerName)
     {
-        this.characterName = playerName;
+        characterName = playerName;
         PlayerManager.Instance.TeleportToSpawnPoint(this);
     }
     
     public void LoadLocalPlayerSettings()
     {
         cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings().GetConvertedMouseSpeed();
+
+        audioSourceLocalPlayer = gameObject.AddComponent<AudioSource>();
+        InitializeLocalAudioSource(audioSourceLocalPlayer);
+        LocalPlayerContext.Instance.localPlayerAudioSource = audioSourceLocalPlayer;
+
+        audioSourceAnnouncement = gameObject.AddComponent<AudioSource>();
+        InitializeLocalAudioSource(audioSourceAnnouncement);
+        LocalPlayerContext.Instance.localPlayerAnnoucementAudioSource = audioSourceAnnouncement;
     }
 
-    private void InitializeLocalAudioSource()
+    private void InitializeLocalAudioSource(AudioSource audioSource)
     {
-        audioSourceLocalPlayer = gameObject.AddComponent<AudioSource>();
-        audioSourceLocalPlayer.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
-        audioSourceLocalPlayer.playOnAwake = false;
-        audioSourceLocalPlayer.transform.SetParent(cameraInput.transform);
-        audioSourceLocalPlayer.transform.localPosition = Vector3.zero;
-        LocalPlayerContext.Instance.localPlayerAudioSource = audioSourceLocalPlayer;
+        audioSource.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
+        audioSource.playOnAwake = false;
+        audioSource.transform.SetParent(cameraInput.transform);
+        audioSource.transform.localPosition = Vector3.zero;
     }
 
 
@@ -298,7 +297,9 @@ public partial class FpsPlayer : FpsCharacter
         {
             // Unscope the weapon on death
             OnWeaponUnScopeEvent();
-            GetActiveWeapon().ResetActionState();
+
+            if(GetActiveWeapon() != null)
+                GetActiveWeapon().ResetActionState();
         }
     }
     
@@ -322,7 +323,7 @@ public partial class FpsPlayer : FpsCharacter
             if(isRagdollState)
             {
                 // Change layer to show the body from camera
-                fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_CHARACTER_MODEL);
+                fpsModel.SetRendererLayer(Constants.LAYER_CHARACTER_MODEL);
                 // Then we attach view camera to tpView 
                 viewCamera.transform.SetParent(tpCameraContainer.transform);
                 viewCamera.transform.localEulerAngles = Vector3.zero;
@@ -331,7 +332,7 @@ public partial class FpsPlayer : FpsCharacter
             else
             {
                 // Change layer to hide the body from camera
-                fpsModel.bodyRenderer.gameObject.layer = LayerMask.NameToLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
+                fpsModel.SetRendererLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
                 viewCamera.transform.SetParent(fpCameraContainer.transform);
                 viewCamera.transform.localEulerAngles = Vector3.zero;
                 viewCamera.transform.localPosition = Vector3.zero;
@@ -340,10 +341,20 @@ public partial class FpsPlayer : FpsCharacter
             }
         }
     }
-    
-	#endregion
-	
-	protected override void OnDestroy()
+
+    protected override string GetModelLayerName()
+    {
+        return Constants.LAYER_LOCAL_PLAYER_MODEL;
+    }
+
+    protected override string GetHitboxLayerName()
+    {
+        return Constants.LAYER_LOCAL_PLAYER_HITBOX;
+    }
+
+    #endregion
+
+    protected override void OnDestroy()
 	{
         base.OnDestroy();
 		if(isServer)
@@ -382,6 +393,16 @@ public partial class FpsPlayer : FpsCharacter
             && weaponSlots[previousActiveWeaponSlot] != null)
         {
             LocalSwitchWeapon(previousActiveWeaponSlot);
+        }
+    }
+
+    protected override void SwitchWeapon(int slot)
+    {
+        base.SwitchWeapon(slot);
+
+        if (isLocalPlayer)
+        {
+            OnWeaponUnScopeEvent();
         }
     }
 

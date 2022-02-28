@@ -5,7 +5,7 @@ using MoreMountains.Feedbacks;
 using Mirror;
 using Kit.Physic;
 
-public class CsoBoomerHost : AbstractCsoEnemy
+public class CsoBoomerHost : FpsNpc
 {
 	[SerializeField] 
 	private MMFeedbacks explosionFeedbacks;

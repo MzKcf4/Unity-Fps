@@ -10,6 +10,7 @@ public class LocalSpawnManager : MonoBehaviour
     public static LocalSpawnManager Instance;
 
     [SerializeField] private GameObject bloodFxPrefab;
+    [SerializeField] private GameObject bulletEffectPrefab;
     [SerializeField] private GameObject bulletDecalPrefab;
     [SerializeField] private GameObject damageTextPrefab;
 
@@ -28,18 +29,21 @@ public class LocalSpawnManager : MonoBehaviour
 
     public void SpawnBulletDecalFx(Vector3 position, Vector3 normalVector)
     {
-        Transform objTransform = PoolManager.Pools["FX"].Spawn(bulletDecalPrefab, position, Quaternion.identity);
-        objTransform.rotation = Quaternion.FromToRotation(objTransform.up, normalVector) * objTransform.rotation;
+        // ------- Feedback --------- //
+        Transform effectTransform = PoolManager.Pools["FX"].Spawn(bulletEffectPrefab, position, Quaternion.identity);
+        effectTransform.rotation = Quaternion.FromToRotation(effectTransform.up, normalVector) * effectTransform.rotation;
 
-        MMFeedbacks feedbacks = objTransform.gameObject.GetComponent<MMFeedbacks>();
-
+        MMFeedbacks feedbacks = effectTransform.gameObject.GetComponent<MMFeedbacks>();
         if (feedbacks)
-        {
             feedbacks.PlayFeedbacks();
-        }
+
+        // ------- Decal ------- // 
+        Transform decalTransform = PoolManager.Pools["FX"].Spawn(bulletDecalPrefab, position, Quaternion.identity);
+        decalTransform.rotation = Quaternion.FromToRotation(decalTransform.forward, normalVector) * decalTransform.rotation;
 
 
-        PoolManager.Pools["FX"].Despawn(objTransform, 5f);
+        PoolManager.Pools["FX"].Despawn(decalTransform, 5f);
+        PoolManager.Pools["FX"].Despawn(effectTransform, 5f);
     }
 
     public void SpawnDamageText(int damage, Vector3 position, bool isHeadshot)

@@ -5,7 +5,8 @@ using Pathfinding;
 using Animancer;
 using Mirror;
 
-public class CsoPsychoHost : AbstractCsoEnemy
+
+public class CsoPsychoHost : FpsNpc
 {
 
 }

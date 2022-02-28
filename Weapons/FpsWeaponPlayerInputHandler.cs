@@ -20,21 +20,29 @@ public class FpsWeaponPlayerInputHandler
     
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
     {
+        if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null) 
+            return;
         fpsPlayer.GetActiveWeapon().UpdateWeaponPrimaryActionState(keyPressState);
     }
     
     public void OnWeaponSecondaryAction(KeyPressState keyPressState)
     {
+        if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
+            return;
         fpsPlayer.GetActiveWeapon().UpdateWeaponSecondaryActionState(keyPressState);
     }
     
     public void DoWeaponReload()
     {
+        if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
+            return;
         fpsPlayer.GetActiveWeapon().DoWeaponReload();
     }
     
     public void DoSwitchWeapon()
     {
+        if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
+            return;
         fpsPlayer.LocalSwitchPreviousWeapon();
     }
 }
