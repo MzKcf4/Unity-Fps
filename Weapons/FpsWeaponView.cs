@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Animancer;
-using MoreMountains.Feedbacks;
+﻿using UnityEngine;
 
 public class FpsWeaponView : MonoBehaviour
 {    
@@ -49,8 +45,7 @@ public class FpsWeaponView : MonoBehaviour
         }
         GameObject weaponViewObj = Instantiate(weaponResources.weaponViewPrefab, transform);
         FpsWeaponViewModel fpsWeaponViewModel = weaponViewObj.GetComponent<FpsWeaponViewModel>();
-        fpsWeaponViewModel.SetWeaponResources(weaponResources);
-        fpsWeaponViewModel.transform.localPosition = fpsWeaponViewModel.offsetFromView;
+        fpsWeaponViewModel.SetUp(weaponResources);
         fpsWeaponViewModel.gameObject.SetActive(false);
         weaponViewModelSlots[slot] = fpsWeaponViewModel;
     }
@@ -65,5 +60,11 @@ public class FpsWeaponView : MonoBehaviour
         activeWeaponViewModel = weaponViewModelSlots[slot];
         activeWeaponViewModel.gameObject.SetActive(true);
         arm.AttachToWeapon(activeWeaponViewModel.gameObject);
+
+        // Flip the "FpsView" object itself
+        if (activeWeaponViewModel.isFlip)
+            transform.localScale = new Vector3(-1f, 1f, 1f);
+        else
+            transform.localScale = new Vector3(1f, 1f, 1f);
     }
 }

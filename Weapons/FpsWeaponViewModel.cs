@@ -7,11 +7,12 @@ using MoreMountains.Feedbacks;
 [RequireComponent(typeof(Animator),typeof(AnimancerComponent))]
 public class FpsWeaponViewModel : MonoBehaviour
 {
-    [SerializeField] public Vector3 offsetFromView = Vector3.zero;
-    [SerializeField] WeaponResources weaponResources;
+    private Vector3 offsetFromView = Vector3.zero;
+    private WeaponResources weaponResources;
     private MMFeedbacks muzzleFeedbacks;
     private AnimancerComponent animancer;
     private AudioSource audioSource;
+    [HideInInspector] public bool isFlip = false;
 
     void Awake()
     {
@@ -24,8 +25,6 @@ public class FpsWeaponViewModel : MonoBehaviour
     {
         audioSource = LocalPlayerContext.Instance.localPlayerAudioSource;
         AttachMuzzleFeedback();
-
-
     }
 
     private void AttachMuzzleFeedback()
@@ -58,9 +57,24 @@ public class FpsWeaponViewModel : MonoBehaviour
         
     }
 
-    public void SetWeaponResources(WeaponResources weaponResources)
+    public void SetUp(WeaponResources weaponResources)
     {
         this.weaponResources = weaponResources;
+        string weaponId = weaponResources.weaponId;
+
+        E_weapon_view_info dbViewInfo = E_weapon_view_info.FindEntity(e =>
+            string.Equals(weaponResources.weaponId, e.f_weapon_info.f_name)
+        );
+
+        if (dbViewInfo != null)
+        {
+            offsetFromView = dbViewInfo.f_view_offset;
+            isFlip = dbViewInfo.f_is_flip;
+        }
+        else
+            offsetFromView = Vector3.zero;
+
+        transform.localPosition = offsetFromView;
     }
     
     public void HandleWeaponEvent(WeaponEvent evt)
