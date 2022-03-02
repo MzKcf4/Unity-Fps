@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Mirror;
 using UnityEngine;
 
-public class FpsNetworkRoomManager : NetworkRoomManager
+public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
 {
     public static FpsNetworkRoomManager Instance;
     private GameModeEnum gameMode = GameModeEnum.Debug;
@@ -45,7 +45,7 @@ public class FpsNetworkRoomManager : NetworkRoomManager
     {
         if (sceneName == RoomScene)
         {
-            FpsNetworkRoomUi.Instance.Initialize(isServer);
+            
         }
         else
         { 
@@ -59,7 +59,7 @@ public class FpsNetworkRoomManager : NetworkRoomManager
 
         if (IsSceneActive(RoomScene))
         {
-            FpsNetworkRoomUi.Instance.RefreshPlayerStatus(roomSlots);
+            NetworkRoomUi.Instance.RefreshPlayerStatus(roomSlots);
         }
     }
 
@@ -114,7 +114,10 @@ public class FpsNetworkRoomManager : NetworkRoomManager
     public override void OnClientSceneChanged()
     {
         base.OnClientSceneChanged();
-        SharedContext.Instance.ClearList();
+
+        if(SharedContext.Instance)
+            SharedContext.Instance.ClearList();
+
         if (FpsUiManager.Instance != null)
         {
             Transform infoPanel = FpsUiManager.Instance.GetInfoPanel();

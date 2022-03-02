@@ -8,6 +8,11 @@ using UnityEngine;
 
 public class FpsNetworkRoomPlayer : NetworkRoomPlayer
 {
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+    }
+
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
@@ -37,5 +42,6 @@ public class FpsNetworkRoomPlayer : NetworkRoomPlayer
     {
         //Debug.Log($"ReadyStateChanged {newReadyState}");
     }
+
 }
 
