@@ -58,7 +58,7 @@ public class WeaponImportHelper
         // ----- Create the weapon resource ----- //
 
         // ------- Read the qc file and gets all events ------ //
-        List<SequenceEventInfo> sequenceEventInfoList = ParseQcFile(context.qcFileSystemPath);
+        List<QcSequenceEventInfo> sequenceEventInfoList = ParseQcFile(context.qcFileSystemPath);
 
         //  Find AnimationClips in /Animation Folder
         PopulateAnimationClipFromQc(sequenceEventInfoList, context);
@@ -95,9 +95,9 @@ public class WeaponImportHelper
         context.wModelAssetPath = Path.Combine(context.modelFolderAssetPath, wModelFileName);
     }
 
-    private static List<SequenceEventInfo> ParseQcFile(string qcFilePath)
+    private static List<QcSequenceEventInfo> ParseQcFile(string qcFilePath)
     {
-        List<SequenceEventInfo> sequenceEventInfoList = new List<SequenceEventInfo>();
+        List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>();
 
         string[] fileLines = File.ReadAllLines(qcFilePath);
         for (int i = 0; i < fileLines.Length; i++)
@@ -109,7 +109,7 @@ public class WeaponImportHelper
                 string sequenceName = Regex.Match(line, "\"([^\"]*)\"").ToString().Replace("\"", "");
                 Debug.Log("Parsing " + sequenceName + " in QC file");
 
-                SequenceEventInfo sequenceEventInfo = new SequenceEventInfo()
+                QcSequenceEventInfo sequenceEventInfo = new QcSequenceEventInfo()
                 {
                     sequenceName = sequenceName
                 };
@@ -124,7 +124,7 @@ public class WeaponImportHelper
         return sequenceEventInfoList;
     }
 
-    private static int ParseQcSequence(string[] fileLines, int startLine, SequenceEventInfo sequenceEventInfo)
+    private static int ParseQcSequence(string[] fileLines, int startLine, QcSequenceEventInfo sequenceEventInfo)
     {
         Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
 
@@ -175,7 +175,7 @@ public class WeaponImportHelper
         return lineParsed;
     }
 
-    private static void PopulateAnimationClipFromQc(List<SequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
+    private static void PopulateAnimationClipFromQc(List<QcSequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
     {
         string animationFolder = Path.Combine(context.modelFolderFileSystemPath, "Animations");
         DirectoryInfo dirInfo = new DirectoryInfo(animationFolder);
@@ -186,7 +186,7 @@ public class WeaponImportHelper
             string assetPath = Path.Combine(context.modelFolderAssetPath, "Animations", fileInfo.Name);
             Debug.Log("Handling animation events for " + fileInfo.Name);
 
-            SequenceEventInfo sequenceEventInfo = GetRelatedSequenceEventInfo(assetPath, sequenceEventInfoList);
+            QcSequenceEventInfo sequenceEventInfo = GetRelatedSequenceEventInfo(assetPath, sequenceEventInfoList);
             if (sequenceEventInfo == null)
             {
                 Debug.Log("Skipped " + fileInfo.Name);
@@ -202,7 +202,7 @@ public class WeaponImportHelper
         }
     }
 
-    private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, SequenceEventInfo sequenceEventInfo)
+    private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, QcSequenceEventInfo sequenceEventInfo)
     {
         foreach (KeyValuePair<AnimType, List<string>> entry in dictAnimTypeToNameList)
         {
@@ -250,9 +250,9 @@ public class WeaponImportHelper
         }
     }
 
-    private static SequenceEventInfo GetRelatedSequenceEventInfo(string animationClipName, List<SequenceEventInfo> sequenceEventInfoList)
+    private static QcSequenceEventInfo GetRelatedSequenceEventInfo(string animationClipName, List<QcSequenceEventInfo> sequenceEventInfoList)
     {
-        foreach (SequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
+        foreach (QcSequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
         {
             if (Path.GetFileNameWithoutExtension(animationClipName).EndsWith(sequenceEventInfo.sequenceName))
                 return sequenceEventInfo;
@@ -260,7 +260,7 @@ public class WeaponImportHelper
         return null;
     }
 
-    private static AnimationEvent[] CreateAnimationEvents(SequenceEventInfo sequenceEventInfo) 
+    private static AnimationEvent[] CreateAnimationEvents(QcSequenceEventInfo sequenceEventInfo) 
     {
         List<AnimationEvent> animationEventList = new List<AnimationEvent>();
         foreach (KeyValuePair<int, string> entry in sequenceEventInfo.dictFrameToSoundName)
@@ -280,7 +280,7 @@ public class WeaponImportHelper
         return animationEventList.ToArray();
     }
 
-    private static void PopulateAudioClipInResource(List<SequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
+    private static void PopulateAudioClipInResource(List<QcSequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
     {
         WeaponResources weaponResources = context.weaponResources;
 
@@ -288,7 +288,7 @@ public class WeaponImportHelper
         string soundFolder = Path.Combine(context.modelFolderFileSystemPath, "Sounds");
         DirectoryInfo soundDirInfo = new DirectoryInfo(soundFolder);
         FileInfo[] soundFileInfos = soundDirInfo.GetFiles("*.wav", SearchOption.TopDirectoryOnly);
-        foreach (SequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
+        foreach (QcSequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
         {
             HashSet<string> soundNameSet = new HashSet<string>(sequenceEventInfo.dictFrameToSoundName.Values);
             foreach (string soundName in soundNameSet)
@@ -364,7 +364,7 @@ public class WeaponImportHelper
         weaponResources.weaponId = context.weaponName;
     }
 
-    class SequenceEventInfo
+    class QcSequenceEventInfo
     {
         public string sequenceName;
         public float fpsMultiplier;
