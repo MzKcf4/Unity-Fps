@@ -12,7 +12,8 @@ public class WeaponImportContext
     public string modelFolderFileSystemPath;
 
     public string qcFileSystemPath;
-    List<SequenceEventInfo> sequenceEventInfoList;
+    public List<QcSequenceEventInfo> sequenceEventInfoList;
+    public List<WeaponModelAttachment> weaponAttachmentList = new List<WeaponModelAttachment>();
 
     // The path of WeaponResource ScriptableObject
     public string weaponResourceAssetPath;

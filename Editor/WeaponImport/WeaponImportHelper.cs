@@ -55,16 +55,14 @@ public class WeaponImportHelper
         // ----- Initialize the paths ------------ //
         PopulatePath(selectedObject, context);
 
-        // ----- Create the weapon resource ----- //
-
         // ------- Read the qc file and gets all events ------ //
-        List<QcSequenceEventInfo> sequenceEventInfoList = ParseQcFile(context.qcFileSystemPath);
+        ParseQcFile(context);
 
         //  Find AnimationClips in /Animation Folder
-        PopulateAnimationClipFromQc(sequenceEventInfoList, context);
+        PopulateAnimationClipFromQc(context);
 
         // ----------------Audio Clips------------------ //
-        PopulateAudioClipInResource(sequenceEventInfoList, context);
+        PopulateAudioClipInResource(context);
 
         // ----------------Create prefab---------------- //
         CreateWeaponPrefab(context);
@@ -81,12 +79,10 @@ public class WeaponImportHelper
         context.qcFileSystemPath = Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(selectedObject));
         context.modelFolderFileSystemPath = Path.GetDirectoryName(context.qcFileSystemPath);
 
-        // string weaponResourceAssetPath = Path.Combine(context.modelFolderAssetPath, context.weaponName + ".asset");
         context.weaponResources = ScriptableObject.CreateInstance<WeaponResources>();
         string weaponResourceAssetPath = Path.Combine(context.modelFolderAssetPath, context.weaponName + ".asset");
         string name = AssetDatabase.GenerateUniqueAssetPath(weaponResourceAssetPath);
         AssetDatabase.CreateAsset(context.weaponResources, name);
-        // (WeaponResources)AssetDatabase.LoadAssetAtPath(weaponResourceAssetPath, typeof(WeaponResources));
 
         string vModelFileName = context.weaponName + "_v" + ".fbx";
         context.vModelAssetPath = Path.Combine(context.modelFolderAssetPath, vModelFileName);
@@ -95,14 +91,35 @@ public class WeaponImportHelper
         context.wModelAssetPath = Path.Combine(context.modelFolderAssetPath, wModelFileName);
     }
 
-    private static List<QcSequenceEventInfo> ParseQcFile(string qcFilePath)
+    private static void ParseQcFile(WeaponImportContext context)
     {
+        string qcFilePath = context.qcFileSystemPath;
+
         List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>();
 
         string[] fileLines = File.ReadAllLines(qcFilePath);
         for (int i = 0; i < fileLines.Length; i++)
         {
             string line = fileLines[i];
+            if (line.Contains("$attachment") && line.Contains("muzzle_flash"))
+            {
+                line = line.Replace("\"", "");
+                WeaponModelAttachment attachment = new WeaponModelAttachment();
+                //      0            1         2    3 4  5   6     7  8 9
+                // $attachment "muzzle_flash" "gun" 0 1 29 rotate -90 0 0
+                string[] parts = line.Split(' ');
+
+                attachment.name = parts[1];
+                attachment.attachTo = parts[2];
+                attachment.offset = new Vector3(
+                        float.Parse(parts[3]) / 100f,
+                        float.Parse(parts[4]) / 100f,
+                        float.Parse(parts[5]) / 100f
+                    );
+                context.weaponAttachmentList.Add(attachment);
+                Debug.Log("Added attachment " + parts[1] + " to " + parts[2] + " with offset " + attachment.offset);
+            }
+
             if (line.Contains("$sequence"))
             {
                 // Find the name of the sequence , inside the "";
@@ -121,7 +138,7 @@ public class WeaponImportHelper
             }
         }
 
-        return sequenceEventInfoList;
+        context.sequenceEventInfoList = sequenceEventInfoList;
     }
 
     private static int ParseQcSequence(string[] fileLines, int startLine, QcSequenceEventInfo sequenceEventInfo)
@@ -175,8 +192,9 @@ public class WeaponImportHelper
         return lineParsed;
     }
 
-    private static void PopulateAnimationClipFromQc(List<QcSequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
+    private static void PopulateAnimationClipFromQc(WeaponImportContext context)
     {
+        List<QcSequenceEventInfo> sequenceEventInfoList = context.sequenceEventInfoList;
         string animationFolder = Path.Combine(context.modelFolderFileSystemPath, "Animations");
         DirectoryInfo dirInfo = new DirectoryInfo(animationFolder);
         FileInfo[] animationFileInfos = dirInfo.GetFiles("*.anim", SearchOption.TopDirectoryOnly);
@@ -234,17 +252,7 @@ public class WeaponImportHelper
 
                 clipTransitionToMap.Clip = clip;
                 clipTransitionToMap.Speed = sequenceEventInfo.fpsMultiplier;
-                
-                /*
-                if (AnimType.ANIM_DRAW == animType)
-                    weaponResources.drawClip.Clip = clip;
-                else if (AnimType.ANIM_IDLE == animType)
-                    weaponResources.idleClip.Clip = clip;
-                else if (AnimType.ANIM_FIRE == animType)
-                    weaponResources.shootClip.Clip = clip;
-                else if (AnimType.ANIM_RELOAD == animType)
-                    weaponResources.reloadClip.Clip = clip;
-                */
+
                 Debug.Log("Mapped " + fileName + " to " + animType);
             } 
         }
@@ -280,8 +288,9 @@ public class WeaponImportHelper
         return animationEventList.ToArray();
     }
 
-    private static void PopulateAudioClipInResource(List<QcSequenceEventInfo> sequenceEventInfoList, WeaponImportContext context)
+    private static void PopulateAudioClipInResource(WeaponImportContext context)
     {
+        List<QcSequenceEventInfo> sequenceEventInfoList = context.sequenceEventInfoList;
         WeaponResources weaponResources = context.weaponResources;
 
         weaponResources.dictWeaponSounds = new Dictionary<string, AudioClip>();
@@ -334,15 +343,18 @@ public class WeaponImportHelper
             if(!found)
                 weaponResources.dictWeaponSounds.Add("fire", null);
         }
-        
-
     }
+
+    #region Prefab Creation
 
     private static void CreateWeaponPrefab(WeaponImportContext context)
     {
         // ------ v model ------- //
         GameObject vModelFbx = (GameObject)AssetDatabase.LoadMainAssetAtPath(context.vModelAssetPath);
         GameObject vModelInstance = (GameObject)PrefabUtility.InstantiatePrefab(vModelFbx);
+        foreach (WeaponModelAttachment weaponModelAttachment in context.weaponAttachmentList)
+            BindAttachmentToVModel(vModelInstance.transform, weaponModelAttachment);
+
         vModelInstance.AddComponent(typeof(FpsWeaponViewModel));
         Utils.ChangeLayerRecursively(vModelInstance, Constants.LAYER_FIRST_PERSON_VIEW, true);
         string vModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_v_variant.prefab");
@@ -364,11 +376,20 @@ public class WeaponImportHelper
         weaponResources.weaponId = context.weaponName;
     }
 
-    class QcSequenceEventInfo
+    private static void BindAttachmentToVModel(Transform vModelTransform , WeaponModelAttachment modelAttachment)
     {
-        public string sequenceName;
-        public float fpsMultiplier;
-        public Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
-        public Dictionary<string, AudioClip> dictNameToAudioClip = new Dictionary<string, AudioClip>();
+        // Note that the attachment bone may NOT exist , so for muzzle , just create a new GameObject and attach muzzleMarker to it
+        Transform attachTo = vModelTransform.FirstOrDefault(x => x.name.Equals(modelAttachment.attachTo));
+        if (attachTo == null) {
+            Debug.LogWarning("AttachTo bone not found : " + modelAttachment.attachTo);
+            return;
+        }
+        GameObject attachment = new GameObject(modelAttachment.name + "_generated");
+        attachment.AddComponent<ViewMuzzleMarker>();
+        attachment.transform.SetParent(attachTo, false);
+        attachment.transform.localPosition = modelAttachment.offset;
+        Debug.Log("Binded " + attachment.name + " to " + attachTo.name);
     }
+
+    #endregion Prefab Creation
 }
