@@ -30,13 +30,13 @@ public class WeaponImportHelper
 
     private static Dictionary<AnimType, List<string>> dictAnimTypeToNameList = new Dictionary<AnimType, List<string>>()
     {
-        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1"  } },
-        { AnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot" , "shoot1", "shoot_1" , "shoot_layer" } },
+        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw"  } },
+        { AnimType.ANIM_FIRE , new List<string>(){ "fire" , "fire_layer", "shoot" , "shoot1", "shoot_1" , "shoot_layer" } },
         { AnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload_layer"  } },
         { AnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy_layer" , "draw_first"  } },
         { AnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
-        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert"} },
-        { AnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end"} },
+        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop_layer"} },
+        { AnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end" , "reload_end_layer"} },
 
     };
 
@@ -112,12 +112,17 @@ public class WeaponImportHelper
                 attachment.name = parts[1];
                 attachment.attachTo = parts[2];
                 attachment.offset = new Vector3(
-                        float.Parse(parts[3]) / 100f,
+                        float.Parse(parts[3]) / -100f,      // need to revert x
                         float.Parse(parts[4]) / 100f,
                         float.Parse(parts[5]) / 100f
                     );
+                attachment.rotation = Quaternion.Euler(
+                    float.Parse(parts[8]),
+                    float.Parse(parts[7]) * -1,         // x in qc = -y in Unity
+                    float.Parse(parts[9])
+                    );
                 context.weaponAttachmentList.Add(attachment);
-                Debug.Log("Added attachment " + parts[1] + " to " + parts[2] + " with offset " + attachment.offset);
+                Debug.Log("Added attachment " + parts[1] + " to " + parts[2] + " with offset " + attachment.offset + " ; rotation " + attachment.rotation);
             }
 
             if (line.Contains("$sequence"))
@@ -222,6 +227,7 @@ public class WeaponImportHelper
 
     private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, QcSequenceEventInfo sequenceEventInfo)
     {
+        
         foreach (KeyValuePair<AnimType, List<string>> entry in dictAnimTypeToNameList)
         {
             AnimType animType = entry.Key;
@@ -308,7 +314,10 @@ public class WeaponImportHelper
                 bool found = false;
                 foreach (FileInfo fileInfo in soundFileInfos)
                 {
-                    if (fileInfo.Name.Contains(soundName))
+                    // clip_in_1 -->  clipin1
+                    string correctedName = fileInfo.Name.Replace("_", "");
+                    bool contains = correctedName.IndexOf(soundName, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                    if (contains)
                     {
                         found = true;
                         string assetPath = Path.Combine(context.modelFolderAssetPath, "Sounds", fileInfo.Name);
@@ -388,6 +397,7 @@ public class WeaponImportHelper
         attachment.AddComponent<ViewMuzzleMarker>();
         attachment.transform.SetParent(attachTo, false);
         attachment.transform.localPosition = modelAttachment.offset;
+        attachment.transform.rotation = modelAttachment.rotation;
         Debug.Log("Binded " + attachment.name + " to " + attachTo.name);
     }
 

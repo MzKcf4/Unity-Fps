@@ -10,5 +10,6 @@ public class WeaponModelAttachment
     public string name;
     public string attachTo;
     public Vector3 offset;
+    public Quaternion rotation = Quaternion.identity;
 }
 
