@@ -12,6 +12,7 @@ public class ProgressionWeaponConfig : SerializedScriptableObject
 		
 	public void InitializeWeaponList()
 	{
+		/*
 		dictTierToWeaponPrefab.Clear();
 		
 		foreach(KeyValuePair<string, GameObject> entry in dictNameToWeaponPrefab)
@@ -37,5 +38,6 @@ public class ProgressionWeaponConfig : SerializedScriptableObject
 			}
 			tierWeaponList.Add(entry.Value);
 		}
+		*/
 	}
 }

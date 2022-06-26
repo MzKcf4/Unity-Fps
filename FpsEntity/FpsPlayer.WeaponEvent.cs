@@ -29,7 +29,7 @@ public partial class FpsPlayer
         
     private void OnWeaponReloadEvent()
     {
-        RpcReloadWeapon_Animation();
+        // RpcReloadWeapon_Animation();
     }
     
     private void OnWeaponScopeEvent()
@@ -37,7 +37,8 @@ public partial class FpsPlayer
         FpsUiManager.Instance.ToggleCrosshair(false);
         FpsUiManager.Instance.ToggleScope(true);
         LocalPlayerContext.Instance.ToggleScope(true);
-        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
+        ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
+        ecmCameraController.mouseVerticalSensitivity = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
         weaponViewCamera.enabled = false;
     }
     
@@ -46,7 +47,8 @@ public partial class FpsPlayer
         FpsUiManager.Instance.ToggleCrosshair(true);
         FpsUiManager.Instance.ToggleScope(false);
         LocalPlayerContext.Instance.ToggleScope(false);
-        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetMouseSpeed();
+        ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetMouseSpeed();
+        ecmCameraController.mouseVerticalSensitivity = LocalPlayerSettingManager.Instance.GetMouseSpeed();
         weaponViewCamera.enabled = true;
     }
     
@@ -72,6 +74,11 @@ public partial class FpsPlayer
     {
         Crosshair.Instance.DoLerp();
         LocalPlayerContext.Instance.ShakeCamera();
+
+        if (!GetActiveWeapon().isSemiAuto)
+        {
+            playerController.weaponRecoilInput = GetActiveWeapon().currentRecoil;
+        }
     }
 
     private void OnTriggerEmptyAmmo()

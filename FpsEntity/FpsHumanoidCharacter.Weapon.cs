@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 using Kit.Physic;
 
-// FpsHumanoidCharacter.Weapon
-public abstract partial class FpsHumanoidCharacter
+public partial class FpsHumanoidCharacter
 {
     public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>() { "", "", "" };
     // ** ----- Just note that fpsWeapon is NOT sync by server ------ **
@@ -87,7 +81,7 @@ public abstract partial class FpsHumanoidCharacter
     [ClientRpc]
     public void RpcReloadActiveWeapon()
     {
-        RpcReloadWeapon_Animation();
+        // RpcReloadWeapon_Animation();
     }
 
     public void LocalCmdGetWeapon(string weaponName, int slot)
@@ -181,7 +175,7 @@ public abstract partial class FpsHumanoidCharacter
         if (!isLocalPlayer)
         {
             fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
-            RpcFireWeapon_Animation();
+            // RpcFireWeapon_Animation();
         }
     }
 
@@ -229,7 +223,26 @@ public abstract partial class FpsHumanoidCharacter
 
     public virtual void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
+        // Temporary fix for shoot events in bots.
+        if (evt == WeaponEvent.Shoot)
+        {
 
+            float spreadMultiplier = GetActiveWeapon().spread;
+            // ---------ToDo: Shotgun pallet ??--------------- //
+            if (GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
+            {
+                spreadMultiplier *= 5f;
+            }
+
+            Vector3 startPosition = fpsWeaponWorldSlot[activeWeaponSlot].transform.position;
+            if (fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform != null)
+                startPosition = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
+
+            Vector3 shootDirection = Utils.GetDirection(startPosition, weaponAimAt.position);
+            CoreGameManager.Instance.DoWeaponRaycast(this, GetActiveWeapon(), startPosition, shootDirection);
+            // ----------------------------------------------- //
+            RpcFireWeapon();
+        }
     }
 
     protected void ResetAllWeapons()

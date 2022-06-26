@@ -4,6 +4,8 @@ using UnityEngine;
 using Mirror;
 using CMF;
 using Animancer;
+using EasyCharacterMovement;
+using UnityEngine.InputSystem;
 
 public partial class FpsPlayer : FpsHumanoidCharacter
 {
@@ -12,20 +14,19 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     
 	[SerializeField]
 	private ArmBoneToWeaponBone arm;
-	private CMF.AdvancedWalkerController playerController;
+    private MzEcmFpCharacter playerController;
     private float moveSpeed = 5.5f;
     private ActionCooldown painShockCooldown = new ActionCooldown(){ interval = 0.1f};
 	
     public GameObject viewCamera;
     // The anti-clipping camera 
     [SerializeField] Camera weaponViewCamera;
-    public GameObject fpCameraContainer;
-    public GameObject tpCameraContainer;
-    [HideInInspector] private PlayerContextCameraInput cameraInput;
-    [SerializeField] private CMF.CameraController cameraController;
-	
+
+    // ToDo: Add upper force to cameraInput
+    private CharacterLook ecmCameraController;
+
     // ----------- View Layer ------------- //
-	[SerializeField]
+    [SerializeField]
 	private AnimancerComponent handViewAnimancer;
 	private bool isLeftLerp = false;
 	private bool isMoveLerpDone = true;
@@ -45,20 +46,27 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     [HideInInspector] public AudioSource audioSourceAnnouncement;
 
     
+    // [SerializeField] private InputActionAsset playerInputAction;
+    
     protected override void Start()
 	{
 		base.Start();
         painShockCooldown.interval = 0.06f;
-        
-	    if(isLocalPlayer)
+        playerController = GetComponent<MzEcmFpCharacter>();
+        ecmCameraController = GetComponent<CharacterLook>();
+
+        if (isLocalPlayer)
 	    {
-	    	LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
+            // playerController.inputActions = playerInputAction;
+            // Debug.Log("Set");
+
+            LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             LocalPlayerSettingManager.Instance.OnPlayerSettingUpdateEvent.AddListener(LoadLocalPlayerSettings);
 
             fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
-	    	playerController = GetComponent<CMF.AdvancedWalkerController>();
-            cameraInput = GetComponentInChildren<PlayerContextCameraInput>();
+
+
             weaponInputHandler = new FpsWeaponPlayerInputHandler(this);
             // For reset the layer for non-local player so that we can see other players.
             //   as our camera has culling mask for LOCAL_PLAYER_MODEL
@@ -74,8 +82,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         }
 	    else
 	    {
-            
-	    }
+            playerController.inputActions = null;
+        }
         
         Utils.ChangeTagRecursively(modelObject , Constants.TAG_PLAYER , true);
 	}
@@ -107,7 +115,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     
     public void LoadLocalPlayerSettings()
     {
-        cameraInput.mouseInputMultiplier = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings().GetConvertedMouseSpeed();
+        ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings().GetConvertedMouseSpeed();
+        ecmCameraController.mouseVerticalSensitivity = LocalPlayerSettingManager.Instance.GetLocalPlayerSettings().GetConvertedMouseSpeed();
 
         audioSourceLocalPlayer = gameObject.AddComponent<AudioSource>();
         InitializeLocalAudioSource(audioSourceLocalPlayer);
@@ -122,7 +131,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     {
         audioSource.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
         audioSource.playOnAwake = false;
-        audioSource.transform.SetParent(cameraInput.transform);
+        audioSource.transform.SetParent(fpsWeaponView.transform);
         audioSource.transform.localPosition = Vector3.zero;
     }
 
@@ -132,13 +141,13 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 	    base.Update();
         if(isLocalPlayer)
         {
-            lookAtTransform.position = localPlayerLookAt.position;
+            weaponAimAt.position = localPlayerLookAt.position;
             if(painShockCooldown.IsOnCooldown())
                 painShockCooldown.ReduceCooldown(Time.deltaTime);
             else
             {
-                if(playerController.movementSpeed != moveSpeed)
-                    playerController.movementSpeed = moveSpeed;               
+                // if(playerController.movementSpeed != moveSpeed)
+                    // playerController.movementSpeed = moveSpeed;               
             }
             LerpHandView();
         }
@@ -146,7 +155,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         
 	private void LerpHandView()
 	{
-		if(playerController == null || playerController.GetMovementVelocity() == Vector3.zero)
+		if(playerController == null || playerController.GetMovementDirection() == Vector3.zero)
 			return;		
 		
 		if(!isMoveLerpDone)	return;
@@ -200,11 +209,11 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         if(isLocalPlayer)
         {
             painShockCooldown.StartCooldown();
-            playerController.movementSpeed = 0f;
+            playerController.SetVelocity(Vector3.zero);
 
             if (UiDamageIndicatorManager.Instance != null && damageInfo.attacker != null)
             {
-                UiDamageIndicatorManager.Instance.CreateIndicator(cameraController.transform, damageInfo.attacker.transform);
+                UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attacker.transform);
             }
         }
 	}
@@ -322,18 +331,20 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         {
             if(isRagdollState)
             {
+                ecmCharacter.SetMovementMode(MovementMode.None);
                 // Change layer to show the body from camera
                 fpsModel.SetRendererLayer(Constants.LAYER_CHARACTER_MODEL);
                 // Then we attach view camera to tpView 
-                viewCamera.transform.SetParent(tpCameraContainer.transform);
+                // viewCamera.transform.SetParent(tpCameraContainer.transform);
                 viewCamera.transform.localEulerAngles = Vector3.zero;
                 viewCamera.transform.localPosition = Vector3.zero;
             }
             else
             {
+                ecmCharacter.SetMovementMode(MovementMode.Walking);
                 // Change layer to hide the body from camera
                 fpsModel.SetRendererLayer(Constants.LAYER_LOCAL_PLAYER_MODEL);
-                viewCamera.transform.SetParent(fpCameraContainer.transform);
+                // viewCamera.transform.SetParent(fpCameraContainer.transform);
                 viewCamera.transform.localEulerAngles = Vector3.zero;
                 viewCamera.transform.localPosition = Vector3.zero;
                 // Reset the lerp
@@ -360,17 +371,17 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 		if(isServer)
 			ServerContext.Instance.playerList.Remove(this);
 	}
-        
-    public override Vector3 GetMovementVelocity()
+
+    // Sync the velocity from local ecm to server
+    protected override void SyncMovementVelocity()
     {
-        if(isLocalPlayer)
+        if (isLocalPlayer)
         {
-            Vector3 controllerVelocity = playerController.GetMovementVelocity();
-            currentVelocity = controllerVelocity;
+            currentVelocity = GetMovementVelocity();
+            CmdSyncMovementVelocity(currentVelocity);
         }
-        return currentVelocity;
     }
-    
+
     public override void RpcHealthUpdate()
     {
         base.RpcHealthUpdate();

@@ -22,9 +22,10 @@ public class FpsEntity : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnGodModeUpdate))]
     public bool isGodMode = false;
-	
-	public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
-	
+
+    [HideInInspector] public UnityEvent<GameObject> onKilledEvent = new UnityEvent<GameObject>();
+    [HideInInspector] public UnityEvent<DamageInfo> onTakeDamageEvent = new UnityEvent<DamageInfo>();
+
     protected virtual void Awake()
     {
         highlightEffect = GetComponent<HighlightEffect>();
@@ -97,7 +98,9 @@ public class FpsEntity : NetworkBehaviour
         {
 			RpcTakeDamage(damageInfo);
         }
-	}
+        onTakeDamageEvent.Invoke(damageInfo);
+
+    }
     
     private void ProcessDamageByDistance(DamageInfo damageInfo)
     {

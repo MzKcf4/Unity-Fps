@@ -5,13 +5,11 @@ using Pathfinding;
 using Animancer;
 using Mirror;
 using Kit.Physic;
-using SensorToolkit;
 
 // 1. Attach the FpsModel to the character
 // 2. Attach AnimationEvent handler to the FpsModel gameobject object
 // 3. FpsNpc should call FpsModel to execute animations for animation-dependent logics
 // 4. AnimationEvent handler should call FpsNpc to execute related logics
-
 
 public abstract partial class FpsNpc : FpsCharacter
 {
@@ -37,7 +35,7 @@ public abstract partial class FpsNpc : FpsCharacter
 
 	public bool canRanged;
 	[SerializeField]
-	protected Sensor rangedDector;
+	// protected Sensor rangedDector;
 	public ActionCooldown rangedCooldown;
 	[SerializeField]
 	private Transform projectileSpawn;
@@ -65,6 +63,14 @@ public abstract partial class FpsNpc : FpsCharacter
 			}
 		}
 		team = TeamEnum.Monster;
+
+		E_monster_info dbMonsterInfo = E_monster_info.GetEntity(npcResources.id);
+		if (dbMonsterInfo != null)
+		{
+			ai.maxSpeed = dbMonsterInfo.f_move_speed;
+			this.characterName = dbMonsterInfo.f_display_name;
+			this.health = dbMonsterInfo.f_base_health;
+		}
 	}
 
     protected override void AttachModel()
@@ -73,8 +79,9 @@ public abstract partial class FpsNpc : FpsCharacter
 		modelObjectParent = modelObject.transform.parent.gameObject;
 
 		fpsModel = modelObject.GetComponent<FpsModel>();
-		modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
-    }
+		// modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
+		characterAnimator.SetAttachedModel(fpsModel);
+	}
 
     // Update is called once per frame
     protected override void Update()
@@ -87,7 +94,7 @@ public abstract partial class FpsNpc : FpsCharacter
 		{
 			UpdateTarget();
 			AttackTargetInMeleeRange();
-			ShootTargetInRange();
+			// ShootTargetInRange();
 			CooldownActions();
 			RecoverSpeed(Time.deltaTime);
 		}
@@ -159,6 +166,7 @@ public abstract partial class FpsNpc : FpsCharacter
 		}
 	}
 
+	/*
 	[Server]
 	protected void ShootTargetInRange()
 	{
@@ -183,6 +191,7 @@ public abstract partial class FpsNpc : FpsCharacter
 		projectile.Setup(direction);
 		RpcDoRangedAttack(direction);
 	}
+	*/
 
 	[ClientRpc]
 	protected virtual void RpcDoRangedAttack(Vector3 direction)
@@ -220,7 +229,7 @@ public abstract partial class FpsNpc : FpsCharacter
 	{
 		// Usually plays the melee attack animation
 		// Then the check hit event will be fired in Client side.
-		PlayActionAnimation(npcResources.meleeClip, UPPER_LAYER , npcResources.idleClip);
+		// PlayActionAnimation(npcResources.meleeClip, UPPER_LAYER , npcResources.idleClip);
 	}
 
 	protected virtual void CheckMeleeHit()
@@ -275,7 +284,7 @@ public abstract partial class FpsNpc : FpsCharacter
 	protected override void RpcKilled(DamageInfo damageInfo)
 	{
 		base.RpcKilled(damageInfo);
-		PlayFullBodyAnimation(Utils.GetRandomElement<ClipTransition>(npcResources.deathClips));
+		// PlayFullBodyAnimation(Utils.GetRandomElement<ClipTransition>(npcResources.deathClips));
 	}
 
 	/*

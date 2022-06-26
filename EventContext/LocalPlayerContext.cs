@@ -28,6 +28,7 @@ public class LocalPlayerContext : MonoBehaviour
     [HideInInspector] public UnityEvent<InputAction.CallbackContext> jumpEvent = new UnityEvent<InputAction.CallbackContext>();
     [HideInInspector] public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
     [HideInInspector] public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent onGamemodeMenuToggleEvent = new UnityEvent();
     // ----------------------------
     private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
 
@@ -89,6 +90,7 @@ public class LocalPlayerContext : MonoBehaviour
         
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.TempDeathmatchWeaponMenu, OnTempDeathmatchWeaponMenuToggle);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleGamemodeMenu, OnGamemodeMenuToggle);
     }
 
     private void MapInputActionToHandlerMethod(InputAction action , Action<InputAction.CallbackContext> inputHandlerMethod)
@@ -227,6 +229,12 @@ public class LocalPlayerContext : MonoBehaviour
     {
         if(value.started)
             onTempDeathmatchWeaponMenuToggleEvent.Invoke();
+    }
+
+    public void OnGamemodeMenuToggle(InputAction.CallbackContext value)
+    {
+        if (value.started)
+            onGamemodeMenuToggleEvent.Invoke();
     }
 
     public void OnMouseLockInput(InputAction.CallbackContext value)

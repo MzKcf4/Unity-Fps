@@ -10,7 +10,7 @@ public class BotChaseStateProcessor : AbstractBotStateProcessor
     private readonly ActionCooldown scanCooldown = new ActionCooldown { interval = 0.2f };
     private readonly ActionCooldown preAimTimer = new ActionCooldown { interval = 2f };
 
-    public BotChaseStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) : base(fpsBot, botFsmDto)
+    public BotChaseStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) : base(fpsBot,character, botFsmDto)
     {
         isReactToTeammateKilled = false;
         isReactToUnknownDamage = true;
@@ -20,7 +20,7 @@ public class BotChaseStateProcessor : AbstractBotStateProcessor
         if (botFsmDto.shootTargetLastSeenPosition != null)
         {
             fpsBot.SetDestination(botFsmDto.shootTargetLastSeenPosition);
-            fpsBot.SetLookAtToPosition(botFsmDto.shootTargetLastSeenPosition);
+            fpsCharacter.AimAtPosition(botFsmDto.shootTargetLastSeenPosition);
             preAimTimer.StartCooldown();
         }
         else
@@ -51,7 +51,7 @@ public class BotChaseStateProcessor : AbstractBotStateProcessor
 
         if (preAimTimer.CanExecuteAfterDeltaTime())
         {
-            fpsBot.AlignLookAtWithMovementDirection();
+            fpsCharacter.AimAtMovementDirection();
         }
     }
 }

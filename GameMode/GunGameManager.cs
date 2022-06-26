@@ -107,6 +107,8 @@ public class GunGameManager : NetworkBehaviour
     [Server]
     public void OnCharacterKilled(FpsCharacter victim, DamageInfo dmgInfo)
     {
+        PlayerManager.Instance.QueueRespawn(victim);
+
         if (!isServer || !isMatchActive || string.IsNullOrEmpty(dmgInfo.damageWeaponName))
             return;
 

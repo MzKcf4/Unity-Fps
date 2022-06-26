@@ -105,7 +105,7 @@ public class Utils
     
     public static bool WithinChance(float probability)
     {
-        float range = Random.RandomRange(0f , 1.0f);
+        float range = Random.Range(0f , 1.0f);
         return range < probability;
     }
     
@@ -117,5 +117,14 @@ public class Utils
         float result = baseDamage * (Mathf.Pow(rangeModifier , distance / 25f));
         // Debug.Log(rangeModifier + " , " + distance + " , " + (distance / 25f) + " = " + result );
         return Mathf.FloorToInt(result);
+    }
+
+    public static void DestroyChildren(Transform transform)
+    {
+        int childs = transform.childCount;
+        for (int i = childs - 1; i >= 0; i--)
+        {
+            GameObject.Destroy(transform.GetChild(i).gameObject);
+        }
     }
 }

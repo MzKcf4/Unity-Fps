@@ -5,7 +5,6 @@ using Pathfinding;
 using Animancer;
 using Mirror;
 using Kit.Physic;
-using SensorToolkit;
 
 // Movable
 // Animated
@@ -32,8 +31,7 @@ public class FpsEnemy : FpsEntity
 	public int meleeDamage;
 	
 	public bool canRanged;
-	[SerializeField]
-	protected Sensor rangedDector;
+	// protected Sensor rangedDector;
 	public ActionCooldown rangedCooldown;
 	[SerializeField]
 	private Transform projectileSpawn;
@@ -63,7 +61,7 @@ public class FpsEnemy : FpsEntity
 		{
 			UpdateTarget();
 			AttackTargetInMeleeRange();
-			ShootTargetInRange();
+			// ShootTargetInRange();
 			CooldownActions();
 			RecoverSpeed(Time.deltaTime);			
 		}
@@ -135,31 +133,8 @@ public class FpsEnemy : FpsEntity
 		}
 	}
 	
-	[Server]
-	protected void ShootTargetInRange()
-	{
-		if(!isServer || !canRanged || rangedDector == null || rangedCooldown.IsOnCooldown())	return;
-		
-		List<FpsPlayer> detectedPlayers = rangedDector.GetDetectedByComponent<FpsPlayer>();
-		if(detectedPlayers != null && detectedPlayers.Count > 0)
-		{
-			DoRangedAttack(detectedPlayers[0].gameObject);
-		}
-		rangedCooldown.StartCooldown();
-	}
-	
-	protected virtual void DoRangedAttack(GameObject target)
-	{
-		if(!isServer)	return;
-		
-		Vector3 direction = (target.transform.position - transform.position).normalized;
-		GameObject projectileObj = Instantiate(projectilePrefab , projectileSpawn.position , Quaternion.identity);
-		NetworkServer.Spawn(projectileObj);
-		FpsProjectile projectile = projectileObj.GetComponent<FpsProjectile>();
-		projectile.Setup(direction);
-		RpcDoRangedAttack(direction);
-	}
-	
+
+
 	[ClientRpc]
 	protected virtual void RpcDoRangedAttack(Vector3 direction)
 	{

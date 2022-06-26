@@ -33,7 +33,7 @@ public class CoreGameManager : NetworkBehaviour
         else if (GameModeEnum.Monster == gameMode)
         {
             mgrObj = Instantiate(WeaponAssetManager.Instance.monsterGameModePrefab);
-            NetworkServer.Spawn(Instantiate(WeaponAssetManager.Instance.debugGameModePrefab));
+            // NetworkServer.Spawn(Instantiate(WeaponAssetManager.Instance.debugGameModePrefab));
         }
         else
             mgrObj = Instantiate(WeaponAssetManager.Instance.gunGameManagerPrefab);

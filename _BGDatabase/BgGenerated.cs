@@ -134,10 +134,10 @@ public partial class E_weapon_info : BGEntity
 		get => (WeaponReloadType) _f_reload_type[Index];
 		set => _f_reload_type[Index] = value;
 	}
-	public System.Int32 f_progression_tier
+	public System.Int32 f_horde_level
 	{
-		get => _f_progression_tier[Index];
-		set => _f_progression_tier[Index] = value;
+		get => _f_horde_level[Index];
+		set => _f_horde_level[Index] = value;
 	}
 	public System.Int32 f_dm_kill_score
 	{
@@ -510,23 +510,23 @@ public partial class E_weapon_info : BGEntity
 			return _ufle12jhs77_f_reload_type;
 		}
 	}
-	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_progression_tier;
-	public static BansheeGz.BGDatabase.BGFieldInt _f_progression_tier
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_horde_level;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_horde_level
 	{
 		get
 		{
 
-			if(_ufle12jhs77_f_progression_tier == null)
+			if(_ufle12jhs77_f_horde_level == null)
 			{
-				_ufle12jhs77_f_progression_tier = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5154641768473479024UL,4415341554901312417UL));
+				_ufle12jhs77_f_horde_level = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5154641768473479024UL,4415341554901312417UL));
 				void __Unloaded(BGObject f)
 				{
-					if(_ufle12jhs77_f_progression_tier != null) _ufle12jhs77_f_progression_tier.OnUnload -= __Unloaded;
-					_ufle12jhs77_f_progression_tier = null;
+					if(_ufle12jhs77_f_horde_level != null) _ufle12jhs77_f_horde_level.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_horde_level = null;
 				}
-				_ufle12jhs77_f_progression_tier.OnUnload += __Unloaded;
+				_ufle12jhs77_f_horde_level.OnUnload += __Unloaded;
 			}
-			return _ufle12jhs77_f_progression_tier;
+			return _ufle12jhs77_f_horde_level;
 		}
 	}
 	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_dm_kill_score;
@@ -602,6 +602,7 @@ public partial class E_weapon_info : BGEntity
 	}
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
+	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private E_weapon_info() : base(MetaDefault)
 	{
 	}
@@ -764,6 +765,7 @@ public partial class E_weapon_view_info : BGEntity
 	}
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
+	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private E_weapon_view_info() : base(MetaDefault)
 	{
 	}
@@ -795,5 +797,239 @@ public partial class E_weapon_view_info : BGEntity
 	public static E_weapon_view_info GetEntity(string entityName) => (E_weapon_view_info) MetaDefault.GetEntity(entityName);
 	public static E_weapon_view_info NewEntity() => (E_weapon_view_info) MetaDefault.NewEntity();
 	public static E_weapon_view_info NewEntity(BGId entityId) => (E_weapon_view_info) MetaDefault.NewEntity(entityId);
+}
+
+public partial class E_monster_info : BGEntity
+{
+
+	public class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new E_monster_info(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new E_monster_info(meta, id);
+	}
+	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaRow MetaDefault
+	{
+		get
+		{
+
+			if(_metaDefault == null)
+			{
+				_metaDefault = BGRepo.I.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(5361719045905385931UL,17304927498360747147UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_metaDefault != null) _metaDefault.OnUnload -= __Unloaded;
+					_metaDefault = null;
+				}
+				_metaDefault.OnUnload += __Unloaded;
+			}
+			return _metaDefault;
+		}
+	}
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	private static readonly List<BGEntity> _find_Entities_Result = new List<BGEntity>();
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String f_name
+	{
+		get => _f_name[Index];
+		set => _f_name[Index] = value;
+	}
+	public System.String f_display_name
+	{
+		get => _f_display_name[Index];
+		set => _f_display_name[Index] = value;
+	}
+	public System.Int32 f_base_health
+	{
+		get => _f_base_health[Index];
+		set => _f_base_health[Index] = value;
+	}
+	public System.Single f_move_speed
+	{
+		get => _f_move_speed[Index];
+		set => _f_move_speed[Index] = value;
+	}
+	public System.Int32 f_max_count
+	{
+		get => _f_max_count[Index];
+		set => _f_max_count[Index] = value;
+	}
+	public System.Int32 f_start_stage
+	{
+		get => _f_start_stage[Index];
+		set => _f_start_stage[Index] = value;
+	}
+	public System.Int32 f_end_stage
+	{
+		get => _f_end_stage[Index];
+		set => _f_end_stage[Index] = value;
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_name == null)
+			{
+				_ufle12jhs77_f_name = (BansheeGz.BGDatabase.BGFieldEntityName) MetaDefault.GetField(new BGId(5199085996425251369UL,1231959888780819631UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_name != null) _ufle12jhs77_f_name.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_name = null;
+				}
+				_ufle12jhs77_f_name.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_name;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
+	public static BansheeGz.BGDatabase.BGFieldString _f_display_name
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_display_name == null)
+			{
+				_ufle12jhs77_f_display_name = (BansheeGz.BGDatabase.BGFieldString) MetaDefault.GetField(new BGId(5265402778546237615UL,8582714996709957524UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_display_name != null) _ufle12jhs77_f_display_name.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_display_name = null;
+				}
+				_ufle12jhs77_f_display_name.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_display_name;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_base_health;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_base_health
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_base_health == null)
+			{
+				_ufle12jhs77_f_base_health = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5741010433549342167UL,6461942175922079874UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_base_health != null) _ufle12jhs77_f_base_health.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_base_health = null;
+				}
+				_ufle12jhs77_f_base_health.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_base_health;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_move_speed;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_move_speed
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_move_speed == null)
+			{
+				_ufle12jhs77_f_move_speed = (BansheeGz.BGDatabase.BGFieldFloat) MetaDefault.GetField(new BGId(4952303815547740193UL,9340583777696718742UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_move_speed != null) _ufle12jhs77_f_move_speed.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_move_speed = null;
+				}
+				_ufle12jhs77_f_move_speed.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_move_speed;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_max_count;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_max_count
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_max_count == null)
+			{
+				_ufle12jhs77_f_max_count = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(4691071039300367544UL,4121527071664136842UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_max_count != null) _ufle12jhs77_f_max_count.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_max_count = null;
+				}
+				_ufle12jhs77_f_max_count.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_max_count;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_start_stage;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_start_stage
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_start_stage == null)
+			{
+				_ufle12jhs77_f_start_stage = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5502007690744568472UL,12848727859619122086UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_start_stage != null) _ufle12jhs77_f_start_stage.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_start_stage = null;
+				}
+				_ufle12jhs77_f_start_stage.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_start_stage;
+		}
+	}
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_end_stage;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_end_stage
+	{
+		get
+		{
+
+			if(_ufle12jhs77_f_end_stage == null)
+			{
+				_ufle12jhs77_f_end_stage = (BansheeGz.BGDatabase.BGFieldInt) MetaDefault.GetField(new BGId(5724066033165208912UL,3647628603327458214UL));
+				void __Unloaded(BGObject f)
+				{
+					if(_ufle12jhs77_f_end_stage != null) _ufle12jhs77_f_end_stage.OnUnload -= __Unloaded;
+					_ufle12jhs77_f_end_stage = null;
+				}
+				_ufle12jhs77_f_end_stage.OnUnload += __Unloaded;
+			}
+			return _ufle12jhs77_f_end_stage;
+		}
+	}
+	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
+	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
+	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
+	private E_monster_info() : base(MetaDefault)
+	{
+	}
+	private E_monster_info(BGId id) : base(MetaDefault, id)
+	{
+	}
+	private E_monster_info(BGMetaEntity meta) : base(meta)
+	{
+	}
+	private E_monster_info(BGMetaEntity meta, BGId id) : base(meta, id)
+	{
+	}
+	public static E_monster_info FindEntity(Predicate<E_monster_info> filter) => MetaDefault.FindEntity(entity => filter==null || filter((E_monster_info) entity)) as E_monster_info;
+	public static List<E_monster_info> FindEntities(Predicate<E_monster_info> filter, List<E_monster_info> result=null, Comparison<E_monster_info> sort=null)
+	{
+		result = result ?? new List<E_monster_info>();
+		_find_Entities_Result.Clear();
+		MetaDefault.FindEntities(filter == null ? (Predicate<BGEntity>) null: e => filter((E_monster_info) e), _find_Entities_Result, sort == null ? (Comparison<BGEntity>) null : (e1, e2) => sort((E_monster_info) e1, (E_monster_info) e2));
+		if (_find_Entities_Result.Count != 0)
+		{
+			for (var i = 0; i < _find_Entities_Result.Count; i++) result.Add((E_monster_info) _find_Entities_Result[i]);
+			_find_Entities_Result.Clear();
+		}
+		return result;
+	}
+	public static void ForEachEntity(Action<E_monster_info> action, Predicate<E_monster_info> filter=null, Comparison<E_monster_info> sort=null) => MetaDefault.ForEachEntity(entity => action((E_monster_info) entity), filter == null ? null : (Predicate<BGEntity>) (entity => filter((E_monster_info) entity)), sort==null?(Comparison<BGEntity>) null:(e1,e2) => sort((E_monster_info)e1,(E_monster_info)e2));
+	public static E_monster_info GetEntity(BGId entityId) => (E_monster_info) MetaDefault.GetEntity(entityId);
+	public static E_monster_info GetEntity(int index) => (E_monster_info) MetaDefault[index];
+	public static E_monster_info GetEntity(string entityName) => (E_monster_info) MetaDefault.GetEntity(entityName);
+	public static E_monster_info NewEntity() => (E_monster_info) MetaDefault.NewEntity();
+	public static E_monster_info NewEntity(BGId entityId) => (E_monster_info) MetaDefault.NewEntity(entityId);
 }
 #pragma warning restore 414

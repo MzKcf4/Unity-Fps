@@ -15,7 +15,7 @@ public abstract partial class FpsNpc
     protected const int LOWER_LAYER = 1;
 
     private ClipTransition currentPlayingClip;
-    */
+    
 
     protected override void Start_Animation()
     {
@@ -49,7 +49,7 @@ public abstract partial class FpsNpc
 
         HandleMovementAnimation();
     }
-
+    
     protected override void HandleMovementAnimation()
     {
         if (npcResources == null || IsDead()) return;
@@ -88,5 +88,6 @@ public abstract partial class FpsNpc
         (currState != CharacterStateEnum.Dead &&
             GetMovementVelocity().magnitude > 0.01f);
     }
+    */
 }
 

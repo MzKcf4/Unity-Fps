@@ -4,22 +4,34 @@ using UnityEngine;
 using Mirror;
 using Animancer;
 using UnityEngine.Events;
+using EasyCharacterMovement;
 
-// A FpsCharacter should 
-// -  have a model
-// -  be able to move
-// -  have animation
+// A FpsCharacter manges 
+// -  character models
+// -  character locomotion / animations
 
-public abstract partial class FpsCharacter : FpsEntity
+public class FpsCharacter : FpsEntity
 {
+    public FpsModel FpsModel { get { return fpsModel; } }
+    public bool IsLookAtWeaponAim { get { return isLookAtWeaponAim; }
+                                    set { isLookAtWeaponAim = value; }}
+
     protected CharacterCommonResources characterCommonResources;
     protected FpsModel fpsModel;
+    [SerializeField] private GameObject fpsModelPrefab;
+
     protected GameObject modelObject;
     protected GameObject modelObjectParent;
     protected bool canRagdoll = true;
-    [SerializeField] protected Transform lookAtTransform; 
+
+    protected bool isLookAtWeaponAim = false;
+    // Need to be synchorinzed for up / down rotation
+    [SerializeField] protected Transform weaponAimAt;
+
+    // Objects that you want to rotate with model itself
+    [SerializeField] protected Transform attachToModel;
     
-    [SerializeField] protected CharacterResources charRes;
+    // [SerializeField] protected CharacterResources charRes;
     
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
@@ -27,18 +39,22 @@ public abstract partial class FpsCharacter : FpsEntity
     [SyncVar] public string characterName;
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.Blue;
-    [SyncVar] protected MovementDirection currMoveDir = MovementDirection.None;
-    [SyncVar] public CharacterStateEnum currState;
 
-    protected MovementDirection prevMoveDir = MovementDirection.None;
-    protected CharacterStateEnum prevCharState = CharacterStateEnum.None;
+    [SerializeField] protected CharacterAnimationResource charAnimationRes;
+    protected Character ecmCharacter;
+    protected MzCharacterAnimator characterAnimator;
+    [SerializeField] protected bool useDeathAnimation = false;
     
     protected AudioSource audioSourceWeapon;
     protected AudioSource audioSourceCharacter;
 
+
+    [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
+
     public override void OnStartClient()
     {
         base.OnStartClient();
+        
         characterCommonResources = WeaponAssetManager.Instance.GetCharacterCommonResources();
         audioSourceWeapon = gameObject.AddComponent<AudioSource>();
         audioSourceCharacter = gameObject.AddComponent<AudioSource>();
@@ -55,32 +71,60 @@ public abstract partial class FpsCharacter : FpsEntity
     protected override void Start()
     {
         base.Start();
+        ecmCharacter = GetComponent<Character>();
+        characterAnimator = GetComponent<MzCharacterAnimator>();
+
         AttachModel();
         SetRagdollState(false);
         
         SharedContext.Instance.RegisterCharacter(this);
-
-        Start_Animation();
     }
     
     protected virtual void AttachModel()
     {
-        fpsModel = GetComponentInChildren<FpsModel>(true);
+        if (fpsModelPrefab != null)
+        {
+            GameObject fpsModelObj = GameObject.Instantiate(fpsModelPrefab , transform);
+            // fpsModelObj.transform.parent = transform;
+
+            fpsModel = fpsModelObj.GetComponent<FpsModel>();
+        }
+        else
+        {
+            fpsModel = GetComponentInChildren<FpsModel>(true);
+        }
+
+        
+        if (fpsModel == null && charAnimationRes != null && charAnimationRes.characterModelPrefab != null)
+        {
+            modelObject = Instantiate(charAnimationRes.characterModelPrefab, transform);
+            fpsModel = modelObject.GetComponent<FpsModel>();
+        }
+
         modelObject = fpsModel.gameObject;
         modelObjectParent = modelObject.transform.parent.gameObject;
-        
-        modelAnimancer = modelObject.GetComponent<AnimancerComponent>();
-        fpsModel.SetLookAtTransform(lookAtTransform);
+
+        fpsModel.SetLookAtTransform(weaponAimAt);
+        if (attachToModel != null)
+        {
+            attachToModel.SetParent(modelObject.transform);
+        }
+
+        characterAnimator.SetAttachedModel(fpsModel);
+        // Apply highlight effect to newly added model's mesh
+        highlightEffect.Refresh();
     }
         
     [Server]
     public virtual void Respawn()
     {
-        currState = CharacterStateEnum.None;
+        // currState = CharacterStateEnum.None;
         SetHealth(maxHealth);
         SetControllableState(true);
         SharedContext.Instance.characterSpawnEvent.Invoke(this);
         RpcRespawn();
+
+        onSpawnEvent.Invoke();
     }
     
     [ClientRpc]
@@ -88,8 +132,9 @@ public abstract partial class FpsCharacter : FpsEntity
     {
         SetControllableState(true);
         SetupComponentsByNetworkSetting();
-        Respawn_Animation();
-        
+        // Respawn_Animation();
+
+        onSpawnEvent.Invoke();
         SharedContext.Instance.characterSpawnEvent.Invoke(this);
     }
 
@@ -99,16 +144,32 @@ public abstract partial class FpsCharacter : FpsEntity
         base.Update();
         if(IsDead())    return;
 
-        Update_Animation();
+        SyncMovementVelocity();
     }
-       
-    [ClientRpc]
-    protected void RpcPlayAnimation(ClipTransition clip)
+
+    [Server]
+    public void ServerPlayAnimationByKey(string key)
     {
-        currentPlayingClip = clip;
-        modelAnimancer.Play(clip , 0.1f , FadeMode.FromStart);
+        RpcPlayAnimationByKey(key);
     }
-    
+
+    [ClientRpc]
+    protected void RpcPlayAnimationByKey(string key)
+    {
+        PlayAnimationByKey(key);
+    }
+
+    public void PlayAnimationByKey(string key) 
+    {
+        if (!charAnimationRes.actionClips.ContainsKey(key)) {
+            Debug.LogWarning("Action clip key not found : " + key);
+            return;
+        }
+
+        characterAnimator.PlayActionAnimation(charAnimationRes.actionClips[key].actionClip);
+
+    }
+           
     [ClientRpc]
     protected override void RpcTakeDamage(DamageInfo damageInfo)
     {
@@ -125,7 +186,6 @@ public abstract partial class FpsCharacter : FpsEntity
     protected override void Killed(DamageInfo damageInfo)
     {
         base.Killed(damageInfo);
-        PlayerManager.Instance.QueueRespawn(this);
         ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
     }
     
@@ -136,6 +196,11 @@ public abstract partial class FpsCharacter : FpsEntity
         
         SetControllableState(false);
         FpsUiManager.Instance.AddNewKillListing(damageInfo , characterName);
+
+        if (useDeathAnimation && charAnimationRes.deathClips.Count > 0)
+        {
+            characterAnimator.PlayDeathAnimation(Utils.GetRandomElement<ClipTransition>(charAnimationRes.deathClips));
+        }
     }
     
     protected void SetControllableState(bool controllable)
@@ -155,12 +220,13 @@ public abstract partial class FpsCharacter : FpsEntity
         
     protected virtual void SetRagdollState(bool isRagdollState)
     {
+        
         if (canRagdoll)
         {
-            if (modelAnimancer != null)
+            if (modelObject != null)
             {
-                modelAnimancer.enabled = isRagdollState ? false : true;
-                modelObject.GetComponent<Animator>().enabled = isRagdollState ? false : true;
+                if(!useDeathAnimation)
+                    characterAnimator.enabled = isRagdollState ? false : true;
 
                 if (!isRagdollState)
                 {
@@ -194,13 +260,14 @@ public abstract partial class FpsCharacter : FpsEntity
             Collider c = hitbox.GetComponent<Collider>();
             c.isTrigger = isRagdollState ? false : true;
             c.gameObject.layer = isRagdollState ? LayerMask.NameToLayer(Constants.LAYER_IGNORE_RAYCAST)
-                                    : LayerMask.NameToLayer(GetHitboxLayerName());
+                                                : LayerMask.NameToLayer(GetHitboxLayerName());
         }
             
         modelObject.gameObject.layer = isRagdollState ? LayerMask.NameToLayer(Constants.LAYER_IGNORE_RAYCAST)
                                                       : LayerMask.NameToLayer(GetModelLayerName());
     }
 
+  
     protected virtual string GetModelLayerName()
     {
         return Constants.LAYER_CHARACTER_MODEL;
@@ -211,39 +278,26 @@ public abstract partial class FpsCharacter : FpsEntity
         return Constants.LAYER_HITBOX;
     }
 
-    protected MovementDirection GetMovementDirection()
+    protected virtual void SyncMovementVelocity()
     {
-        Vector3 vecNormalized = GetMovementVelocity().normalized;
-
-        // ----Pure WASD direction checking---- //
-        
-        float dotProductFront = Vector3.Dot(vecNormalized , modelObject.transform.forward);
-        if(dotProductFront == 1)
-            return MovementDirection.Front;
-        else if (dotProductFront == -1)
-            return MovementDirection.Back;
-        else
-        {
-            float dotProuctRight = Mathf.Round(Vector3.Dot(vecNormalized , modelObject.transform.right));
-            if(dotProuctRight == 1)
-                return MovementDirection.Right;
-            else if (dotProuctRight == -1)
-                return MovementDirection.Left;
-        }
-        // --------------------------------------- //
-        if(vecNormalized.x * modelObject.transform.forward.x < 0 
-            && vecNormalized.z * modelObject.transform.forward.z < 0)
-            return MovementDirection.Back;
-        else
-            return MovementDirection.Front;
+        if (isServer)
+            currentVelocity = GetMovementVelocity();
     }
-    
-    public abstract Vector3 GetMovementVelocity();
-        
+
     [Command]
-    protected void CmdSetVelocity(Vector3 velocity)
+    protected void CmdSyncMovementVelocity(Vector3 velocity)
     {
         currentVelocity = velocity;
+    }
+
+    public virtual Vector3 GetMovementVelocity() 
+    { 
+        return ecmCharacter.GetVelocity();
+    }
+        
+    public Vector3 GetCurrentVelocity()
+    {
+        return currentVelocity;
     }
         
     protected virtual void OnDestroy()
@@ -257,5 +311,18 @@ public abstract partial class FpsCharacter : FpsEntity
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0.5f;
         audioSource.spread = 1f;
+    }
+
+    public void AimAtMovementDirection()
+    {
+        Vector3 moveVec = GetMovementVelocity().normalized * 2f;
+        
+        if (moveVec != Vector3.zero)
+            weaponAimAt.localPosition = new Vector3(moveVec.x, 1.3f + moveVec.y, moveVec.z);
+    }
+
+    public void AimAtPosition(Vector3 pos)
+    {
+        weaponAimAt.position = pos;
     }
 }

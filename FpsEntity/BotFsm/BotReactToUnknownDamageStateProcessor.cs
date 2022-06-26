@@ -8,7 +8,7 @@ public class BotReactToUnknownDamageStateProcessor : AbstractBotStateProcessor
 {
     private readonly ActionCooldown aimToDmgSourceTimer = new ActionCooldown { interval = 1.5f };
 
-    public BotReactToUnknownDamageStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) : base(fpsBot, botFsmDto)
+    public BotReactToUnknownDamageStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) : base(fpsBot,character, botFsmDto)
     {
         this.isReactToUnknownDamage = false;
         isReactToTeammateKilled = false;
@@ -28,7 +28,7 @@ public class BotReactToUnknownDamageStateProcessor : AbstractBotStateProcessor
     {
         // Stop and aim to damage source for certain time
         fpsBot.StopMoving();
-        fpsBot.SetLookAtToPosition(botFsmDto.lastUnexpectedDamage.damageSourcePosition);
+        fpsCharacter.AimAtPosition(botFsmDto.lastUnexpectedDamage.damageSourcePosition);
 
         if (!aimToDmgSourceTimer.CanExecuteAfterDeltaTime())
             return;

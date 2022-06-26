@@ -6,7 +6,7 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
     private readonly ActionCooldown weaponShotCooldown = new ActionCooldown();
     private readonly ActionCooldown reactionTime = new ActionCooldown();
 
-    public BotEngageStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) : base(fpsBot, botFsmDto)
+    public BotEngageStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) : base(fpsBot,character, botFsmDto)
     {
         this.isReactToUnknownDamage = false;
         isReactToTeammateKilled = false;
@@ -23,13 +23,13 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
         reactionTime.interval = fpsBot.reactionTime;
         reactionTime.StartCooldown();
 
-        weaponShotCooldown.interval = fpsBot.GetActiveWeapon().shootInterval;
+        weaponShotCooldown.interval = fpsCharacter.GetActiveWeapon().shootInterval;
         weaponShotCooldown.StartCooldown();
     }
 
     public override void ProcessState()
     {
-        fpsBot.SetLookAtToPosition(botFsmDto.shootTargetModel.transform.position + new Vector3(0, 1f, 0));
+        fpsCharacter.AimAtPosition(botFsmDto.shootTargetModel.transform.position + new Vector3(0, 1f, 0));
 
         // Still in reaction time
         if (!reactionTime.CanExecuteAfterDeltaTime())
@@ -44,26 +44,29 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
         FpsModel shootTarget = botFsmDto.shootTargetModel;
 
         // Check if Target is valid / already dead
-        if (!shootTarget || shootTarget.controllerEntity.IsDead())
+        if (!shootTarget || shootTarget.fpsCharacter.IsDead())
         {
             ResetShootTarget();
             ExitToState(BotStateEnum.Wandering);
             return;
         }
 
+        /*
         // Set points for bot to strafe
         if (CanStrafe() && fpsBot.IsReachedDesination())
         {
             fpsBot.SetDestination(PickRandomStrafePoint());
         }
+        */
 
         // Otherwise , find a visible body part to shoot
         Transform shootAtHitBox = fpsBot.GetVisibleHitBoxFromAimTarget(shootTarget.gameObject);
+        
         if (shootAtHitBox != null)
         {
             // Got visible hitbox to shoot
-            fpsBot.SetLookAtToPosition(shootAtHitBox.position);
-            fpsBot.ShootAtTarget();
+            fpsCharacter.AimAtPosition(shootAtHitBox.position);
+            fpsCharacter.ShootAtTarget();
         }
         else
         {
@@ -91,6 +94,6 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
     private bool CanStrafe()
     {
         
-        return fpsBot.GetActiveWeapon() != null && fpsBot.GetActiveWeapon().weaponCategory != WeaponCategory.Sniper;
+        return fpsCharacter.GetActiveWeapon() != null && fpsCharacter.GetActiveWeapon().weaponCategory != WeaponCategory.Sniper;
     }
 }

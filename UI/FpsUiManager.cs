@@ -75,6 +75,7 @@ public class FpsUiManager : MonoBehaviour
 	
 	protected void OnProgressionUpdate()
 	{
+		/*
 		ProgressionState currState = ProgressionManager.Instance.progressionState;
 		int stage = ProgressionManager.Instance.currentStage + 1;
 		int targetKills = ProgressionManager.Instance.stageTargetKills;
@@ -101,6 +102,7 @@ public class FpsUiManager : MonoBehaviour
 		{
 			progressText.text = "";
 		}
+		*/
 	}
     
     public void ToggleScope(bool enable)

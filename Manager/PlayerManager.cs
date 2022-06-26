@@ -40,11 +40,12 @@ public class PlayerManager : NetworkBehaviour
             botObj = Instantiate(botPrefab , spawn.position , Quaternion.identity);
         NetworkServer.Spawn(botObj);
         
-        FpsBot fpsBot = botObj.GetComponent<FpsBot>();
-        fpsBot.team = team;
-        fpsBot.SetSkillLevel(skillLevel);
-        
-        RespawnAndTeleport(fpsBot);
+        FpsCharacter fpsCharacter = botObj.GetComponent<FpsCharacter>();
+        fpsCharacter.team = team;
+        MzFpsBotBrain botBrain = botObj.GetComponent<MzFpsBotBrain>();
+        botBrain.SetSkillLevel(skillLevel);
+
+        RespawnAndTeleport(fpsCharacter);
     }
     
     [Server]

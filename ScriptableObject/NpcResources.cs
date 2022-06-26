@@ -8,6 +8,7 @@ using Animancer;
 public class NpcResources : SerializedScriptableObject
 {
 	public GameObject modelPrefab;
+	public string id;
 	public AvatarMask upperBodyMask;
 	public AvatarMask lowerBodyMask;
 	

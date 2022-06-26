@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Kit.Physic;
-using SensorToolkit;
+// using SensorToolkit;
 using Pathfinding;
 using Animancer;
 using RootMotion.FinalIK;
@@ -14,7 +14,7 @@ public partial class FpsBot : FpsHumanoidCharacter
     public bool aiIgnoreEnemy = false;
     public bool aiEnableWander = true;
     
-    protected TriggerSensor visionSensor;
+    // protected TriggerSensor visionSensor;
     
     private IAstarAI ai;
     private Seeker seeker;
@@ -34,7 +34,7 @@ public partial class FpsBot : FpsHumanoidCharacter
         
         if(isServer)
         {
-            visionSensor = GetComponentInChildren<TriggerSensor>();
+            // visionSensor = GetComponentInChildren<TriggerSensor>();
             ai = GetComponent<IAstarAI>();
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
@@ -103,16 +103,7 @@ public partial class FpsBot : FpsHumanoidCharacter
     {
         SetDestination(transform.position);
     }
-    
-    [Server]
-    public void ShootAtTarget()
-    {
-        if(GetActiveWeapon() == null)
-            return;
-        
-        GetActiveWeapon().DoWeaponFire();
-    }
-                
+                    
     [Server]
     public override void TakeDamage(DamageInfo damageInfo)
     {
@@ -179,7 +170,7 @@ public partial class FpsBot : FpsHumanoidCharacter
             if (fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform != null)
                 startPosition = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
 
-            Vector3 shootDirection = Utils.GetDirection(startPosition, lookAtTransform.position);
+            Vector3 shootDirection = Utils.GetDirection(startPosition, weaponAimAt.position);
             CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , startPosition, shootDirection);
             // ----------------------------------------------- //
             RpcFireWeapon();

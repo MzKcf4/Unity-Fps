@@ -12,7 +12,7 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
     private float teammateKilledReactionDistance = 20f;
     private Vector3 preAimPosition;
 
-    public BotWanderStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) : base(fpsBot, botFsmDto)
+    public BotWanderStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) : base(fpsBot,character, botFsmDto)
     {
         isReactToTeammateKilled = true;
         isReactToUnknownDamage = true;
@@ -48,7 +48,7 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
 
         // Pre Aim ended.
         if(teammateKilledPreAimTimer.CanExecuteAfterDeltaTime())
-            fpsBot.AlignLookAtWithMovementDirection();
+            fpsCharacter.AimAtMovementDirection();
 
     }
 
@@ -71,7 +71,7 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
         fpsBot.SetDestination(deathPos);
         botFsmDto.targetWaypoint = deathPos;
         preAimPosition = damageInfo.damageSourcePosition;
-        fpsBot.SetLookAtToPosition(preAimPosition);
+        fpsCharacter.AimAtPosition(preAimPosition);
     }
 }
 

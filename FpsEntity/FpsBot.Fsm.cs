@@ -17,10 +17,12 @@ public partial class FpsBot
 
     public void Start_Fsm()
     {
+        /*
         dictStateToProcessor.Add(BotStateEnum.Wandering, new BotWanderStateProcessor(this, botFsmDto));
         dictStateToProcessor.Add(BotStateEnum.Engage, new BotEngageStateProcessor(this, botFsmDto));
         dictStateToProcessor.Add(BotStateEnum.Chasing, new BotChaseStateProcessor(this, botFsmDto));
         dictStateToProcessor.Add(BotStateEnum.ReactToUnknownDamage, new BotReactToUnknownDamageStateProcessor(this, botFsmDto));
+        */
         TransitToState(BotStateEnum.Wandering);
     }
 
@@ -79,16 +81,17 @@ public partial class FpsBot
     {
         Vector3 moveVec = GetMovementVelocity().normalized * 2f;
         if (moveVec != Vector3.zero)
-            lookAtTransform.localPosition = new Vector3(moveVec.x, 1.3f + moveVec.y, moveVec.z);
+            weaponAimAt.localPosition = new Vector3(moveVec.x, 1.3f + moveVec.y, moveVec.z);
     }
 
     public void SetLookAtToPosition(Vector3 pos)
     {
-        lookAtTransform.position = pos;
+        weaponAimAt.position = pos;
     }
         
     public FpsModel ScanForShootTarget()
     {
+        /*
         if(visionSensor == null || aiIgnoreEnemy)
             return null;
 
@@ -110,13 +113,14 @@ public partial class FpsBot
             {
                 return detectedModel;
             }
-        }
+        }*/
         
         return null;
     }
 
     public Transform GetVisibleHitBoxFromAimTarget(GameObject targetObject)
     {
+        /*
         if (visionSensor == null)   return null;
 
         // Let's just assume all aim target is FpsCharacter first.
@@ -125,7 +129,7 @@ public partial class FpsBot
         if (tList != null && tList.Count > 0)
         {
             return Utils.GetRandomElement<Transform>(tList);
-        }
+        }*/
         return null;
     }
     

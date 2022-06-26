@@ -8,15 +8,17 @@ using UnityEngine;
 [Serializable]
 public abstract class AbstractBotStateProcessor
 {
-    protected readonly FpsBot fpsBot;
+    protected readonly MzFpsBotBrain fpsBot;
     protected readonly BotFsmDto botFsmDto;
+    protected readonly FpsHumanoidCharacter fpsCharacter;
     protected bool isReactToUnknownDamage = true;
     protected bool isReactToTeammateKilled = true;
 
-    public AbstractBotStateProcessor(FpsBot fpsBot, BotFsmDto botFsmDto) 
+    public AbstractBotStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) 
     {
         this.fpsBot = fpsBot;
         this.botFsmDto = botFsmDto;
+        this.fpsCharacter = character;
     }
     public abstract void EnterState();
     public abstract void ProcessState();
