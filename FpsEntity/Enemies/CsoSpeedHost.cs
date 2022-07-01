@@ -5,6 +5,7 @@ using Mirror;
 
 public class CsoSpeedHost : FpsNpc
 {
+
 	[SerializeField]
 	private ActionCooldown stalkCooldown;
 	private float stalkRemaining = 0f;
