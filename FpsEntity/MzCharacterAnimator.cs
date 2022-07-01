@@ -13,18 +13,10 @@ public class MzCharacterAnimator : MonoBehaviour
     protected const int UPPER_LAYER = 0;
     protected const int LOWER_LAYER = 1;
 
-    private ClipTransition currentPlayingClip;
-
-    private MovementDirection currMoveDir = MovementDirection.None;
-    private CharacterStateEnum currState;
+    private AnimationClip[] currentLayerPlayingClip = new AnimationClip[2];
 
     protected MovementDirection prevMoveDir = MovementDirection.None;
     protected CharacterStateEnum prevCharState = CharacterStateEnum.None;
-
-    private ClipTransition currentLowerClip;
-    private ClipTransition currentUpperClip;
-
-    private AnimancerState lowerBodyState;
 
     void Start()
     {
@@ -34,9 +26,6 @@ public class MzCharacterAnimator : MonoBehaviour
 
     void Update()
     {
-        // currMoveDir = fpsCharacter.currMoveDir;
-        // currState = fpsCharacter.currState;
-
         if (modelAnimancer == null) return;
         HandleMovementAnimation();
     }
@@ -47,9 +36,9 @@ public class MzCharacterAnimator : MonoBehaviour
 
         // Debug.Log(fpsCharacter.GetCurrentVelocity().magnitude);
         if (fpsCharacter.GetCurrentVelocity().magnitude > 0.001f)
-            PlayLocomotionAnimation(charRes.runClip, LOWER_LAYER);
+            PlayLocomotionAnimation(charRes.runClip);
         else
-            PlayLocomotionAnimation(charRes.idleClip, LOWER_LAYER);
+            PlayLocomotionAnimation(charRes.idleClip);
 
         /*
         if (currState == CharacterStateEnum.Idle)
@@ -77,51 +66,46 @@ public class MzCharacterAnimator : MonoBehaviour
         modelAnimancer.Layers[LOWER_LAYER].SetMask(charRes.lowerBodyMask);
 
         if (charRes.upperBodyAimClip.Clip != null)
-            modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip, 0.1f);
+            modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyAimClip.Clip);
+            // PlayActionAnimation(charRes.upperBodyAimClip);
 
         if (charRes.idleClip.Clip != null)
-            modelAnimancer.Layers[LOWER_LAYER].Play(charRes.idleClip, 0.1f);
+            PlayLocomotionAnimation(charRes.idleClip);
     }
 
+    // Do NOT play the ClipTransition itself directly if you have OnEnd events
+    //      because it applies the OnEnd event to ClipTransition itself , so if the ClipTransition is shared among other objects
+    //      this object's OnEnd will call OTHER object's OnEnd !
     public void PlayActionAnimation(ClipTransition clip)
     {
-        PlayAnimation(clip , UPPER_LAYER);
-    }
-    public void PlayAnimation(ClipTransition clip, int layer)
-    {
-        PlayAnimation(clip, layer, null);
-    }
-
-    protected void PlayLocomotionAnimation(ClipTransition clip, int layer)
-    {
-        if (lowerBodyState != null && lowerBodyState.Clip == clip.Clip)
-            return;
-
-        lowerBodyState = modelAnimancer.Layers[layer].Play(clip, 0.1f);
-    }
-
-    public void PlayAnimation(ClipTransition clip, int layer, ClipTransition idleClip)
-    {
-        if (currentPlayingClip == clip)
-            return;
-
-        currentPlayingClip = clip;
-        var state = modelAnimancer.Layers[layer].Play(clip, 0.1f, FadeMode.FromStart);
-
-        idleClip ??= charRes.idleClip;
-
-        if (idleClip != null)
+        AnimancerState state = modelAnimancer.Layers[UPPER_LAYER].Play(clip.Clip, 0.1f, FadeMode.FixedSpeed);
+        state.Events.OnEnd = () =>
         {
-            state.Events.OnEnd = () => PlayAnimation(idleClip, layer);
-        }
+            // Return to idle state
+            currentLayerPlayingClip[UPPER_LAYER] = null;
+            modelAnimancer.Layers[UPPER_LAYER].Play(charRes.idleClip, 0.1f);
+        };
+        
+        state.Speed = clip.Speed;
+    }
 
+    private void PlayLocomotionAnimation(ClipTransition clip)
+    {
+        if (currentLayerPlayingClip[LOWER_LAYER] == clip.Clip)
+            return;
+        currentLayerPlayingClip[LOWER_LAYER] = clip.Clip;
+
+        // modelAnimancer.Layers[LOWER_LAYER].Stop();
+
+        AnimancerState state = modelAnimancer.Layers[LOWER_LAYER].Play(clip.Clip, 0.1f);
+        state.Speed = clip.Speed;
     }
 
     public void PlayDeathAnimation(ClipTransition clip)
     {
         modelAnimancer.Layers[UPPER_LAYER].Stop();
         modelAnimancer.Layers[LOWER_LAYER].Stop();
-        currentPlayingClip = clip;
+        
         modelAnimancer.Layers[UPPER_LAYER].Play(clip, 0.1f, FadeMode.FromStart);
         modelAnimancer.Layers[LOWER_LAYER].Play(clip, 0.1f, FadeMode.FromStart);
     }
