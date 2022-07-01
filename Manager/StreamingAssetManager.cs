@@ -8,6 +8,7 @@ public class StreamingAssetManager : MonoBehaviour
 {
     public static StreamingAssetManager Instance;
     public Dictionary<string, WeaponResources> dictNameToWeaponResource;
+    public Dictionary<string, GameObject> dictMonsterNameToPrefab;
 
     void Awake()
     {
@@ -31,6 +32,28 @@ public class StreamingAssetManager : MonoBehaviour
         {
             if (loadedWeaponRes == null) return;
             dictNameToWeaponResource.Add(loadedWeaponRes.weaponId, loadedWeaponRes);
+        });
+    }
+
+    public GameObject GetMonsterPrefab(string prefabName)
+    {
+        return dictMonsterNameToPrefab[prefabName];
+    }
+
+    public void InitializeMonsterDict() 
+    {
+        if (dictMonsterNameToPrefab != null) 
+        {
+            Debug.LogWarning("Monster dict already initialized!");
+            return;
+        }
+
+        dictMonsterNameToPrefab = new Dictionary<string, GameObject>();
+        Addressables.LoadAssetsAsync<GameObject>(Constants.ADDRESS_LABEL_MONSTER_PREFAB, (loadedRes) =>
+        {
+            if (loadedRes == null) return;
+            Debug.Log("Loaded : " + loadedRes.name);
+            dictMonsterNameToPrefab.Add(loadedRes.name, loadedRes);
         });
     }
 }

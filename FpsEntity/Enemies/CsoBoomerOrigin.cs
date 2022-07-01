@@ -5,6 +5,7 @@ using Kit.Physic;
 
 public class CsoBoomerOrigin : CsoBoomerHost
 {
+	/*
 	[SerializeField]
 	private RaycastHelper radiationRaycast;
 	
@@ -33,9 +34,10 @@ public class CsoBoomerOrigin : CsoBoomerHost
 				if(c.CompareTag(Constants.TAG_PLAYER))
 				{
 					FpsPlayer fpsPlayer = c.GetComponent<FpsPlayer>();
-					fpsPlayer.OnHitInClient(this.gameObject);
+					fpsPlayer.OnHitInLocalClient(this.gameObject);
 				}
 			}
 		}
 	}
+	*/
 }

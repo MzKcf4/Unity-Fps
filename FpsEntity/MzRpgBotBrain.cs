@@ -11,25 +11,23 @@ using Kit.Physic;
 public class MzRpgBotBrain : MzBotBrainBase
 {
     protected static readonly string MELEE_COOLDOWN = "bot-melee-cooldown";
+    protected static readonly string MELEE_CHECK = "bot-melee-check";
 
     public bool canMeleeAttack = true;
     public float meleeCooldown = 5.0f;
-    protected RaycastHelper meleeRangeDetector;
+    public float meleeCheckInterval = 1.0f;
 
     public bool canRangeAttack = false;
+    private MzRpgCharacter rpgCharacter;
 
     protected override void Start()
     {
         base.Start();
 
-        character = GetComponent<FpsCharacter>();
+        rpgCharacter = GetComponent<MzRpgCharacter>();
         if (character.isServer)
         {
-            // visionSensor = GetComponentInChildren<TriggerSensor>();
 
-            cooldownSystem.PutOnCooldown(MELEE_COOLDOWN, meleeCooldown);
-            cooldownSystem.PutOnCooldown(TARGET_UPDATE_COOLDOWN, targetUpdateInterval);
-            InitializeMeleeRangeDetector();
         }
         else
         {
@@ -41,18 +39,26 @@ public class MzRpgBotBrain : MzBotBrainBase
     {
         base.Update();
 
+        if (rpgCharacter.IsDead() || !rpgCharacter.isServer)
+            return;
+
         SeekTarget();
         CheckMeleeRange();
     }
 
     protected virtual void CheckMeleeRange()
     {
-        if (!cooldownSystem.IsOnCooldown(MELEE_COOLDOWN))
+        if (!cooldownSystem.IsOnCooldown(MELEE_COOLDOWN) && !cooldownSystem.IsOnCooldown(MELEE_CHECK))
         {
-            if (DetectedTarget(meleeRangeDetector, Constants.TAG_PLAYER))
-                ExecuteMeleeAttack();
-
-            cooldownSystem.PutOnCooldown(MELEE_COOLDOWN, meleeCooldown);
+            if (!cooldownSystem.IsOnCooldown(MELEE_CHECK))
+            {
+                if (DetectedTarget())
+                {
+                    ExecuteMeleeAttack();
+                    cooldownSystem.PutOnCooldown(MELEE_COOLDOWN, meleeCooldown);
+                }
+                cooldownSystem.PutOnCooldown(MELEE_CHECK, meleeCheckInterval);
+            }
         }
     }
 
@@ -133,15 +139,9 @@ public class MzRpgBotBrain : MzBotBrainBase
         }
     }
 
-    protected void InitializeMeleeRangeDetector()
+    protected bool DetectedTarget()
     {
-        meleeRangeDetector = gameObject.AddComponent<RaycastHelper>();
-        meleeRangeDetector.m_FixedUpdate = false;
-        meleeRangeDetector.RayType = RaycastHelper.eRayType.BoxOverlap;
-        meleeRangeDetector.m_LocalPosition = new Vector3(0, 1f, 0.93f);
-        meleeRangeDetector.m_HalfExtends = new Vector3(0.51f, 1f, 0.69f);
-        meleeRangeDetector.SetMemorySize(10);
-        meleeRangeDetector.m_LayerMask = LayerMask.GetMask(Constants.LAYER_CHARACTER_MODEL, Constants.LAYER_LOCAL_PLAYER_MODEL);
+        return rpgCharacter.GetTargetsInMeleeRange().Count > 0;
     }
 }
 

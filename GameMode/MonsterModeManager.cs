@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mirror;
 using UnityEngine;
+using BansheeGz.BGDatabase;
 
 public class MonsterModeManager : NetworkBehaviour
 {
@@ -17,21 +18,32 @@ public class MonsterModeManager : NetworkBehaviour
     [SerializeField] private List<MonsterStageConfig> stageConfigList = new List<MonsterStageConfig>();
     private MonsterStageConfig activeStageConfig;
 
+
     public bool canSpawn = false;
     
     [SerializeField] public ActionCooldown spawnInterval;
     
-    [SyncVar(hook = (nameof(OnKillRemainUpdate)))] public int stageKillsRemain = 0;
+    [SyncVar(hook = (nameof(OnKillRemainUpdate)))] 
+    public int stageKillsRemain = 0;
+
     // Stage must start at "1" ! 
     [SyncVar(hook = (nameof(OnStageUpdate)))] 
     public int currentStage = 0;
 
     public int restTime = 10;
     [SyncVar(hook = (nameof(OnRestRemainUpdate)))] public int restRemain = 10;
-    public int maxMonsters = 30;
+
+    public int maxMonsters = 7;
+
+
+    private int currentMonsterCount = 0;
+
     public Stack<GameObject> stageSpawnStack;
 
     private List<GameObject> killedMonsterList = new List<GameObject>();
+
+    // private List<string> stageSpawnableList = new List<string>();
+    private List<E_monster_info> stageSpawnableList = new List<E_monster_info>();
 
     private void Awake()
     {
@@ -40,6 +52,7 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void Start()
     {
+        StreamingAssetManager.Instance.InitializeMonsterDict();
         
     }
 
@@ -47,7 +60,9 @@ public class MonsterModeManager : NetworkBehaviour
     {
         base.OnStartServer();
         FindSpawnsOnMap();
-        ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
+        maxMonsters = 7;
+        MzCharacterManager.instance.OnCharacterKilled.AddListener(OnCharacterKilled);
+        // ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
         // SharedContext.Instance.characterSpawnEvent.AddListener(OnCharacterSpawn);
     }
 
@@ -57,7 +72,8 @@ public class MonsterModeManager : NetworkBehaviour
         if (MonsterModeUiManager.Instance == null)
             Instantiate(uiPrefab, FpsUiManager.Instance.GetInfoPanel());
     }
-
+    
+    [Server]
     public void StartGame()
     {
         currentStage = 0;
@@ -100,12 +116,16 @@ public class MonsterModeManager : NetworkBehaviour
 
     public void StartStage(int stage)
     {
+        stageKillsRemain = 40;
+        stageSpawnableList = BuildStageSpawnableList(stage);
+        /*
         DestroyKilledMonsters();
         killedMonsterList.Clear();
 
         activeStageConfig = stageConfigList[stage];
         InitializeSpawnStack(stageConfigList[stage]);
         stageKillsRemain = activeStageConfig.targetKillCount;
+        */
         canSpawn = true;
     }
 
@@ -123,45 +143,54 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void TrySpawnEnemy()
     {
-        if (!canSpawn || spawnedEnemy.Count > maxMonsters) return;
+        if (!canSpawn || currentMonsterCount >= maxMonsters) return;
 
-        if (spawnInterval.CanExecuteAfterDeltaTime(true) && stageSpawnStack.Count > 0) 
+        if (spawnInterval.CanExecuteAfterDeltaTime(true)) 
         {
-            GameObject prefab = stageSpawnStack.Pop();
-            // GameObject prefab = Utils.GetRandomElement<GameObject>(normalMonsterPrefabList);
-            Vector3 posToSapwn = Utils.GetRandomElement<Transform>(monsterSpawnPoints).position;
+            currentMonsterCount++;
+            E_monster_info monsterInfo = Utils.GetRandomElement<E_monster_info>(stageSpawnableList);
 
+            GameObject prefab = StreamingAssetManager.Instance.GetMonsterPrefab(monsterInfo.f_name);
+
+
+            Vector3 posToSapwn = Utils.GetRandomElement<Transform>(monsterSpawnPoints).position;
             GameObject obj = Instantiate(prefab, posToSapwn, Quaternion.identity);
             spawnedEnemy.Add(obj);
 
-            FpsNpc fpsNpc = obj.GetComponent<FpsNpc>();
-            fpsNpc.onKilledEvent.AddListener(OnMonsterKilled);
+            MzRpgCharacter mzRpgCharacter = obj.GetComponent<MzRpgCharacter>();
+            mzRpgCharacter.SetMaxSpeed(monsterInfo.f_move_speed);
+            mzRpgCharacter.SetHealth(monsterInfo.f_base_health);
 
-            /*
-            if (progressionState == ProgressionState.Enraged)
-                fpsEnemy.MultiplySpeed(enragedSpeedMultiply);
-            */
+
             NetworkServer.Spawn(obj);
         }
     }
 
-    [Server]
-    public void OnCharacterKilled(FpsCharacter victim, DamageInfo dmgInfo)
+    private List<E_monster_info> BuildStageSpawnableList(int stage) 
     {
-        if(victim is FpsPlayer)
-            PlayerManager.Instance.QueueRespawn(victim);
+        return E_monster_info.FindEntities(e => stage >= e.f_start_stage && stage <= e.f_end_stage);
     }
 
-    private void OnMonsterKilled(GameObject enemyObj)
+    private void OnCharacterKilled(FpsCharacter fpsCharacter)
     {
-        killedMonsterList.Add(enemyObj);
+        if (fpsCharacter.team == TeamEnum.Monster)
+            OnMonsterKilled(fpsCharacter);
+        else if (fpsCharacter is FpsPlayer)
+            PlayerManager.Instance.QueueRespawn(fpsCharacter);
+    }
 
+    private void OnMonsterKilled(FpsCharacter fpsCharacter)
+    {
+        MzCharacterManager.instance.QueueRemove(fpsCharacter, 5);
+        currentMonsterCount--;
         stageKillsRemain--;
 
         if (stageKillsRemain <= 0)
         {
             EndStage();
         }
+
+        
 
 
         /*

@@ -23,8 +23,9 @@ public class Constants
     public static readonly string LAYER_FIRST_PERSON_VIEW = "FirstPersonView";
 
     public static readonly string LABEL_WEAPON_RESOURCE = "WeaponResource";
-    
-	public static readonly string WEAPON_SOUND_FIRE = "fire";
+    public static readonly string ADDRESS_LABEL_MONSTER_PREFAB = "MonsterPrefab";
+
+    public static readonly string WEAPON_SOUND_FIRE = "fire";
     
 	public static readonly int WEAPON_SLOT_1 = 0;
 	public static readonly int WEAPON_SLOT_2 = 1;

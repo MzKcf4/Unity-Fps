@@ -38,7 +38,6 @@ public abstract class MzBotBrainBase : MonoBehaviour
         character = GetComponent<FpsCharacter>();
         if (character.isServer)
         {
-            // visionSensor = GetComponentInChildren<TriggerSensor>();
             ai = GetComponent<IAstarAI>();
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
@@ -54,6 +53,10 @@ public abstract class MzBotBrainBase : MonoBehaviour
         }
         else
         {
+            AIBase aiBase = GetComponent<AIBase>();
+            aiDest.enabled = false;
+            aiBase.enabled = false;
+            seeker.enabled = false;
             this.enabled = false;
         }
     }
@@ -122,20 +125,6 @@ public abstract class MzBotBrainBase : MonoBehaviour
     private void OnCharacterSpawn()
     {
         TogglePathingFindingAI(true);
-    }
-
-    protected static bool DetectedTarget(RaycastHelper raycastHelper, string targetTag)
-    {
-        raycastHelper.CheckPhysic();
-        IEnumerable<Collider> colliders = raycastHelper.GetOverlapColliders();
-        foreach (Collider c in colliders)
-        {
-            if (c.CompareTag(targetTag))
-            {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

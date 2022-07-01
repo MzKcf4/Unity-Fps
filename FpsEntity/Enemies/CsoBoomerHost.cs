@@ -5,8 +5,10 @@ using MoreMountains.Feedbacks;
 using Mirror;
 using Kit.Physic;
 
+
 public class CsoBoomerHost : FpsNpc
 {
+	/*
 	[SerializeField] 
 	private MMFeedbacks explosionFeedbacks;
 	[SerializeField]
@@ -26,10 +28,10 @@ public class CsoBoomerHost : FpsNpc
 			if(c.CompareTag(Constants.TAG_PLAYER))
 			{
 				FpsPlayer fpsPlayer = c.GetComponent<FpsPlayer>();
-				fpsPlayer.OnHitInClient(this.gameObject);
+				fpsPlayer.OnHitInLocalClient(this.gameObject);
 			}
 		}
 	}
-	
+	*/
 	
 }

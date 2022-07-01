@@ -245,7 +245,7 @@ public abstract partial class FpsNpc : FpsCharacter
 				if (fpsPlayer == null)
 					fpsPlayer = c.GetComponentInParent<FpsPlayer>();
 
-				fpsPlayer.OnHitInClient(this.gameObject);
+				fpsPlayer.OnHitInLocalClient(this.gameObject);
 			}
 		}
 	}

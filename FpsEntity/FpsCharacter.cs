@@ -5,6 +5,7 @@ using Mirror;
 using Animancer;
 using UnityEngine.Events;
 using EasyCharacterMovement;
+using Pathfinding;
 
 // A FpsCharacter manges 
 // -  character models
@@ -40,6 +41,9 @@ public class FpsCharacter : FpsEntity
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
     [SyncVar] public TeamEnum team = TeamEnum.Blue;
 
+    [SyncVar(hook = (nameof(OnMaxSpeedChanged)))]
+    protected float maxSpeed;
+
     [SerializeField] protected CharacterAnimationResource charAnimationRes;
     protected Character ecmCharacter;
     protected MzCharacterAnimator characterAnimator;
@@ -48,8 +52,9 @@ public class FpsCharacter : FpsEntity
     protected AudioSource audioSourceWeapon;
     protected AudioSource audioSourceCharacter;
 
-
     [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
+
+
 
     public override void OnStartClient()
     {
@@ -65,14 +70,13 @@ public class FpsCharacter : FpsEntity
     protected override void Awake()
     {
         base.Awake();
-        
+        ecmCharacter = GetComponent<Character>();
+        characterAnimator = GetComponent<MzCharacterAnimator>();
     }
     
     protected override void Start()
     {
         base.Start();
-        ecmCharacter = GetComponent<Character>();
-        characterAnimator = GetComponent<MzCharacterAnimator>();
 
         AttachModel();
         SetRagdollState(false);
@@ -187,6 +191,7 @@ public class FpsCharacter : FpsEntity
     {
         base.Killed(damageInfo);
         ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
+        MzCharacterManager.instance.OnCharacterKilled.Invoke(this);
     }
     
     [ClientRpc]
@@ -249,6 +254,8 @@ public class FpsCharacter : FpsEntity
                 rb.useGravity = isRagdollState ? true : false;
             }
         }
+
+        ecmCharacter.enabled = !isRagdollState;
 
         // The capsule collider of character
         Collider boundCollider = GetComponent<Collider>();
@@ -325,4 +332,16 @@ public class FpsCharacter : FpsEntity
     {
         weaponAimAt.position = pos;
     }
+
+    public virtual void SetMaxSpeed(float maxSpeed)
+    {
+        this.maxSpeed = maxSpeed;
+        ecmCharacter.maxWalkSpeed = maxSpeed;
+    }
+
+    private void OnMaxSpeedChanged(float oldMaxSpeed, float newMaxSpeed)
+    {
+        SetMaxSpeed(newMaxSpeed);
+    }
+    
 }

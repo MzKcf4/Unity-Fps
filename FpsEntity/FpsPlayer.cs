@@ -183,9 +183,9 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     #region hit_dmg
     
 	[Client]
-	public void OnHitInClient(GameObject hitByObj)
+	public void OnHitInLocalClient(GameObject hitByObj)
 	{
-		if(!isClient)	return;
+		if(!isClient || !isLocalPlayer) return;
 		// Tells server it is hit.
 		CmdOnHit(hitByObj);
 	}
