@@ -13,13 +13,19 @@ public class MzEcmAStarCharacter : EasyCharacterMovement.Character
     private Vector3 aiNextPosition;
     private Quaternion aiNextRotation;
 
+    private FpsCharacter mzCharacter;
+
+    private bool isServer;
+
     // Start is called before the first frame update
-    override protected void Start()
+    protected override void Start()
     {
         base.Start();
-        
         ai = GetComponent<IAstarAI>();
         seeker = GetComponent<Seeker>();
+
+        mzCharacter = GetComponent<FpsCharacter>();
+        isServer = mzCharacter.isServer;
 
         ai.canMove = false;
     }
@@ -37,10 +43,22 @@ public class MzEcmAStarCharacter : EasyCharacterMovement.Character
         SetMovementDirection(planarDesiredVelocity.normalized * ComputeAnalogInputModifier(planarDesiredVelocity));
     }
 
+    private void SyncAStarSpeed()
+    { 
+        ai.maxSpeed = GetMaxSpeed();
+    }
+
     protected override void Move()
     {
-        SyncAStarMovement();
+        if (isServer)
+        {
+            SyncAStarSpeed();
+            SyncAStarMovement();
+        }
+
         base.Move();
     }
+    
+
 
 }
