@@ -12,6 +12,7 @@ public class SharedContext : NetworkBehaviour
     public UnityEvent<FpsCharacter> characterRemoveEvent = new UnityEvent<FpsCharacter>();
     public UnityEvent<FpsCharacter> characterSpawnEvent = new UnityEvent<FpsCharacter>();
     
+
     void Awake()
     {
         Instance = this;

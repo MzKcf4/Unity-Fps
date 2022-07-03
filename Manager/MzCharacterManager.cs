@@ -10,6 +10,8 @@ public class MzCharacterManager : NetworkBehaviour
 {
     public static MzCharacterManager instance;
 
+    private List<FpsCharacter> inGameCharacters = new List<FpsCharacter>();
+
     public UnityEvent<FpsCharacter> OnCharacterJoin { get { return characterJoinEvent; }}
     public UnityEvent<FpsCharacter> OnCharacterKilled { get { return characterKilledEvent; } }
 
@@ -25,10 +27,31 @@ public class MzCharacterManager : NetworkBehaviour
     }
 
     [Server]
+    public void AddNewCharacter(FpsCharacter fpsCharacter) 
+    { 
+        inGameCharacters.Add(fpsCharacter);
+    }
+
+    [Server]
+    public void KillAllCharacterInTeam(TeamEnum team)
+    {
+        foreach (FpsCharacter fpsCharacter in inGameCharacters)
+        {
+            if (fpsCharacter.team == team) 
+            {
+                fpsCharacter.Kill();
+            }
+        }
+    }
+
+    [Server]
     protected void RemoveCharacter(FpsCharacter character)
     {
-        if(character != null)
+        if (character != null)
+        {
+            inGameCharacters.Remove(character);
             NetworkServer.Destroy(character.gameObject);
+        }
     }
 
     public void QueueRemove(FpsCharacter character , int seconds) 

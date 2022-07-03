@@ -13,13 +13,11 @@ public class MonsterModeManager : NetworkBehaviour
     public static MonsterModeManager Instance;
     [SerializeField] private GameObject uiPrefab;
 
+    [SyncVar] private GameState currentGameState = GameState.NotStarted;
+
     private List<Transform> monsterSpawnPoints = new List<Transform>();
-	private List<GameObject> spawnedEnemy = new List<GameObject>();
-    [SerializeField] private List<MonsterStageConfig> stageConfigList = new List<MonsterStageConfig>();
+
     private MonsterStageConfig activeStageConfig;
-
-
-    public bool canSpawn = false;
     
     [SerializeField] public ActionCooldown spawnInterval;
     
@@ -34,15 +32,13 @@ public class MonsterModeManager : NetworkBehaviour
     [SyncVar(hook = (nameof(OnRestRemainUpdate)))] public int restRemain = 10;
 
     public int maxMonsters = 7;
-
-
     private int currentMonsterCount = 0;
 
     public Stack<GameObject> stageSpawnStack;
 
     private List<GameObject> killedMonsterList = new List<GameObject>();
 
-    // private List<string> stageSpawnableList = new List<string>();
+
     private List<E_monster_info> stageSpawnableList = new List<E_monster_info>();
 
     private void Awake()
@@ -53,7 +49,6 @@ public class MonsterModeManager : NetworkBehaviour
     private void Start()
     {
         StreamingAssetManager.Instance.InitializeMonsterDict();
-        
     }
 
     public override void OnStartServer()
@@ -76,17 +71,20 @@ public class MonsterModeManager : NetworkBehaviour
     [Server]
     public void StartGame()
     {
+        restTime = 15;
         currentStage = 0;
         RestStart();
     }
 
     public void StopGame()
     {
-        canSpawn = false;
+        currentGameState = GameState.NotStarted;
     }
 
     public void RestStart()
     {
+        currentGameState = GameState.Rest;
+        MzCharacterManager.instance.KillAllCharacterInTeam(TeamEnum.Monster);
         currentStage++;
         restRemain = restTime;
         StartCoroutine(DoRestTimeCountdown());
@@ -116,22 +114,14 @@ public class MonsterModeManager : NetworkBehaviour
 
     public void StartStage(int stage)
     {
-        stageKillsRemain = 40;
+        currentGameState = GameState.Battle;
+        currentMonsterCount = 0;
+        stageKillsRemain = 20;
         stageSpawnableList = BuildStageSpawnableList(stage);
-        /*
-        DestroyKilledMonsters();
-        killedMonsterList.Clear();
-
-        activeStageConfig = stageConfigList[stage];
-        InitializeSpawnStack(stageConfigList[stage]);
-        stageKillsRemain = activeStageConfig.targetKillCount;
-        */
-        canSpawn = true;
     }
 
     public void EndStage()
     {
-        canSpawn = false;
         RestStart();
     }
 
@@ -143,7 +133,8 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void TrySpawnEnemy()
     {
-        if (!canSpawn || currentMonsterCount >= maxMonsters) return;
+        if ( (currentGameState != GameState.Battle && currentGameState != GameState.Midnight) 
+             || currentMonsterCount >= maxMonsters) return;
 
         if (spawnInterval.CanExecuteAfterDeltaTime(true)) 
         {
@@ -155,14 +146,15 @@ public class MonsterModeManager : NetworkBehaviour
 
             Vector3 posToSapwn = Utils.GetRandomElement<Transform>(monsterSpawnPoints).position;
             GameObject obj = Instantiate(prefab, posToSapwn, Quaternion.identity);
-            spawnedEnemy.Add(obj);
 
             MzRpgCharacter mzRpgCharacter = obj.GetComponent<MzRpgCharacter>();
             mzRpgCharacter.SetMaxSpeed(monsterInfo.f_move_speed);
-            mzRpgCharacter.SetHealth(monsterInfo.f_base_health);
-
 
             NetworkServer.Spawn(obj);
+            MzCharacterManager.instance.AddNewCharacter(mzRpgCharacter);
+
+            float healthMultiplier = Math.Max(2 * (currentStage - 1), 1);
+            mzRpgCharacter.SetHealth((int)(monsterInfo.f_base_health * healthMultiplier));
         }
     }
 
@@ -182,16 +174,17 @@ public class MonsterModeManager : NetworkBehaviour
     private void OnMonsterKilled(FpsCharacter fpsCharacter)
     {
         MzCharacterManager.instance.QueueRemove(fpsCharacter, 5);
-        currentMonsterCount--;
-        stageKillsRemain--;
 
-        if (stageKillsRemain <= 0)
+        if (currentGameState == GameState.Battle || currentGameState == GameState.Midnight)
         {
-            EndStage();
+            currentMonsterCount--;
+            stageKillsRemain--;
+
+            if (stageKillsRemain <= 0)
+            {
+                EndStage();
+            }
         }
-
-        
-
 
         /*
         // When ending stage , we manually kill all enemies , but they will invoke this too , 
@@ -249,5 +242,13 @@ public class MonsterModeManager : NetworkBehaviour
     private void OnRestRemainUpdate(int oldVal , int newVal)
     {
         MonsterModeUiManager.Instance.UpdateRestCountdown(newVal);
+    }
+
+    private enum GameState 
+    { 
+        NotStarted,
+        Rest,
+        Battle,
+        Midnight
     }
 }

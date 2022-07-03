@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 // The logical layer (brain) of a weapon , updated by owner in Update()
 // It shouldn't care about the view/world model
@@ -96,6 +94,18 @@ public class FpsWeapon
         isSemiAuto = dbWeaponInfo.f_is_semi_auto;
 
         displayName = dbWeaponInfo.f_display_name;
+
+        // ToDo: bad dependency ? Maybe should depend on CoreGameManager instead?
+        if (FpsNetworkRoomManager.Instance.GameMode == GameModeEnum.Monster)
+        {
+            E_weapon_monster_info weaponMonsterInfo = E_weapon_monster_info.FindEntity(e => string.Equals(weaponName, e.f_weapon_info.Name));
+            if (weaponMonsterInfo == null) {
+                Debug.LogWarning("Warning , weapon monster info not found " + weaponName);
+                return;
+            }
+
+            damage = weaponMonsterInfo.f_override_damage > 0 ? weaponMonsterInfo.f_override_damage : damage;
+        }
     }
     
     public void Reset()

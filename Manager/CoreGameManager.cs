@@ -11,7 +11,7 @@ public class CoreGameManager : NetworkBehaviour
     private static LayerMask MASK_HITBOX;
     private static LayerMask MASK_WALL;
     private static LayerMask MASK_HITBOX_AND_WALL;
-
+    
     void Awake()
     {
         Instance = this;

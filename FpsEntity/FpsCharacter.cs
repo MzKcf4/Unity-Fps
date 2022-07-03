@@ -59,12 +59,37 @@ public class FpsCharacter : FpsEntity
     public override void OnStartClient()
     {
         base.OnStartClient();
-        
+        if (!isServer)
+        {
+            DisableClientSideComponents();
+        }
+
         characterCommonResources = WeaponAssetManager.Instance.GetCharacterCommonResources();
         audioSourceWeapon = gameObject.AddComponent<AudioSource>();
         audioSourceCharacter = gameObject.AddComponent<AudioSource>();
         InitializeAudioSource(audioSourceWeapon);
         InitializeAudioSource(audioSourceCharacter);
+        
+    }
+
+    protected virtual void DisableClientSideComponents()
+    {
+        AIBase ai = GetComponent<AIBase>();
+        if (ai != null)
+            ai.enabled = false;
+
+        Seeker seeker = GetComponent<Seeker>();
+        if(seeker != null)
+            seeker.enabled = false;
+
+        AIDestinationSetter aiDest = GetComponent<AIDestinationSetter>();
+        if(aiDest != null)
+            aiDest.enabled = false;
+
+        MzBotBrainBase botBrain = GetComponent<MzBotBrainBase>();
+        if(botBrain != null)
+            botBrain.enabled = false;
+
     }
     
     protected override void Awake()

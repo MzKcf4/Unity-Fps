@@ -39,7 +39,7 @@ public class MzRpgBotBrain : MzBotBrainBase
     {
         base.Update();
 
-        if (rpgCharacter.IsDead() || !rpgCharacter.isServer)
+        if (rpgCharacter == null || rpgCharacter.IsDead() || !rpgCharacter.isServer)
             return;
 
         SeekTarget();

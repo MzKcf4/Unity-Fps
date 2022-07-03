@@ -27,7 +27,7 @@ public class ServerContext : NetworkBehaviour
 		if(playerList.Count == 0)
 			return null;
 			
-		int idx = Random.Range(0 , playerList.Count - 1);
+		int idx = Random.Range(0 , playerList.Count);
 		return playerList[idx];
 	}
     	

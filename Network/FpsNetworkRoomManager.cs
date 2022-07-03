@@ -8,9 +8,11 @@ using UnityEngine;
 
 public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
 {
+    public GameModeEnum GameMode { get { return gameMode; } }
     public static FpsNetworkRoomManager Instance;
     private GameModeEnum gameMode = GameModeEnum.Debug;
     [SerializeField] GameObject coreObjectPrefab;
+
     private GameObject coreObject;
     bool isServer = false;
 

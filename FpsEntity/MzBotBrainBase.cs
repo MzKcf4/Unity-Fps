@@ -53,13 +53,11 @@ public abstract class MzBotBrainBase : MonoBehaviour
         }
         else
         {
-            AIBase aiBase = GetComponent<AIBase>();
-            aiDest.enabled = false;
-            aiBase.enabled = false;
-            seeker.enabled = false;
             this.enabled = false;
         }
     }
+
+    
 
     protected virtual void Update()
     {

@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 public class FpsNetworkManager : NetworkManager
 {
-    public static FpsNetworkManager Instance;
+    // public static FpsNetworkManager Instance;
     private GameModeEnum gameMode = GameModeEnum.Debug;
     [SerializeField] GameObject coreObjectPrefab;
     private GameObject coreObject;
@@ -15,7 +15,7 @@ public class FpsNetworkManager : NetworkManager
     public override void Awake()
     {
         base.Awake();
-        Instance = this;
+        // Instance = this;
     }
 
     public override void Start()
@@ -72,7 +72,8 @@ public class FpsNetworkManager : NetworkManager
     public override void OnServerSceneChanged(string sceneName)
     {
         base.OnServerSceneChanged(sceneName);
-        
+
+
         SharedContext.Instance.ClearList();
         CoreGameManager.Instance.SpawnGameModeManager(gameMode);
     }
