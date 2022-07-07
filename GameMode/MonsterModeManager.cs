@@ -56,7 +56,7 @@ public class MonsterModeManager : NetworkBehaviour
         base.OnStartServer();
         FindSpawnsOnMap();
         maxMonsters = 7;
-        MzCharacterManager.instance.OnCharacterKilled.AddListener(OnCharacterKilled);
+        MzCharacterManager.Instance.OnCharacterKilled.AddListener(OnCharacterKilled);
         // ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
         // SharedContext.Instance.characterSpawnEvent.AddListener(OnCharacterSpawn);
     }
@@ -73,7 +73,15 @@ public class MonsterModeManager : NetworkBehaviour
     {
         restTime = 15;
         currentStage = 0;
+        GivePistolOnStart();
         RestStart();
+    }
+
+    private void GivePistolOnStart()
+    {
+        string pistolName = E_weapon_monster_info.FindEntity(e => e.f_level == 1 && e.f_weapon_info.f_category == WeaponCategory.Pistol)
+                                                 .f_weapon_info.f_name;
+        SharedContext.Instance.GetPlayers().ForEach(p => p.ServerCmdGetWeapon(pistolName, 1));
     }
 
     public void StopGame()
@@ -84,7 +92,7 @@ public class MonsterModeManager : NetworkBehaviour
     public void RestStart()
     {
         currentGameState = GameState.Rest;
-        MzCharacterManager.instance.KillAllCharacterInTeam(TeamEnum.Monster);
+        MzCharacterManager.Instance.KillAllCharacterInTeam(TeamEnum.Monster);
         currentStage++;
         restRemain = restTime;
         StartCoroutine(DoRestTimeCountdown());
@@ -151,7 +159,7 @@ public class MonsterModeManager : NetworkBehaviour
             mzRpgCharacter.SetMaxSpeed(monsterInfo.f_move_speed);
 
             NetworkServer.Spawn(obj);
-            MzCharacterManager.instance.AddNewCharacter(mzRpgCharacter);
+            MzCharacterManager.Instance.AddNewCharacter(mzRpgCharacter);
 
             float healthMultiplier = Math.Max(2 * (currentStage - 1), 1);
             mzRpgCharacter.SetHealth((int)(monsterInfo.f_base_health * healthMultiplier));
@@ -173,7 +181,7 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void OnMonsterKilled(FpsCharacter fpsCharacter)
     {
-        MzCharacterManager.instance.QueueRemove(fpsCharacter, 5);
+        MzCharacterManager.Instance.QueueRemove(fpsCharacter, 5);
 
         if (currentGameState == GameState.Battle || currentGameState == GameState.Midnight)
         {
@@ -185,24 +193,6 @@ public class MonsterModeManager : NetworkBehaviour
                 EndStage();
             }
         }
-
-        /*
-        // When ending stage , we manually kill all enemies , but they will invoke this too , 
-        //		so add this checking to prevent concurrent modification
-        if (progressionState != ProgressionState.Rest)
-        {
-            spawnedEnemy.Remove(enemyObj);
-            stageCurrentKills++;
-        }
-
-
-        if (progressionState == ProgressionState.Enraged && CanEndStage())
-        {
-            EndStage();
-        }
-
-        RpcNotifyProgressUpdate();
-        */
     }
 
     private void DestroyKilledMonsters()

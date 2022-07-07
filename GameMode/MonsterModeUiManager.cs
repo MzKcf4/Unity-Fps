@@ -61,7 +61,7 @@ public class MonsterModeUiManager : MonoBehaviour
 
     private void PopulateWeaponUpgrade(int stage)
     {
-        List<E_weapon_monster_info> weapons = E_weapon_monster_info.FindEntities(e => e.f_weapon_info.f_active && e.f_level == stage);
+        List<E_weapon_monster_info> weapons = E_weapon_monster_info.FindEntities(e => e.f_weapon_info.f_active && e.f_level == stage && e.f_weapon_info.f_category != WeaponCategory.Pistol);
         if (weapons == null || weapons.Count == 0)
             return;
 

@@ -8,7 +8,7 @@ using UnityEngine.Events;
 // Provides utilities methods for MzCharacters
 public class MzCharacterManager : NetworkBehaviour
 {
-    public static MzCharacterManager instance;
+    public static MzCharacterManager Instance;
 
     private List<FpsCharacter> inGameCharacters = new List<FpsCharacter>();
 
@@ -23,7 +23,7 @@ public class MzCharacterManager : NetworkBehaviour
 
     void Awake()
     {
-        instance = this;
+        Instance = this;
     }
 
     [Server]
@@ -68,5 +68,6 @@ public class MzCharacterManager : NetworkBehaviour
     private void OnDestroy()
     {
         StopAllCoroutines();
+        inGameCharacters.Clear();
     }
 }

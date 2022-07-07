@@ -36,6 +36,17 @@ public class SharedContext : NetworkBehaviour
         }
     }
 
+    public List<FpsPlayer> GetPlayers()
+    {
+        List<FpsPlayer> playerList = new List<FpsPlayer>();
+        foreach (FpsCharacter fpsCharacter in characterList)
+        { 
+            if(fpsCharacter is FpsPlayer)
+                playerList.Add((FpsPlayer)fpsCharacter);
+        }
+        return playerList;
+    }
+
     public void ClearList()
     {
         List<FpsCharacter> dupList = new List<FpsCharacter>(characterList);
