@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Kit.Physic;
 using Pathfinding;
+using Mirror;
 
 // RpgCharacter doesn't have fps weapon slots
 // Instead they use raycast for attacks.
@@ -67,6 +68,22 @@ public class MzRpgCharacter : FpsCharacter
 		base.SetMaxSpeed(maxSpeed);
 		ai.maxSpeed = maxSpeed;
 	}
+
+	[Server]
+	public void ServerExtendMeleeRange(FpsCharacter targetCharcter)
+	{
+		RpcExtendMeleeRange(targetCharcter.netIdentity);
+	}
+
+	[ClientRpc]
+	public void RpcExtendMeleeRange(NetworkIdentity playerIdentity)
+	{
+		float distance = Vector3.Distance(transform.position , playerIdentity.transform.position);
+		float middlePoint = Mathf.Max(1 , distance / 2);
+		meleeRangeDetector.m_LocalPosition = new Vector3(0, 1f, middlePoint);
+		meleeRangeDetector.m_HalfExtends = new Vector3(1f, 1f, middlePoint);
+	}
+	
 
     protected void InitializeMeleeRangeDetector()
 	{

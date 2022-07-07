@@ -20,11 +20,15 @@ public class MzRpgBotBrain : MzBotBrainBase
     public bool canRangeAttack = false;
     private MzRpgCharacter rpgCharacter;
 
+    private FpsCharacter targetCharacter;
+
+    public float lockOnDistance = 2.5f;
+
     protected override void Start()
     {
         base.Start();
 
-        rpgCharacter = GetComponent<MzRpgCharacter>();
+        rpgCharacter = (MzRpgCharacter)character;
         if (character.isServer)
         {
 
@@ -44,6 +48,7 @@ public class MzRpgBotBrain : MzBotBrainBase
 
         SeekTarget();
         CheckMeleeRange();
+        LockOnTarget();
     }
 
     protected virtual void CheckMeleeRange()
@@ -64,6 +69,7 @@ public class MzRpgBotBrain : MzBotBrainBase
 
     protected virtual void ExecuteMeleeAttack()
     {
+        rpgCharacter.ServerExtendMeleeRange(targetCharacter);
         character.ServerPlayAnimationByKey(Constants.ACTION_KEY_MELEE);
     }
 
@@ -72,7 +78,8 @@ public class MzRpgBotBrain : MzBotBrainBase
         if (cooldownSystem.IsOnCooldown(TARGET_UPDATE_COOLDOWN)) return;
         if (aiDest.target != null) return;
 
-        aiDest.target = ServerContext.Instance.GetRandomPlayer().transform;
+        targetCharacter = ServerContext.Instance.GetRandomPlayer();
+        aiDest.target = targetCharacter.transform;
         cooldownSystem.PutOnCooldown(TARGET_UPDATE_COOLDOWN, targetUpdateInterval);
         /*
         if (target == null)
@@ -95,6 +102,21 @@ public class MzRpgBotBrain : MzBotBrainBase
             }
         }
         */
+    }
+
+    private void LockOnTarget()
+    {
+        if (targetCharacter == null)
+            return;
+
+        float distance = Vector3.Distance(transform.position, targetCharacter.transform.position);
+        if (distance <= lockOnDistance)
+        {
+            Vector3 targetLookAtPostition = new Vector3(targetCharacter.transform.position.x,
+                                           this.transform.position.y,
+                                           targetCharacter.transform.position.z);
+            this.transform.LookAt(targetLookAtPostition);
+        }
     }
 
     /*
