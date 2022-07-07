@@ -355,6 +355,11 @@ public partial class E_monster_info : BGEntity
 		get => _f_end_stage[Index];
 		set => _f_end_stage[Index] = value;
 	}
+	public System.Int32 f_weight
+	{
+		get => _f_weight[Index];
+		set => _f_weight[Index] = value;
+	}
 	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
 	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5199085996425251369UL, 1231959888780819631UL), () => _ufle12jhs77_f_name = null));
 	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
@@ -369,6 +374,8 @@ public partial class E_monster_info : BGEntity
 	public static BansheeGz.BGDatabase.BGFieldInt _f_start_stage => _ufle12jhs77_f_start_stage ?? (_ufle12jhs77_f_start_stage = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5502007690744568472UL, 12848727859619122086UL), () => _ufle12jhs77_f_start_stage = null));
 	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_end_stage;
 	public static BansheeGz.BGDatabase.BGFieldInt _f_end_stage => _ufle12jhs77_f_end_stage ?? (_ufle12jhs77_f_end_stage = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5724066033165208912UL, 3647628603327458214UL), () => _ufle12jhs77_f_end_stage = null));
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_weight;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_weight => _ufle12jhs77_f_weight ?? (_ufle12jhs77_f_weight = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5279641282541583146UL, 10970047311882549645UL), () => _ufle12jhs77_f_weight = null));
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
 	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();

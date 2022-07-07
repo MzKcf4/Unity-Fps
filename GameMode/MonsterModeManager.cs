@@ -36,10 +36,8 @@ public class MonsterModeManager : NetworkBehaviour
 
     public Stack<GameObject> stageSpawnStack;
 
-    private List<GameObject> killedMonsterList = new List<GameObject>();
-
-
     private List<E_monster_info> stageSpawnableList = new List<E_monster_info>();
+    private Dictionary<string , int> dictMonsterSpawnCount = new Dictionary<string , int>();
 
     private void Awake()
     {
@@ -73,6 +71,7 @@ public class MonsterModeManager : NetworkBehaviour
     {
         restTime = 15;
         currentStage = 0;
+        dictMonsterSpawnCount.Clear();
         GivePistolOnStart();
         RestStart();
     }
@@ -147,7 +146,10 @@ public class MonsterModeManager : NetworkBehaviour
         if (spawnInterval.CanExecuteAfterDeltaTime(true)) 
         {
             currentMonsterCount++;
+            // ToDo: replace with shuffle
             E_monster_info monsterInfo = Utils.GetRandomElement<E_monster_info>(stageSpawnableList);
+            while(!CanSpawnEnemy(monsterInfo.f_name , monsterInfo.f_max_count))
+                monsterInfo = Utils.GetRandomElement<E_monster_info>(stageSpawnableList);
 
             GameObject prefab = StreamingAssetManager.Instance.GetMonsterPrefab(monsterInfo.f_name);
 
@@ -163,7 +165,19 @@ public class MonsterModeManager : NetworkBehaviour
 
             float healthMultiplier = Math.Max(2 * (currentStage - 1), 1);
             mzRpgCharacter.SetHealth((int)(monsterInfo.f_base_health * healthMultiplier));
+            mzRpgCharacter.AdditionalInfos.Add(Constants.ADDITIONAL_INFO_MONSTER_ID, monsterInfo.f_name);
+
+            if (dictMonsterSpawnCount.ContainsKey(monsterInfo.f_name))
+                dictMonsterSpawnCount[monsterInfo.f_name]++;
+            else
+                dictMonsterSpawnCount.Add(monsterInfo.f_name, 1);
         }
+    }
+
+    private bool CanSpawnEnemy(string monsterId , int maxCount)
+    {
+        dictMonsterSpawnCount.TryGetValue(monsterId, out int currentCount);
+        return currentCount < maxCount;
     }
 
     private List<E_monster_info> BuildStageSpawnableList(int stage) 
@@ -181,6 +195,12 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void OnMonsterKilled(FpsCharacter fpsCharacter)
     {
+        if (fpsCharacter.AdditionalInfos.ContainsKey(Constants.ADDITIONAL_INFO_MONSTER_ID))
+        {
+            string monsterId = fpsCharacter.AdditionalInfos[Constants.ADDITIONAL_INFO_MONSTER_ID];
+            dictMonsterSpawnCount[monsterId]--;
+        }
+        
         MzCharacterManager.Instance.QueueRemove(fpsCharacter, 5);
 
         if (currentGameState == GameState.Battle || currentGameState == GameState.Midnight)
@@ -195,19 +215,9 @@ public class MonsterModeManager : NetworkBehaviour
         }
     }
 
-    private void DestroyKilledMonsters()
+    private float GetStageHealthMultiplier() 
     {
-        foreach (GameObject go in killedMonsterList)
-            NetworkServer.Destroy(go);
-    }
-
-    private void InitializeSpawnStack(MonsterStageConfig stageConfig)
-    {
-        stageSpawnStack = new Stack<GameObject>();
-        for (int i = 0; i < stageConfig.targetKillCount; i++)
-        {
-            stageSpawnStack.Push(stageConfig.spawnPrefabList[0]);
-        }
+        return currentStage == 1 ? 1.0f : 2.0f * currentStage;
     }
 
     private void FindSpawnsOnMap()
