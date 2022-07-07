@@ -95,8 +95,7 @@ public class FpsWeapon
 
         displayName = dbWeaponInfo.f_display_name;
 
-        // ToDo: bad dependency ? Maybe should depend on CoreGameManager instead?
-        if (FpsNetworkRoomManager.Instance.GameMode == GameModeEnum.Monster)
+        if (CoreGameManager.Instance.GameMode == GameModeEnum.Monster)
         {
             E_weapon_monster_info weaponMonsterInfo = E_weapon_monster_info.FindEntity(e => string.Equals(weaponName, e.f_weapon_info.Name));
             if (weaponMonsterInfo == null) {
