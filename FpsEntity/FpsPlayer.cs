@@ -15,8 +15,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 	[SerializeField]
 	private ArmBoneToWeaponBone arm;
     private MzEcmFpCharacter playerController;
-    private float moveSpeed = 5.5f;
-    private ActionCooldown painShockCooldown = new ActionCooldown(){ interval = 0.1f};
 	
     public GameObject viewCamera;
     // The anti-clipping camera 
@@ -51,7 +49,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     protected override void Start()
 	{
 		base.Start();
-        painShockCooldown.interval = 0.06f;
         playerController = GetComponent<MzEcmFpCharacter>();
         ecmCameraController = GetComponent<CharacterLook>();
 
@@ -142,13 +139,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         if(isLocalPlayer)
         {
             weaponAimAt.position = localPlayerLookAt.position;
-            if(painShockCooldown.IsOnCooldown())
-                painShockCooldown.ReduceCooldown(Time.deltaTime);
-            else
-            {
-                // if(playerController.movementSpeed != moveSpeed)
-                    // playerController.movementSpeed = moveSpeed;               
-            }
             LerpHandView();
         }
     }
@@ -208,8 +198,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 		base.RpcTakeDamage(damageInfo);
         if(isLocalPlayer)
         {
-            painShockCooldown.StartCooldown();
-            playerController.SetVelocity(Vector3.zero);
+            // painShockCooldown.StartCooldown();
+            // playerController.SetVelocity(Vector3.zero);
 
             if (UiDamageIndicatorManager.Instance != null && damageInfo.attacker != null)
             {

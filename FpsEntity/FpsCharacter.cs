@@ -214,6 +214,7 @@ public class FpsCharacter : FpsEntity
                                                  : Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtSoundList);
 
         audioSourceCharacter.PlayOneShot(hurtSoundClip);
+        SetVelocity(Vector3.zero);
     }
     
     [Server]
@@ -400,5 +401,11 @@ public class FpsCharacter : FpsEntity
     private void OnMaxSpeedChanged(float oldMaxSpeed, float newMaxSpeed)
     {
         SetMaxSpeed(newMaxSpeed);
+    }
+
+    protected void SetVelocity(Vector3 velocity)
+    {
+        if (characterMovement != null)
+            characterMovement.velocity = velocity;
     }
 }
