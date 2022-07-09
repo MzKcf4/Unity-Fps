@@ -171,6 +171,8 @@ public class MonsterModeManager : NetworkBehaviour
                 dictMonsterSpawnCount[monsterInfo.f_name]++;
             else
                 dictMonsterSpawnCount.Add(monsterInfo.f_name, 1);
+
+            AssignAbility(mzRpgCharacter, monsterInfo.f_ability_key);
         }
     }
 
@@ -227,6 +229,21 @@ public class MonsterModeManager : NetworkBehaviour
 
         foreach (GameObject obj in spawnObjects)
             monsterSpawnPoints.Add(obj.transform);
+    }
+
+    public void AssignAbility(FpsCharacter fpsCharacter, string abilityKey) 
+    {
+        if (string.IsNullOrEmpty(abilityKey))
+            return;
+
+        Ability ability = null;
+        if (string.Equals(AbilityBerserk.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
+            ability = new AbilityBerserk(fpsCharacter);
+
+        if (ability != null) { 
+            MzAbilitySystem abilitySystem = fpsCharacter.GetComponent<MzAbilitySystem>();
+            abilitySystem.AddAbility(ability);
+        }
     }
 
     private void OnStageUpdate(int oldVal , int newVal)

@@ -6,6 +6,7 @@ using Animancer;
 using UnityEngine.Events;
 using EasyCharacterMovement;
 using Pathfinding;
+using Pathfinding.RVO;
 
 // A FpsCharacter manges 
 // -  character models
@@ -13,9 +14,11 @@ using Pathfinding;
 
 public class FpsCharacter : FpsEntity
 {
+    public Dictionary<string, string> AdditionalInfos { get { return dictAdditionalInfo; } }
     public FpsModel FpsModel { get { return fpsModel; } }
     public bool IsLookAtWeaponAim { get { return isLookAtWeaponAim; }
                                     set { isLookAtWeaponAim = value; }}
+    public float MaxSpeed { get { return maxSpeed; }}
 
     protected CharacterCommonResources characterCommonResources;
     protected FpsModel fpsModel;
@@ -32,10 +35,9 @@ public class FpsCharacter : FpsEntity
     // Objects that you want to rotate with model itself
     [SerializeField] protected Transform attachToModel;
     
-    // [SerializeField] protected CharacterResources charRes;
-    
     [SerializeField] protected List<Behaviour> disableBehaviorOnDeathList = new List<Behaviour>();
     [SerializeField] protected List<GameObject> disableGameObjectOnDeathList = new List<GameObject>();
+    private RVOController rvoController;
     
     [SyncVar] public string characterName;
     [SyncVar] protected Vector3 currentVelocity = Vector3.zero;
@@ -46,6 +48,7 @@ public class FpsCharacter : FpsEntity
 
     [SerializeField] protected CharacterAnimationResource charAnimationRes;
     protected Character ecmCharacter;
+    protected CharacterMovement characterMovement;
     protected MzCharacterAnimator characterAnimator;
     [SerializeField] protected bool useDeathAnimation = false;
     
@@ -54,7 +57,7 @@ public class FpsCharacter : FpsEntity
 
     [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
 
-
+    private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
 
     public override void OnStartClient()
     {
@@ -96,7 +99,9 @@ public class FpsCharacter : FpsEntity
     {
         base.Awake();
         ecmCharacter = GetComponent<Character>();
+        characterMovement = GetComponent<CharacterMovement>();
         characterAnimator = GetComponent<MzCharacterAnimator>();
+        rvoController = GetComponent<RVOController>();
     }
     
     protected override void Start()
@@ -216,7 +221,7 @@ public class FpsCharacter : FpsEntity
     {
         base.Killed(damageInfo);
         ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
-        MzCharacterManager.instance.OnCharacterKilled.Invoke(this);
+        MzCharacterManager.Instance.OnCharacterKilled.Invoke(this);
     }
     
     [ClientRpc]
@@ -297,6 +302,9 @@ public class FpsCharacter : FpsEntity
             
         modelObject.gameObject.layer = isRagdollState ? LayerMask.NameToLayer(Constants.LAYER_IGNORE_RAYCAST)
                                                       : LayerMask.NameToLayer(GetModelLayerName());
+
+        if(rvoController != null)
+            rvoController.enabled = !isRagdollState;
     }
 
   
@@ -312,12 +320,37 @@ public class FpsCharacter : FpsEntity
 
     protected virtual void SyncMovementVelocity()
     {
+        // LocalPlayer sync its velocity to server.
+        if (isLocalPlayer)
+        {
+            currentVelocity = GetMovementVelocity();
+            CmdSyncMovementVelocity(GetMovementVelocity());
+        }
+        // Server syncs back velocity from other clients or bots to clients
+        else if (isServer)
+            currentVelocity = GetMovementVelocity();
+        // RpcSyncMovementVelocity(GetMovementVelocity());
+        // Then , for all clients , order the mover to move according to received velocity
+        // else if (isClient)
+        //    characterMovement.velocity = currentVelocity;
+
+        /*
         if (isServer)
             currentVelocity = GetMovementVelocity();
+
+        if (!isLocalPlayer)
+            characterMovement.velocity = currentVelocity;
+        */
     }
 
     [Command]
     protected void CmdSyncMovementVelocity(Vector3 velocity)
+    {
+        currentVelocity = velocity;
+    }
+
+    [ClientRpc]
+    protected void RpcSyncMovementVelocity(Vector3 velocity)
     {
         currentVelocity = velocity;
     }
@@ -368,5 +401,4 @@ public class FpsCharacter : FpsEntity
     {
         SetMaxSpeed(newMaxSpeed);
     }
-    
 }

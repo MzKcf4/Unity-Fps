@@ -40,6 +40,7 @@ public class MzEcmAStarCharacter : EasyCharacterMovement.Character
         if (planarDesiredVelocity.sqrMagnitude < MathLib.Square(minAnalogWalkSpeed))
             planarDesiredVelocity = planarDesiredVelocity.normalized * minAnalogWalkSpeed;
 
+        
         SetMovementDirection(planarDesiredVelocity.normalized * ComputeAnalogInputModifier(planarDesiredVelocity));
     }
 

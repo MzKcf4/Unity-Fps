@@ -372,16 +372,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 			ServerContext.Instance.playerList.Remove(this);
 	}
 
-    // Sync the velocity from local ecm to server
-    protected override void SyncMovementVelocity()
-    {
-        if (isLocalPlayer)
-        {
-            currentVelocity = GetMovementVelocity();
-            CmdSyncMovementVelocity(currentVelocity);
-        }
-    }
-
     public override void RpcHealthUpdate()
     {
         base.RpcHealthUpdate();

@@ -12,6 +12,7 @@ public class MzRpgBotBrain : MzBotBrainBase
 {
     protected static readonly string MELEE_COOLDOWN = "bot-melee-cooldown";
     protected static readonly string MELEE_CHECK = "bot-melee-check";
+    protected static readonly string ABILITY_CHECK = "bot-ability-check";
 
     public bool canMeleeAttack = true;
     public float meleeCooldown = 5.0f;
@@ -19,6 +20,7 @@ public class MzRpgBotBrain : MzBotBrainBase
 
     public bool canRangeAttack = false;
     private MzRpgCharacter rpgCharacter;
+    private MzAbilitySystem abilitySystem;
 
     private FpsCharacter targetCharacter;
 
@@ -31,7 +33,7 @@ public class MzRpgBotBrain : MzBotBrainBase
         rpgCharacter = (MzRpgCharacter)character;
         if (character.isServer)
         {
-
+            abilitySystem = character.GetComponent<MzAbilitySystem>();
         }
         else
         {
@@ -49,6 +51,7 @@ public class MzRpgBotBrain : MzBotBrainBase
         SeekTarget();
         CheckMeleeRange();
         LockOnTarget();
+        CheckAndUseAbility();
     }
 
     protected virtual void CheckMeleeRange()
@@ -117,6 +120,24 @@ public class MzRpgBotBrain : MzBotBrainBase
                                            targetCharacter.transform.position.z);
             this.transform.LookAt(targetLookAtPostition);
         }
+    }
+
+    private void CheckAndUseAbility()
+    {
+        if (cooldownSystem.IsOnCooldown(ABILITY_CHECK))
+            return;
+
+        Ability ability = abilitySystem.GetFirstAbility();
+        if (ability == null)
+            return;
+
+        float distance = Vector3.Distance(transform.position, targetCharacter.transform.position);
+        if (distance <= 20f)
+        {
+            ability.ActiviateAbility();
+        }
+
+        cooldownSystem.PutOnCooldown(ABILITY_CHECK, 1.0f);
     }
 
     /*

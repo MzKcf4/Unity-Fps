@@ -10,7 +10,7 @@ using System;
 public class LocalPlayerContext : MonoBehaviour
 {
 	public static LocalPlayerContext Instance;
-    private PlayerInputActions playerInputActions;
+    private static PlayerInputActions playerInputActions;
     private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
 
     // ----- Input events : events fired when corresponding input key pressed -----
@@ -78,8 +78,8 @@ public class LocalPlayerContext : MonoBehaviour
 
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLook, OnMouseLookInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Movement, OnMovementInput);
-        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponPrimaryAction, OnWeaponPrimaryActionInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLock, OnMouseLockInput);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponPrimaryAction, OnWeaponPrimaryActionInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot1, OnSwitchWeaponSlot1);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot2, OnSwitchWeaponSlot2);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot3, OnSwitchWeaponSlot3);
@@ -243,7 +243,9 @@ public class LocalPlayerContext : MonoBehaviour
         {
             Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ?
                                          CursorLockMode.None : CursorLockMode.Locked;
+            Debug.Log(Cursor.lockState);
         }
+        
     }
 
     public void TogglePlayerControl(bool isEnable)
