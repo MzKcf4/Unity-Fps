@@ -1,9 +1,13 @@
 ﻿using Mirror;
 using UnityEngine;
 using Kit.Physic;
+using System.Collections.Generic;
 
 public partial class FpsHumanoidCharacter
 {
+    public Dictionary<string, int> BackAmmoInfo { get { return dictBackAmmo; } }
+    protected Dictionary<string, int> dictBackAmmo = new Dictionary<string, int>();
+
     public readonly SyncList<string> syncWeaponNameInSlots = new SyncList<string>() { "", "", "" };
     // ** ----- Just note that fpsWeapon is NOT sync by server ------ **
     public FpsWeapon[] weaponSlots = new FpsWeapon[Constants.WEAPON_SLOT_MAX];
@@ -253,5 +257,13 @@ public partial class FpsHumanoidCharacter
                 continue;
             weapon.Reset();
         }
+    }
+
+    public int GetBackAmmo(FpsWeapon weapon) 
+    {
+        string ammoKey = weapon.weaponCategory.ToString();
+        if (!dictBackAmmo.ContainsKey(ammoKey))
+            dictBackAmmo.Add(ammoKey, 0);
+        return dictBackAmmo[ammoKey];
     }
 }

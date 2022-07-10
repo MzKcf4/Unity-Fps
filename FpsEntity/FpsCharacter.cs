@@ -15,6 +15,7 @@ using Pathfinding.RVO;
 public class FpsCharacter : FpsEntity
 {
     public Dictionary<string, string> AdditionalInfos { get { return dictAdditionalInfo; } }
+    
     public FpsModel FpsModel { get { return fpsModel; } }
     public bool IsLookAtWeaponAim { get { return isLookAtWeaponAim; }
                                     set { isLookAtWeaponAim = value; }}
@@ -57,8 +58,8 @@ public class FpsCharacter : FpsEntity
 
     [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
 
-    private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
-
+    protected Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
+    
     public override void OnStartClient()
     {
         base.OnStartClient();

@@ -54,12 +54,10 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 
         if (isLocalPlayer)
 	    {
-            // playerController.inputActions = playerInputAction;
-            // Debug.Log("Set");
-
             LocalPlayerContext.Instance.onSwitchWeaponSlotEvent.AddListener(LocalSwitchWeapon);
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             LocalPlayerSettingManager.Instance.OnPlayerSettingUpdateEvent.AddListener(LoadLocalPlayerSettings);
+            LocalPlayerContext.Instance.buyAmmoInputEvent.AddListener(OnBuyAmmoInput);
 
             fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 
@@ -405,6 +403,50 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         {
             LocalPlayerContext.Instance.OnHealthUpdate(newHealth, maxHealth);
         }
-        
+    }
+
+    private void OnBuyAmmoInput()
+    {
+        if (!isLocalPlayer || CoreGameManager.Instance.GameMode != GameModeEnum.Monster)
+            return;
+
+        FpsWeapon activeWeapon = GetActiveWeapon();
+        if (activeWeapon == null || activeWeapon.weaponCategory == WeaponCategory.Melee)
+            return;
+
+        int ammopack = int.Parse(TryGetAdditionalInfoValue(Constants.ADDITIONAL_INFO_AMMOPACK, "0"));
+        if (ammopack <= 0)
+            return;
+
+        int backAmmo = MonsterModeManager.Instance.GetBackAmmoForWeaponType(activeWeapon.weaponCategory, activeWeapon.isSemiAuto);
+        ammopack--;
+        dictAdditionalInfo[Constants.ADDITIONAL_INFO_AMMOPACK] = ammopack.ToString();
+
+        dictBackAmmo[activeWeapon.weaponCategory.ToString()] += backAmmo;
+        UpdateAmmoDisplay();
+        UpdateAmmoPackDisplay();
+    }
+
+    [TargetRpc]
+    public void TargetUpdateAmmoPack(NetworkConnection conn , int amount) 
+    {
+        int existing = int.Parse(TryGetAdditionalInfoValue(Constants.ADDITIONAL_INFO_AMMOPACK, "0"));
+        dictAdditionalInfo[Constants.ADDITIONAL_INFO_AMMOPACK] = (existing += amount).ToString();
+        UpdateAmmoPackDisplay();
+    }
+
+    private void UpdateAmmoPackDisplay()
+    {
+        int existing = int.Parse(TryGetAdditionalInfoValue(Constants.ADDITIONAL_INFO_AMMOPACK, "0"));
+        MonsterModeUiManager.Instance.UpdateAmmoPackText(existing);
+    }
+
+    private string TryGetAdditionalInfoValue(string key , string defaultValue) 
+    {
+        if (!dictAdditionalInfo.ContainsKey(key))
+        {
+            dictAdditionalInfo.Add(key, defaultValue);
+        }
+        return dictAdditionalInfo[key];
     }
 }

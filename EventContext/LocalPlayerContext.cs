@@ -29,6 +29,7 @@ public class LocalPlayerContext : MonoBehaviour
     [HideInInspector] public UnityEvent onOptionMenuToggleEvent = new UnityEvent();
     [HideInInspector] public UnityEvent onTempDeathmatchWeaponMenuToggleEvent = new UnityEvent();
     [HideInInspector] public UnityEvent onGamemodeMenuToggleEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent buyAmmoInputEvent = new UnityEvent();
     // ----------------------------
     private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
 
@@ -75,6 +76,7 @@ public class LocalPlayerContext : MonoBehaviour
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Jump);
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.WeaponSecondaryAction);
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.PreviousWeapon);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.BuyAmmo);
 
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLook, OnMouseLookInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Movement, OnMovementInput);
@@ -91,6 +93,7 @@ public class LocalPlayerContext : MonoBehaviour
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.TempDeathmatchWeaponMenu, OnTempDeathmatchWeaponMenuToggle);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleGamemodeMenu, OnGamemodeMenuToggle);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.BuyAmmo, OnBuyAmmoInput);
     }
 
     private void MapInputActionToHandlerMethod(InputAction action , Action<InputAction.CallbackContext> inputHandlerMethod)
@@ -211,6 +214,12 @@ public class LocalPlayerContext : MonoBehaviour
 	{
 		onHealthUpdateEvent.Invoke(newHealth, maxHealth);
 	}
+
+    public void OnBuyAmmoInput(InputAction.CallbackContext value)
+    {
+        if (value.started)
+            buyAmmoInputEvent.Invoke();
+    }
 
     // ============================================================================================
 

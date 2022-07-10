@@ -67,6 +67,5 @@ public partial class FpsHumanoidCharacter : FpsCharacter
 
         Update_Weapon();
     }
-
 }
 

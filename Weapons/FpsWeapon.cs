@@ -12,6 +12,7 @@
 public class FpsWeapon
 {
     public string weaponName;
+    public bool UseBackAmmo { get { return useBackAmmo; } }
     
     private WeaponResources weaponResouces;
     
@@ -55,7 +56,8 @@ public class FpsWeapon
     
     [HideInInspector] public FpsHumanoidCharacter owner;
     public string displayName = "";
-    
+    private bool useBackAmmo = false;
+
     public FpsWeapon(){}
     
     public FpsWeapon(string weaponName)
@@ -105,6 +107,8 @@ public class FpsWeapon
 
             damage = weaponMonsterInfo.f_override_damage > 0 ? weaponMonsterInfo.f_override_damage : damage;
         }
+
+        useBackAmmo = weaponCategory != WeaponCategory.Melee && CoreGameManager.Instance.GameMode == GameModeEnum.Monster;
     }
     
     public void Reset()
@@ -178,7 +182,7 @@ public class FpsWeapon
             // When action is done, update weapon info according to action.
             if(weaponState == WeaponState.Reloading)
             {
-                currentClip = clipSize;
+                RefillAmmo(false);
                 EmitWeaponViewEvent(WeaponEvent.Reload_End);
                 EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
                 weaponState = WeaponState.Idle;
@@ -194,9 +198,9 @@ public class FpsWeapon
             }
             else if (weaponState == WeaponState.Reloading_PalletInsert)
             {
-                currentClip++;
+                RefillAmmo(true);
                 EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
-                if(currentClip != clipSize)
+                if(currentClip != clipSize && OwnerHasBackAmmo())
                 {
                     cooldownUntilIdle.StartCooldown(reloadTime_PalletInsert);
                     EmitWeaponViewEvent(WeaponEvent.Reload_PalletInsertStart);
@@ -216,12 +220,37 @@ public class FpsWeapon
         }
     }
 
+    private void RefillAmmo(bool isPalletReload) 
+    {
+        if (!useBackAmmo)
+            currentClip = isPalletReload ? currentClip + 1 : clipSize;
+        else
+        { 
+            string ammoKey = weaponCategory.ToString();
+            int requiredAmmo = isPalletReload ? 1 : clipSize - currentClip;
+            int fillableAmmo = Mathf.Min(requiredAmmo, owner.BackAmmoInfo[ammoKey]);
+            currentClip += fillableAmmo;
+            owner.BackAmmoInfo[ammoKey] -= fillableAmmo;
+        }
+    }
+
     private void CheckAmmoAndAutoReload()
     {
-        if (!isOutOfAmmo() || primaryActionState != KeyPressState.Released || weaponState != WeaponState.Idle)
+        if (!isOutOfAmmo() || primaryActionState != KeyPressState.Released || weaponState != WeaponState.Idle || !OwnerHasBackAmmo())
             return;
 
         DoWeaponReload();
+    }
+
+    private bool OwnerHasBackAmmo() 
+    {
+        if (useBackAmmo)
+        {
+            string ammoKey = weaponCategory.ToString();
+            if (!owner.BackAmmoInfo.ContainsKey(ammoKey) || owner.BackAmmoInfo[ammoKey] <= 0)
+                return false;
+        }
+        return true;
     }
 
     public void UpdateWeaponPrimaryActionState(KeyPressState keyPressState)
@@ -275,9 +304,9 @@ public class FpsWeapon
     {
         if (weaponCategory == WeaponCategory.Melee) return;
 
-        if(weaponState != WeaponState.Idle || currentClip == clipSize)
+        if(weaponState != WeaponState.Idle || currentClip == clipSize || !OwnerHasBackAmmo())
             return;
-        
+
         ResetWeaponSecondaryState();
         if(reloadType == WeaponReloadType.Clip)
         {

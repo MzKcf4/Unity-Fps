@@ -26,6 +26,7 @@ public class MzRpgCharacter : FpsCharacter
     {
         base.Start();
 		InitializeMeleeRangeDetector();
+		
 		// ecmAStarCharacter = (MzEcmAStarCharacter)ecmCharacter;
 		
 	}

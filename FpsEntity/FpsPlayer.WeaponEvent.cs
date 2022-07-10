@@ -67,7 +67,11 @@ public partial class FpsPlayer
     
     private void UpdateAmmoDisplay()
     {
-        FpsUiManager.Instance.OnWeaponAmmoUpdate(GetActiveWeapon().currentClip);
+        FpsWeapon activeWeapon = GetActiveWeapon();
+        if (activeWeapon.UseBackAmmo) 
+            FpsUiManager.Instance.OnWeaponAmmoUpdate(activeWeapon.currentClip , GetBackAmmo(activeWeapon));
+        else
+            FpsUiManager.Instance.OnWeaponAmmoUpdate(activeWeapon.currentClip);
     }
     
     protected void ApplyRecoil()

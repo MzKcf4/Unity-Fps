@@ -52,7 +52,12 @@ public class FpsUiManager : MonoBehaviour
 	{
 		ammoText.SetText(currentClip.ToString());
 	}
-	
+
+	public void OnWeaponAmmoUpdate(int currentClip , int backAmmo)
+	{
+		ammoText.SetText(currentClip.ToString() + " / " + backAmmo);
+	}
+
 	protected void OnHealthUpdate(int newHealth ,int maxHealth)
 	{
 		healthText.SetText(newHealth + "/" + maxHealth);

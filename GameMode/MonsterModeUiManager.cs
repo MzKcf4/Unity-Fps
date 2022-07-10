@@ -16,6 +16,7 @@ public class MonsterModeUiManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI killText;
     [SerializeField] private TextMeshProUGUI stageText;
     [SerializeField] private TextMeshProUGUI restText;
+    [SerializeField] private TextMeshProUGUI ammoPackText;
     [SerializeField] private Transform hudPanel;
     [SerializeField] private Transform menuPanel;
     [SerializeField] private Transform weaponSelectionPanel;
@@ -33,6 +34,11 @@ public class MonsterModeUiManager : MonoBehaviour
         killText.text = newKill.ToString();
     }
 
+    public void UpdateAmmoPackText(int newAmmoPack)
+    { 
+        ammoPackText.text = "Ammo Pack : " + newAmmoPack.ToString();
+    }
+
     public void ToggleMenuPanel()
     {
         bool hudActive = hudPanel.gameObject.activeSelf;
@@ -42,7 +48,7 @@ public class MonsterModeUiManager : MonoBehaviour
 
     public void UpdateRestCountdown(int countdown)
     {
-        restText.text = countdown.ToString();
+        restText.text = "Rest : " + countdown.ToString();
     }
 
     public void UpdateStage(int stage)

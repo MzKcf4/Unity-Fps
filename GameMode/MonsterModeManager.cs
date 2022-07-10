@@ -69,6 +69,7 @@ public class MonsterModeManager : NetworkBehaviour
     [Server]
     public void StartGame()
     {
+        SharedContext.Instance.GetPlayers().ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient, 5));
         restTime = 15;
         currentStage = 0;
         dictMonsterSpawnCount.Clear();
@@ -207,6 +208,7 @@ public class MonsterModeManager : NetworkBehaviour
 
         if (currentGameState == GameState.Battle || currentGameState == GameState.Midnight)
         {
+            RollAmmoPack();
             currentMonsterCount--;
             stageKillsRemain--;
 
@@ -214,6 +216,14 @@ public class MonsterModeManager : NetworkBehaviour
             {
                 EndStage();
             }
+        }
+    }
+
+    private void RollAmmoPack()
+    {
+        if (UnityEngine.Random.Range(0, 100) < 30)
+        {
+            SharedContext.Instance.GetPlayers().ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient , 1));
         }
     }
 
@@ -259,6 +269,27 @@ public class MonsterModeManager : NetworkBehaviour
     private void OnRestRemainUpdate(int oldVal , int newVal)
     {
         MonsterModeUiManager.Instance.UpdateRestCountdown(newVal);
+    }
+
+    public int GetBackAmmoForWeaponType(WeaponCategory category , bool isSemiAuto)
+    {
+        switch (category) 
+        {
+            case WeaponCategory.Rifle:
+            case WeaponCategory.Pistol:
+                return 30;
+            case WeaponCategory.Smg:
+            case WeaponCategory.Mg:
+                return 50;
+            case WeaponCategory.Shotgun:
+                return 10;
+            case WeaponCategory.Sniper:
+                if (isSemiAuto)
+                    return 5;
+                else
+                    return 20;
+        }
+        return 0;
     }
 
     private enum GameState 
