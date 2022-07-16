@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using MoreMountains.Feedbacks;
 
 public class EffectManager : NetworkBehaviour
 {
@@ -54,5 +55,15 @@ public class EffectManager : NetworkBehaviour
 	public void RpcSetColor(GameObject obj , Color color)
 	{
 		SetColor(obj, color);
+	}
+
+	[ClientRpc]
+	public void RpcPlayEffect(string effectName, Vector3 pos , float lifeTime)
+	{
+		MMFeedbacks feedback = Instantiate(StreamingAssetManager.Instance.DictEffectNameToPrefab[effectName], pos, Quaternion.identity)
+			.GetComponent<MMFeedbacks>();
+		feedback.PlayFeedbacks();
+		//ToDo: pool the effects
+		Destroy(feedback.gameObject, lifeTime);
 	}
 }

@@ -47,6 +47,7 @@ public class MonsterModeManager : NetworkBehaviour
     private void Start()
     {
         StreamingAssetManager.Instance.InitializeMonsterDict();
+        StreamingAssetManager.Instance.InitializeEffectDict();
     }
 
     public override void OnStartServer()
@@ -249,6 +250,8 @@ public class MonsterModeManager : NetworkBehaviour
         Ability ability = null;
         if (string.Equals(AbilityBerserk.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
             ability = new AbilityBerserk(fpsCharacter);
+        else if (string.Equals(AbilityDeathExplosion.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
+            ability = new AbilityDeathExplosion(fpsCharacter);
 
         if (ability != null) { 
             MzAbilitySystem abilitySystem = fpsCharacter.GetComponent<MzAbilitySystem>();

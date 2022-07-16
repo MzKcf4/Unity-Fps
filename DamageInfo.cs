@@ -16,12 +16,18 @@ public class DamageInfo
     public string damageWeaponName = "";
     // For calculating damage reduction over distance
     public float weaponRangeModifier = 1f;
+
+    public bool isFromWeapon = true;
     
 	
-	public static DamageInfo AsDamageInfo(int dmg, BodyPart bodyPart, Vector3 hitPoint)
+	public static DamageInfo AsDamageInfo(int dmg, FpsCharacter attacker)
 	{
-		return new DamageInfo {
-			damage = dmg
+        return new DamageInfo {
+            bodyPart = BodyPart.Chest,
+            damage = dmg,
+            damageSource = attacker.characterName,
+            attacker = attacker.netIdentity,
+            isFromWeapon = false
 		};
 	}
 	
@@ -40,6 +46,7 @@ public class DamageInfo
             damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;
             damageInfo.weaponRangeModifier = fromWeapon.rangeModifier;
             damageInfo.attacker = fromWeapon.owner.netIdentity;
+            damageInfo.isFromWeapon = true;
         }
         
         return damageInfo;
@@ -47,6 +54,9 @@ public class DamageInfo
     
     public float GetDamageDistance()
     {
-        return Vector3.Distance(hitPoint , damageSourcePosition);
+        if (isFromWeapon)
+            return Vector3.Distance(hitPoint, damageSourcePosition);
+        else
+            return 1f;
     }
 }

@@ -41,7 +41,7 @@ public abstract class Ability
         isActive = true;
     }
 
-    protected abstract void ApplyEffects();
+    protected virtual void ApplyEffects() { }
 
     public void DeactivateAbility() 
     {
@@ -49,7 +49,7 @@ public abstract class Ability
         RemoveEffects();
     }
 
-    protected abstract void RemoveEffects();
+    protected virtual void RemoveEffects() { }
 
     protected virtual void ApplySpeedModifier() { }
 
