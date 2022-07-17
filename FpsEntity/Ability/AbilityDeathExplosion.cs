@@ -39,7 +39,7 @@ public class AbilityDeathExplosion : Ability
         RaycastHelper raycastHelper = owner.GetComponent<RaycastHelper>();
         raycastHelper.RayType = RaycastHelper.eRayType.SphereOverlap;
         raycastHelper.SetMemorySize(10);
-        raycastHelper.m_Radius = 2.5f;
+        raycastHelper.m_Radius = 4f;
         raycastHelper.m_LocalPosition = Vector3.zero;
         return raycastHelper;
     }
