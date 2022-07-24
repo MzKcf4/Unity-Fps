@@ -15,4 +15,9 @@ public class MzRpgModelAnimationEventHandler : MonoBehaviour
     {
         character.CheckMeleeHit();
     }
+
+    public void AniEvent_ShootProjectile()
+    { 
+        
+    }
 }

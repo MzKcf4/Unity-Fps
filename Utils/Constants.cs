@@ -20,7 +20,9 @@ public class Constants
     public static readonly string LAYER_LOCAL_PLAYER_MODEL = "LocalPlayerModel";
     public static readonly string LAYER_LOCAL_PLAYER_HITBOX = "LocalPlayerHitbox";
     public static readonly string LAYER_CHARACTER_MODEL = "CharacterModel";
+    public static readonly string LAYER_CHARACTER = "Character";
     public static readonly string LAYER_FIRST_PERSON_VIEW = "FirstPersonView";
+    public static readonly string[] LAYER_CHARACTER_RAYCAST_LAYER = { LAYER_LOCAL_PLAYER_MODEL , LAYER_CHARACTER };
 
     public static readonly string LABEL_WEAPON_RESOURCE = "WeaponResource";
     public static readonly string ADDRESS_LABEL_MONSTER_PREFAB = "MonsterPrefab";

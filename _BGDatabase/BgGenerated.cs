@@ -10,7 +10,7 @@ using Alias_rifegrt_weapon_monster_info = E_weapon_monster_info;
 
 #pragma warning disable 414
 
-public partial class E_weapon_info : BGEntity
+public partial class E_weapon_info : BGEntity, E_view_weapon_monster_info
 {
 
 	public class Factory : BGEntity.EntityFactory
@@ -193,6 +193,7 @@ public partial class E_weapon_info : BGEntity
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
 	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private static readonly E_weapon_monster_info.Factory _factory3_PFS = new E_weapon_monster_info.Factory();
+	private static readonly E_nestedTest.Factory _factory4_PFS = new E_nestedTest.Factory();
 	private E_weapon_info() : base(MetaDefault)
 	{
 	}
@@ -270,6 +271,7 @@ public partial class E_weapon_view_info : BGEntity
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
 	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private static readonly E_weapon_monster_info.Factory _factory3_PFS = new E_weapon_monster_info.Factory();
+	private static readonly E_nestedTest.Factory _factory4_PFS = new E_nestedTest.Factory();
 	private E_weapon_view_info() : base(MetaDefault)
 	{
 	}
@@ -365,6 +367,7 @@ public partial class E_monster_info : BGEntity
 		get => _f_ability_key[Index];
 		set => _f_ability_key[Index] = value;
 	}
+	public List<E_nestedTest> f_nestedTest => BGCodeGenUtils.GetNested<E_nestedTest>(_f_nestedTest, Index);
 	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
 	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5199085996425251369UL, 1231959888780819631UL), () => _ufle12jhs77_f_name = null));
 	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
@@ -383,10 +386,13 @@ public partial class E_monster_info : BGEntity
 	public static BansheeGz.BGDatabase.BGFieldInt _f_weight => _ufle12jhs77_f_weight ?? (_ufle12jhs77_f_weight = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5279641282541583146UL, 10970047311882549645UL), () => _ufle12jhs77_f_weight = null));
 	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_ability_key;
 	public static BansheeGz.BGDatabase.BGFieldString _f_ability_key => _ufle12jhs77_f_ability_key ?? (_ufle12jhs77_f_ability_key = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldString>(MetaDefault, new BGId(5482737687231203666UL, 1722902475672857756UL), () => _ufle12jhs77_f_ability_key = null));
+	private static BansheeGz.BGDatabase.BGFieldNested _ufle12jhs77_f_nestedTest;
+	public static BansheeGz.BGDatabase.BGFieldNested _f_nestedTest => _ufle12jhs77_f_nestedTest ?? (_ufle12jhs77_f_nestedTest = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5200032263417096181UL, 14246244039933091983UL), () => _ufle12jhs77_f_nestedTest = null));
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
 	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private static readonly E_weapon_monster_info.Factory _factory3_PFS = new E_weapon_monster_info.Factory();
+	private static readonly E_nestedTest.Factory _factory4_PFS = new E_nestedTest.Factory();
 	private E_monster_info() : base(MetaDefault)
 	{
 	}
@@ -419,7 +425,7 @@ public partial class E_monster_info : BGEntity
 	}
 }
 
-public partial class E_weapon_monster_info : BGEntity
+public partial class E_weapon_monster_info : BGEntity, E_view_weapon_monster_info
 {
 
 	public class Factory : BGEntity.EntityFactory
@@ -463,6 +469,7 @@ public partial class E_weapon_monster_info : BGEntity
 	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
 	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
 	private static readonly E_weapon_monster_info.Factory _factory3_PFS = new E_weapon_monster_info.Factory();
+	private static readonly E_nestedTest.Factory _factory4_PFS = new E_nestedTest.Factory();
 	private E_weapon_monster_info() : base(MetaDefault)
 	{
 	}
@@ -493,5 +500,86 @@ public partial class E_weapon_monster_info : BGEntity
 	{
 		return (E_weapon_monster_info) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((E_weapon_monster_info)entity)));
 	}
+}
+
+public partial class E_nestedTest : BGEntity
+{
+
+	public class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new E_nestedTest(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new E_nestedTest(meta, id);
+	}
+	private static BansheeGz.BGDatabase.BGMetaNested _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaNested MetaDefault => _metaDefault ?? (_metaDefault = BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaNested>(new BGId(5237944747463234076UL,77412510453723806UL), () => _metaDefault = null));
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String f_name
+	{
+		get => _f_name[Index];
+		set => _f_name[Index] = value;
+	}
+	public E_monster_info f_monster_info
+	{
+		get => (E_monster_info) _f_monster_info[Index];
+		set => _f_monster_info[Index] = value;
+	}
+	public System.Double f_Test
+	{
+		get => _f_Test[Index];
+		set => _f_Test[Index] = value;
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5053021597742242008UL, 14692661828327963064UL), () => _ufle12jhs77_f_name = null));
+	private static BansheeGz.BGDatabase.BGFieldRelationSingle _ufle12jhs77_f_monster_info;
+	public static BansheeGz.BGDatabase.BGFieldRelationSingle _f_monster_info => _ufle12jhs77_f_monster_info ?? (_ufle12jhs77_f_monster_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldRelationSingle>(MetaDefault, new BGId(4937004467604413747UL, 15411813045842888079UL), () => _ufle12jhs77_f_monster_info = null));
+	private static BansheeGz.BGDatabase.BGFieldDouble _ufle12jhs77_f_Test;
+	public static BansheeGz.BGDatabase.BGFieldDouble _f_Test => _ufle12jhs77_f_Test ?? (_ufle12jhs77_f_Test = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldDouble>(MetaDefault, new BGId(5068093326020408130UL, 5593250451046240668UL), () => _ufle12jhs77_f_Test = null));
+	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
+	private static readonly E_weapon_view_info.Factory _factory1_PFS = new E_weapon_view_info.Factory();
+	private static readonly E_monster_info.Factory _factory2_PFS = new E_monster_info.Factory();
+	private static readonly E_weapon_monster_info.Factory _factory3_PFS = new E_weapon_monster_info.Factory();
+	private static readonly E_nestedTest.Factory _factory4_PFS = new E_nestedTest.Factory();
+	private E_nestedTest() : base(MetaDefault)
+	{
+	}
+	private E_nestedTest(BGId id) : base(MetaDefault, id)
+	{
+	}
+	private E_nestedTest(BGMetaEntity meta) : base(meta)
+	{
+	}
+	private E_nestedTest(BGMetaEntity meta, BGId id) : base(meta, id)
+	{
+	}
+	public static E_nestedTest FindEntity(Predicate<E_nestedTest> filter)
+	{
+		return MetaDefault.FindEntity(entity => filter==null || filter((E_nestedTest) entity)) as E_nestedTest;
+	}
+	public static List<E_nestedTest> FindEntities(Predicate<E_nestedTest> filter, List<E_nestedTest> result=null, Comparison<E_nestedTest> sort=null) => BGCodeGenUtils.FindEntities(MetaDefault, filter, result, sort);
+	public static void ForEachEntity(Action<E_nestedTest> action, Predicate<E_nestedTest> filter=null, Comparison<E_nestedTest> sort=null)
+	{
+		MetaDefault.ForEachEntity(entity => action((E_nestedTest) entity), filter == null ? null : (Predicate<BGEntity>) (entity => filter((E_nestedTest) entity)), sort==null?(Comparison<BGEntity>) null:(e1,e2) => sort((E_nestedTest)e1,(E_nestedTest)e2));
+	}
+	public static E_nestedTest GetEntity(BGId entityId) => (E_nestedTest) MetaDefault.GetEntity(entityId);
+	public static E_nestedTest GetEntity(int index) => (E_nestedTest) MetaDefault[index];
+	public static E_nestedTest GetEntity(string entityName) => (E_nestedTest) MetaDefault.GetEntity(entityName);
+	public static E_nestedTest NewEntity() => (E_nestedTest) MetaDefault.NewEntity();
+	public static E_nestedTest NewEntity(BGId entityId) => (E_nestedTest) MetaDefault.NewEntity(entityId);
+	public static E_nestedTest NewEntity(Action<E_nestedTest> callback)
+	{
+		return (E_nestedTest) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((E_nestedTest)entity)));
+	}
+	public static E_nestedTest NewEntity(E_monster_info owner) => (E_nestedTest) MetaDefault.NewEntity(owner);
+	public static E_nestedTest NewEntity(E_monster_info owner, BGId entityId) => (E_nestedTest) MetaDefault.NewEntity(owner, entityId);
+	public static E_nestedTest NewEntity(E_monster_info owner, Action<E_nestedTest> callback)
+	{
+		return (E_nestedTest) MetaDefault.NewEntity(owner, new BGMetaEntity.NewEntityContext(entity => callback((E_nestedTest)entity)));
+	}
+}
+
+public partial interface E_view_weapon_monster_info  : BGAbstractEntityI
+{
+	System.String f_name {get; set;}
 }
 #pragma warning restore 414

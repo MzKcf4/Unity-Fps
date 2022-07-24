@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Kit.Physic;
 
-public class CsoBoomerOrigin : CsoBoomerHost
+public class CsoBoomerOrigin
 {
 	/*
 	[SerializeField]
