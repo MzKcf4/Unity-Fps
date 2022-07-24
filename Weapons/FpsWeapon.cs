@@ -99,13 +99,8 @@ public class FpsWeapon
 
         if (CoreGameManager.Instance.GameMode == GameModeEnum.Monster)
         {
-            E_weapon_monster_info weaponMonsterInfo = E_weapon_monster_info.FindEntity(e => string.Equals(weaponName, e.f_weapon_info.Name));
-            if (weaponMonsterInfo == null) {
-                Debug.LogWarning("Warning , weapon monster info not found " + weaponName);
-                return;
-            }
-
-            damage = weaponMonsterInfo.f_override_damage > 0 ? weaponMonsterInfo.f_override_damage : damage;
+            if(dbWeaponInfo.f_monster_damage > 0)
+                damage = dbWeaponInfo.f_monster_damage;
         }
 
         useBackAmmo = weaponCategory != WeaponCategory.Melee && CoreGameManager.Instance.GameMode == GameModeEnum.Monster;

@@ -13,6 +13,12 @@ public class MonsterModeManager : NetworkBehaviour
     public static MonsterModeManager Instance;
     [SerializeField] private GameObject uiPrefab;
 
+    public int StageTargetKillCount
+    {
+        get { return stageTargetKillCount; }
+        set { stageTargetKillCount = value; }
+    }
+
     [SyncVar] private GameState currentGameState = GameState.NotStarted;
 
     private List<Transform> monsterSpawnPoints = new List<Transform>();
@@ -23,6 +29,8 @@ public class MonsterModeManager : NetworkBehaviour
     
     [SyncVar(hook = (nameof(OnKillRemainUpdate)))] 
     public int stageKillsRemain = 0;
+    [SyncVar]
+    private int stageTargetKillCount = 40;
 
     // Stage must start at "1" ! 
     [SyncVar(hook = (nameof(OnStageUpdate)))] 
@@ -31,10 +39,13 @@ public class MonsterModeManager : NetworkBehaviour
     public int restTime = 10;
     [SyncVar(hook = (nameof(OnRestRemainUpdate)))] public int restRemain = 10;
 
+    private int activePlayers = 1;
     public int maxMonsters = 7;
     private int currentMonsterCount = 0;
 
     public Stack<GameObject> stageSpawnStack;
+
+    
 
     private List<E_monster_info> stageSpawnableList = new List<E_monster_info>();
     private Dictionary<string , int> dictMonsterSpawnCount = new Dictionary<string , int>();
@@ -70,7 +81,10 @@ public class MonsterModeManager : NetworkBehaviour
     [Server]
     public void StartGame()
     {
-        SharedContext.Instance.GetPlayers().ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient, 5));
+        List<FpsPlayer> fpsPlayers = SharedContext.Instance.GetPlayers();
+        fpsPlayers.ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient, 5));
+        activePlayers = fpsPlayers.Count;
+
         restTime = 15;
         currentStage = 0;
         dictMonsterSpawnCount.Clear();
@@ -80,9 +94,9 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void GivePistolOnStart()
     {
-        string pistolName = E_weapon_monster_info.FindEntity(e => e.f_level == 1 && e.f_weapon_info.f_category == WeaponCategory.Pistol)
-                                                 .f_weapon_info.f_name;
-        SharedContext.Instance.GetPlayers().ForEach(p => p.ServerCmdGetWeapon(pistolName, 1));
+        List<E_weapon_info> pistolList = E_weapon_info.FindEntities(e => e.f_monster_level == 0 && e.f_category == WeaponCategory.Pistol);
+        pistolList.Shuffle();
+        SharedContext.Instance.GetPlayers().ForEach(p => p.ServerCmdGetWeapon(pistolList[0].f_name, 1));
     }
 
     public void StopGame()
@@ -125,7 +139,7 @@ public class MonsterModeManager : NetworkBehaviour
     {
         currentGameState = GameState.Battle;
         currentMonsterCount = 0;
-        stageKillsRemain = 20;
+        stageKillsRemain = stageTargetKillCount;
         stageSpawnableList = BuildStageSpawnableList(stage);
     }
 
@@ -165,7 +179,7 @@ public class MonsterModeManager : NetworkBehaviour
             NetworkServer.Spawn(obj);
             MzCharacterManager.Instance.AddNewCharacter(mzRpgCharacter);
 
-            float healthMultiplier = Math.Max(2 * (currentStage - 1), 1);
+            float healthMultiplier = GetEnemyHealthMultiplier();
             mzRpgCharacter.SetHealth((int)(monsterInfo.f_base_health * healthMultiplier));
             mzRpgCharacter.AdditionalInfos.Add(Constants.ADDITIONAL_INFO_MONSTER_ID, monsterInfo.f_name);
 
@@ -176,6 +190,14 @@ public class MonsterModeManager : NetworkBehaviour
 
             AssignAbility(mzRpgCharacter, monsterInfo.f_ability_key);
         }
+    }
+
+    private float GetEnemyHealthMultiplier() 
+    {
+        float stageHealthMultiplier = Math.Max(2 * (currentStage - 1), 1);
+        float playerHealthMultiplier = Mathf.Pow(1.2f, activePlayers);
+
+        return stageHealthMultiplier * playerHealthMultiplier;
     }
 
     private bool CanSpawnEnemy(string monsterId , int maxCount)

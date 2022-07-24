@@ -143,89 +143,11 @@ public class ConsoleCmdManager : NetworkBehaviour
         MonsterModeManager.Instance.StartGame();
     }
 
-    [QFSW.QC.Command("changelevel_sample")]
-    public void ChangeLevel_sample()
+    [QFSW.QC.Command("mm_killsPerStage")]
+    public void MonsterMode_SetKillsPerStage(int killCount)
     {
         if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("fy_sample");
-    }
-
-    [QFSW.QC.Command("changelevel_fy_snow")]
-    public void ChangeLevel()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("fy_snow");
-    }
-
-    [QFSW.QC.Command("changelevel_ar_egypt")]
-    public void ChangeLevel_ar()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("ar_egypt");
-    }
-
-
-    [QFSW.QC.Command("changelevel_yet")]
-    public void ChangeLevel_yet()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_yetanotheraimmap");
-    }
-
-    [QFSW.QC.Command("changelevel_cybergrap")]
-    public void ChangeLevel_cyber()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("cybergrape");
-    }
-
-    [QFSW.QC.Command("changelevel_aim_space")]
-    public void ChangeLevel_space()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_space");
-    }
-
-    [QFSW.QC.Command("changelevel_aim_2077")]
-    public void ChangeLevel_2()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_allpistols");
-    }
-
-    [QFSW.QC.Command("changelevel_aim_2019")]
-    public void ChangeLevel_3()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_allpistols_2019");
-    }
-
-    [QFSW.QC.Command("changelevel_de_dust2_classic")]
-    public void ChangeLevel_4()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("de_dust2_classic");
-    }
-
-    [QFSW.QC.Command("changelevel_cs_bloodstrike")]
-    public void ChangeLevel_5()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("cs_bloodstrike");
-    }
-
-    [QFSW.QC.Command("changelevel_aim_rush")]
-    public void ChangeLevel_6()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_rush");
-    }
-
-    [QFSW.QC.Command("changelevel_aim_vertigo")]
-    public void ChangeLevel_7()
-    {
-        if (!isServer) return;
-        NetworkManager.singleton.ServerChangeScene("aim_vertigo");
+        MonsterModeManager.Instance.StageTargetKillCount = killCount;
     }
 
     [QFSW.QC.Command("db_reload")]

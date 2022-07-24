@@ -23,7 +23,7 @@ public class AbilityRadiation : Ability
 
     private void DoRadiationDamage() 
     {
-        Collider[] colliders = Physics.OverlapSphere(owner.transform.position, 5f, radiationHitLayer);
+        Collider[] colliders = Physics.OverlapSphere(owner.transform.position, 6f, radiationHitLayer);
         foreach (Collider c in colliders) 
         { 
             FpsCharacter character = c.GetComponent<FpsCharacter>();
