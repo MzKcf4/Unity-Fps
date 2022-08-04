@@ -278,6 +278,8 @@ public class MonsterModeManager : NetworkBehaviour
             ability = new AbilityStalk(fpsCharacter);
         else if (string.Equals(AbilityRadiation.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
             ability = new AbilityRadiation(fpsCharacter);
+        else if (string.Equals(AbilityUndyingRage.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
+            ability = new AbilityUndyingRage(fpsCharacter);
 
         if (ability != null) { 
             MzAbilitySystem abilitySystem = fpsCharacter.GetComponent<MzAbilitySystem>();

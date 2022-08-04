@@ -143,11 +143,32 @@ public class ConsoleCmdManager : NetworkBehaviour
         MonsterModeManager.Instance.StartGame();
     }
 
+    [QFSW.QC.Command("mm_stage_restTime")]
+    public void MonsterMode_SetStageRestTime(int restTime)
+    {
+        if (!isServer) return;
+        MonsterModeManager.Instance.StageRestTime = restTime;
+    }
+
     [QFSW.QC.Command("mm_killsPerStage")]
     public void MonsterMode_SetKillsPerStage(int killCount)
     {
         if (!isServer) return;
         MonsterModeManager.Instance.StageTargetKillCount = killCount;
+    }
+
+    [QFSW.QC.Command("mm_health_multiplier_player")]
+    public void MonsterMode_SetHealthMultiplierPerPlayer(float multiplier)
+    {
+        if (!isServer) return;
+        MonsterModeManager.Instance.HealthMultiplierPerPlayer = multiplier;
+    }
+
+    [QFSW.QC.Command("mm_health_multiplier_stage")]
+    public void MonsterMode_SetHealthMultiplierPerStage(float multiplier)
+    {
+        if (!isServer) return;
+        MonsterModeManager.Instance.HealthMultiplierPerStage = multiplier;
     }
 
     [QFSW.QC.Command("db_reload")]
