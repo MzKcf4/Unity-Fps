@@ -21,6 +21,7 @@ public class CharacterAnimationResource : SerializedScriptableObject
     public ClipTransition upperBodyShootClip;
     public ClipTransition upperBodyReloadClip;
     // ------------------------------- //
+    public ClipTransition upperBodyIdleClip;
 
     public List<ClipTransition> deathClips = new List<ClipTransition>();
     public ClipTransition idleClip;

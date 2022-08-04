@@ -46,6 +46,7 @@ public class FpsCharacter : FpsEntity
 
     [SyncVar(hook = (nameof(OnMaxSpeedChanged)))]
     protected float maxSpeed;
+    protected float currentMaxSpeed;
 
     [SerializeField] protected CharacterAnimationResource charAnimationRes;
     protected Character ecmCharacter;
@@ -183,28 +184,34 @@ public class FpsCharacter : FpsEntity
     }
 
     [Server]
-    public void ServerPlayAnimationByKey(string key)
+    public void ServerPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
     {
-        RpcPlayAnimationByKey(key);
+        RpcPlayAnimationByKey(key, isFullBody , isForceExecute);
     }
 
     [ClientRpc]
-    protected void RpcPlayAnimationByKey(string key)
+    protected void RpcPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
     {
-        PlayAnimationByKey(key);
+        PlayAnimationByKey(key, isFullBody , isForceExecute);
     }
 
-    public void PlayAnimationByKey(string key) 
+    public void PlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
     {
         if (!charAnimationRes.actionClips.ContainsKey(key)) {
             Debug.LogWarning("Action clip key not found : " + key);
             return;
         }
 
-        characterAnimator.PlayActionAnimation(charAnimationRes.actionClips[key].actionClip);
+        characterAnimator.PlayActionAnimation(charAnimationRes.actionClips[key].actionClip , isFullBody, isForceExecute);
 
     }
-           
+
+    public override void TakeDamage(DamageInfo damageInfo)
+    {
+        base.TakeDamage(damageInfo);
+        HandlePainShock();
+    }
+
     [ClientRpc]
     protected override void RpcTakeDamage(DamageInfo damageInfo)
     {
@@ -215,6 +222,11 @@ public class FpsCharacter : FpsEntity
                                                  : Utils.GetRandomElement<AudioClip>(characterCommonResources.hurtSoundList);
 
         audioSourceCharacter.PlayOneShot(hurtSoundClip);
+
+    }
+
+    protected virtual void HandlePainShock() 
+    {
         SetVelocity(Vector3.zero);
     }
     
@@ -397,6 +409,13 @@ public class FpsCharacter : FpsEntity
     {
         this.maxSpeed = maxSpeed;
         ecmCharacter.maxWalkSpeed = maxSpeed;
+    }
+
+    public virtual void SetCanMove(bool canMove)
+    {
+        ecmCharacter.SetMovementMode(canMove ? MovementMode.Walking : MovementMode.None);
+        // this.maxSpeed = maxSpeed;
+        // ecmCharacter.maxWalkSpeed = maxSpeed;
     }
 
     private void OnMaxSpeedChanged(float oldMaxSpeed, float newMaxSpeed)

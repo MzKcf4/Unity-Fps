@@ -196,9 +196,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 		base.RpcTakeDamage(damageInfo);
         if(isLocalPlayer)
         {
-            // painShockCooldown.StartCooldown();
-            // playerController.SetVelocity(Vector3.zero);
-
             if (UiDamageIndicatorManager.Instance != null && damageInfo.attacker != null)
             {
                 UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attacker.transform);

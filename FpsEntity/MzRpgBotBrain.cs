@@ -73,7 +73,7 @@ public class MzRpgBotBrain : MzBotBrainBase
     protected virtual void ExecuteMeleeAttack()
     {
         rpgCharacter.ServerExtendMeleeRange(targetCharacter);
-        character.ServerPlayAnimationByKey(Constants.ACTION_KEY_MELEE);
+        character.ServerPlayAnimationByKey(Constants.ACTION_KEY_MELEE, false , false);
     }
 
     protected override void SeekTarget()
