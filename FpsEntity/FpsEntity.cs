@@ -84,11 +84,12 @@ public class FpsEntity : NetworkBehaviour
 	public virtual void TakeDamage(DamageInfo damageInfo)
 	{
 		if(!isServer || IsDead() || isGodMode)	return;
-		
+		PreTakeDamage(damageInfo);
         ProcessDamageByDistance(damageInfo);
 		ProcessDamageByBodyPart(damageInfo);
 		int newHealth = health - damageInfo.damage;
         SetHealth(newHealth);
+        PostTakeDamage(damageInfo);
 		if(IsDead())
         {
             RpcTakeDamage(damageInfo);
@@ -99,9 +100,13 @@ public class FpsEntity : NetworkBehaviour
 			RpcTakeDamage(damageInfo);
         }
         onTakeDamageEvent.Invoke(damageInfo);
-
     }
+
+    protected virtual void PreTakeDamage(DamageInfo damageInfo){ }
+
+    protected virtual void PostTakeDamage(DamageInfo damageInfo) { }
     
+
     private void ProcessDamageByDistance(DamageInfo damageInfo)
     {
         damageInfo.damage = Utils.CalculateDamageByDropoff(damageInfo.damage , damageInfo.GetDamageDistance() , damageInfo.weaponRangeModifier);

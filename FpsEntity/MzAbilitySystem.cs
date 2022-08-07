@@ -8,7 +8,6 @@ using Mirror;
 
 public class MzAbilitySystem : MonoBehaviour
 {
-
     private FpsCharacter owner;
     public Dictionary<string, Ability> dictAbilities = new Dictionary<string, Ability>();
 
@@ -23,6 +22,24 @@ public class MzAbilitySystem : MonoBehaviour
         {
             Ability ability = entry.Value;
             ability.Update(Time.deltaTime);
+        }
+    }
+
+    public void OnOwnerPreTakeDamage(DamageInfo damageInfo) 
+    {
+        foreach (KeyValuePair<string, Ability> entry in dictAbilities)
+        {
+            Ability ability = entry.Value;
+            ability.OnOwnerPreTakeDamage(damageInfo);
+        }
+    }
+
+    public void OnOwnerPostTakeDamage(DamageInfo damageInfo) 
+    {
+        foreach (KeyValuePair<string, Ability> entry in dictAbilities)
+        {
+            Ability ability = entry.Value;
+            ability.OnOwnerPostTakeDamage(damageInfo);
         }
     }
 

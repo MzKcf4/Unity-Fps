@@ -93,6 +93,7 @@ public class MzCharacterAnimator : MonoBehaviour
             {
                 // Return to idle state
                 currentLayerPlayingClip[UPPER_LAYER] = null;
+                currentLayerPlayingClip[LOWER_LAYER] = null;
                 isDisableLocomation = false;
                 modelAnimancer.Layers[UPPER_LAYER].Play(charRes.upperBodyIdleClip, 0.1f);
             };

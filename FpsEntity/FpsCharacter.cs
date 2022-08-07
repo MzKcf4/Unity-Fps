@@ -60,7 +60,11 @@ public class FpsCharacter : FpsEntity
     [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
 
     protected Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
-    
+
+    protected MzAbilitySystem abilitySystem;
+    protected Dictionary<string, VfxMarker> dictVfxMarkers = new Dictionary<string, VfxMarker>();
+
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -109,6 +113,7 @@ public class FpsCharacter : FpsEntity
     protected override void Start()
     {
         base.Start();
+        abilitySystem = GetComponent<MzAbilitySystem>();
 
         AttachModel();
         SetRagdollState(false);
@@ -149,6 +154,11 @@ public class FpsCharacter : FpsEntity
         characterAnimator.SetAttachedModel(fpsModel);
         // Apply highlight effect to newly added model's mesh
         highlightEffect.Refresh();
+
+        VfxMarker[] vfxMarkers = GetComponentsInChildren<VfxMarker>();
+        for (int i = 0; i < vfxMarkers.Length; i++) {
+            dictVfxMarkers.Add(vfxMarkers[i].MarkerName, vfxMarkers[i]);
+        }
     }
         
     [Server]
@@ -184,9 +194,13 @@ public class FpsCharacter : FpsEntity
     }
 
     [Server]
-    public void ServerPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
+    public void ServerPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute, float freezeTime = 0)
     {
         RpcPlayAnimationByKey(key, isFullBody , isForceExecute);
+        if (freezeTime > 0) {
+            SetCanMove(false);
+            StartCoroutine(SetCanMoveAfter(true, freezeTime));
+        }
     }
 
     [ClientRpc]
@@ -203,13 +217,46 @@ public class FpsCharacter : FpsEntity
         }
 
         characterAnimator.PlayActionAnimation(charAnimationRes.actionClips[key].actionClip , isFullBody, isForceExecute);
+    }
 
+    [Server]
+    public void PlayVfxInMarker(string markerName , string vfxKey , float vfxLifeTime)
+    {
+        RpcPlayVfxInMarker(markerName, vfxKey, vfxLifeTime);
+    }
+
+    [ClientRpc]
+    protected void RpcPlayVfxInMarker(string markerName, string vfxKey, float vfxLifeTime)
+    {
+        if (!dictVfxMarkers.ContainsKey(markerName))
+        {
+            Debug.LogWarning("Marker not found : " + markerName);
+            return;
+        }
+
+        VfxMarker marker = dictVfxMarkers[markerName];
+
+        EffectManager.Instance.PlayEffect(vfxKey, marker.transform.position, vfxLifeTime , marker.transform);
     }
 
     public override void TakeDamage(DamageInfo damageInfo)
     {
         base.TakeDamage(damageInfo);
         HandlePainShock();
+    }
+
+    protected override void PreTakeDamage(DamageInfo damageInfo)
+    {
+        base.PreTakeDamage(damageInfo);
+        if(abilitySystem != null)
+            abilitySystem.OnOwnerPreTakeDamage(damageInfo);
+    }
+
+    protected override void PostTakeDamage(DamageInfo damageInfo)
+    {
+        base.PostTakeDamage(damageInfo);
+        if(abilitySystem != null)
+            abilitySystem.OnOwnerPostTakeDamage(damageInfo);
     }
 
     [ClientRpc]
@@ -427,5 +474,11 @@ public class FpsCharacter : FpsEntity
     {
         if (characterMovement != null)
             characterMovement.velocity = velocity;
+    }
+
+    private IEnumerator SetCanMoveAfter(bool canMove, float durationInSecond)
+    {
+        yield return new WaitForSeconds(durationInSecond);
+        SetCanMove(canMove);
     }
 }

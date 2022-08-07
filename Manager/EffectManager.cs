@@ -60,10 +60,27 @@ public class EffectManager : NetworkBehaviour
 	[ClientRpc]
 	public void RpcPlayEffect(string effectName, Vector3 pos , float lifeTime)
 	{
-		MMFeedbacks feedback = Instantiate(StreamingAssetManager.Instance.DictEffectNameToPrefab[effectName], pos, Quaternion.identity)
-			.GetComponent<MMFeedbacks>();
-		feedback.PlayFeedbacks();
+		PlayEffect(effectName, pos, lifeTime, null);
+	}
+
+	public void PlayEffect(string effectName, Vector3 pos, float lifeTime, Transform objectAttachTo)
+	{
+		if (!StreamingAssetManager.Instance.DictEffectNameToPrefab.ContainsKey(effectName))
+		{
+			Debug.Log("Effect name NOT found : " + effectName);
+			return;
+		}
+
+		GameObject obj = Instantiate(StreamingAssetManager.Instance.DictEffectNameToPrefab[effectName], pos, Quaternion.identity);
+		if (objectAttachTo != null)
+			obj.transform.SetParent(objectAttachTo.transform);
+
+		MMFeedbacks feedback = obj.GetComponent<MMFeedbacks>();
+
+		if(feedback != null)
+			feedback.PlayFeedbacks();
+
 		//ToDo: pool the effects
-		Destroy(feedback.gameObject, lifeTime);
+		Destroy(obj, lifeTime);
 	}
 }

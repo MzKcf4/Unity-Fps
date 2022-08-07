@@ -55,6 +55,10 @@ public abstract class Ability
 
     protected virtual void RemoveSpeedModifier() { }
 
+    public virtual void OnOwnerPreTakeDamage(DamageInfo damageInfo) { }
+
+    public virtual void OnOwnerPostTakeDamage(DamageInfo damageInfo) { }
+
     public abstract string GetID();
 
     protected string GetDurationKey() 
@@ -65,12 +69,6 @@ public abstract class Ability
     protected string GetCooldownKey() 
     {
         return "cooldown-" + GetID();
-    }
-
-    private IEnumerator CountdownAbility(int duration)
-    { 
-        yield return new WaitForSeconds(duration);
-        DeactivateAbility();
     }
 }
 

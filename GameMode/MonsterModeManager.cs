@@ -15,9 +15,29 @@ public class MonsterModeManager : NetworkBehaviour
 
     public int StageTargetKillCount
     {
-        get { return stageTargetKillCount; }
-        set { stageTargetKillCount = value; }
+        get { return config.stageTargetKillCount; }
+        set { config.stageTargetKillCount = value; }
     }
+
+    public float HealthMultiplierPerPlayer
+    {
+        get { return config.healthMultiplierPerPlayer; }
+        set { config.healthMultiplierPerPlayer = value; }
+    }
+
+    public float HealthMultiplierPerStage
+    {
+        get { return config.healthMultiplierPerStage; }
+        set { config.healthMultiplierPerStage = value; }
+    }
+
+    public int StageRestTime
+    {
+        get { return config.restTime; }
+        set { config.restTime = value; }
+    }
+
+    private MonsterModeConfig config = new MonsterModeConfig();
 
     [SyncVar] private GameState currentGameState = GameState.NotStarted;
 
@@ -29,26 +49,22 @@ public class MonsterModeManager : NetworkBehaviour
     
     [SyncVar(hook = (nameof(OnKillRemainUpdate)))] 
     public int stageKillsRemain = 0;
-    [SyncVar]
-    private int stageTargetKillCount = 40;
 
     // Stage must start at "1" ! 
     [SyncVar(hook = (nameof(OnStageUpdate)))] 
     public int currentStage = 0;
 
-    public int restTime = 10;
     [SyncVar(hook = (nameof(OnRestRemainUpdate)))] public int restRemain = 10;
 
     private int activePlayers = 1;
-    public int maxMonsters = 7;
+
     private int currentMonsterCount = 0;
 
     public Stack<GameObject> stageSpawnStack;
 
-    
-
     private List<E_monster_info> stageSpawnableList = new List<E_monster_info>();
     private Dictionary<string , int> dictMonsterSpawnCount = new Dictionary<string , int>();
+    
 
     private void Awake()
     {
@@ -65,7 +81,7 @@ public class MonsterModeManager : NetworkBehaviour
     {
         base.OnStartServer();
         FindSpawnsOnMap();
-        maxMonsters = 7;
+
         MzCharacterManager.Instance.OnCharacterKilled.AddListener(OnCharacterKilled);
         // ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
         // SharedContext.Instance.characterSpawnEvent.AddListener(OnCharacterSpawn);
@@ -85,7 +101,7 @@ public class MonsterModeManager : NetworkBehaviour
         fpsPlayers.ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient, 5));
         activePlayers = fpsPlayers.Count;
 
-        restTime = 15;
+        // restTime = 15;
         currentStage = 0;
         dictMonsterSpawnCount.Clear();
         GivePistolOnStart();
@@ -109,7 +125,7 @@ public class MonsterModeManager : NetworkBehaviour
         currentGameState = GameState.Rest;
         MzCharacterManager.Instance.KillAllCharacterInTeam(TeamEnum.Monster);
         currentStage++;
-        restRemain = restTime;
+        restRemain = config.restTime;
         StartCoroutine(DoRestTimeCountdown());
         RpcRestStart(currentStage);
     }
@@ -139,7 +155,7 @@ public class MonsterModeManager : NetworkBehaviour
     {
         currentGameState = GameState.Battle;
         currentMonsterCount = 0;
-        stageKillsRemain = stageTargetKillCount;
+        stageKillsRemain = config.stageTargetKillCount;
         stageSpawnableList = BuildStageSpawnableList(stage);
     }
 
@@ -157,7 +173,7 @@ public class MonsterModeManager : NetworkBehaviour
     private void TrySpawnEnemy()
     {
         if ( (currentGameState != GameState.Battle && currentGameState != GameState.Midnight) 
-             || currentMonsterCount >= maxMonsters) return;
+             || currentMonsterCount >= config.maxMonsters) return;
 
         if (spawnInterval.CanExecuteAfterDeltaTime(true)) 
         {
@@ -192,10 +208,11 @@ public class MonsterModeManager : NetworkBehaviour
         }
     }
 
-    private float GetEnemyHealthMultiplier() 
+    private float GetEnemyHealthMultiplier()
     {
-        float stageHealthMultiplier = Math.Max(2 * (currentStage - 1), 1);
-        float playerHealthMultiplier = Mathf.Pow(1.2f, activePlayers);
+        float stageHealthMultiplier = Math.Max(config.healthMultiplierPerStage * (currentStage - 1), 1);
+
+        float playerHealthMultiplier = Mathf.Pow(config.healthMultiplierPerPlayer, activePlayers);
 
         return stageHealthMultiplier * playerHealthMultiplier;
     }
@@ -250,11 +267,6 @@ public class MonsterModeManager : NetworkBehaviour
         }
     }
 
-    private float GetStageHealthMultiplier() 
-    {
-        return currentStage == 1 ? 1.0f : 2.0f * currentStage;
-    }
-
     private void FindSpawnsOnMap()
     {
         monsterSpawnPoints = new List<Transform>();
@@ -278,8 +290,8 @@ public class MonsterModeManager : NetworkBehaviour
             ability = new AbilityStalk(fpsCharacter);
         else if (string.Equals(AbilityRadiation.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
             ability = new AbilityRadiation(fpsCharacter);
-        else if (string.Equals(AbilityUndyingRage.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
-            ability = new AbilityUndyingRage(fpsCharacter);
+        else if (string.Equals(AbilityMetatronicSkill.ID, abilityKey, StringComparison.OrdinalIgnoreCase))
+            ability = new AbilityMetatronicSkill(fpsCharacter);
 
         if (ability != null) { 
             MzAbilitySystem abilitySystem = fpsCharacter.GetComponent<MzAbilitySystem>();

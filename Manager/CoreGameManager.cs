@@ -257,14 +257,14 @@ public class CoreGameManager : NetworkBehaviour
     [Server]
     public void ReloadDatabase()
     {
-        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(true);
+        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(false);
         RpcReloadDatabase();
     }
 
     [ClientRpc]
     public void RpcReloadDatabase()
     {
-        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(true);
+        BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(false);
     }
 
 }

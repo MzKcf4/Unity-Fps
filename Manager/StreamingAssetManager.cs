@@ -72,14 +72,6 @@ public class StreamingAssetManager : MonoBehaviour
         Addressables.LoadAssetsAsync<GameObject>(Constants.ADDRESS_LABEL_EFFECT_PREFAB, (loadedRes) =>
         {
             if (loadedRes == null) return;
-            MMFeedbacks feedbacks = loadedRes.GetComponent<MMFeedbacks>();
-
-            if (feedbacks == null) 
-            {
-                Debug.Log(loadedRes.name + " has no feedback attached ! ");
-                return;
-            }
-
             dictEffectNameToPrefab.Add(loadedRes.name.ToLower(), loadedRes);
         });
     }

@@ -29,6 +29,7 @@ public class Constants
     public static readonly string ADDRESS_LABEL_EFFECT_PREFAB = "EffectPrefab";
 
     public static readonly string EFFECT_NAME_GREEN_SPHERE_BLAST = "GreenSphereBlast".ToLower();
+    public static readonly string EFFECT_NAME_LIGHTNING_MESH_GLOW = "LightningMeshGlow".ToLower();
 
     public static readonly string WEAPON_SOUND_FIRE = "fire";
     
@@ -46,4 +47,5 @@ public class Constants
     public static readonly string ADDITIONAL_INFO_AMMOPACK = "ammopack";
 
     public static readonly string ACTION_KEY_MELEE = "melee";
+    public static readonly string ACTION_KEY_SKILL = "skill";
 }
