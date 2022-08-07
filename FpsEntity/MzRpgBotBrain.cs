@@ -25,6 +25,7 @@ public class MzRpgBotBrain : MzBotBrainBase
     private FpsCharacter targetCharacter;
 
     public float lockOnDistance = 2.5f;
+    public float maxSwitchTargetDistance = 10f;
 
     protected override void Start()
     {
@@ -79,11 +80,29 @@ public class MzRpgBotBrain : MzBotBrainBase
     protected override void SeekTarget()
     {
         if (cooldownSystem.IsOnCooldown(TARGET_UPDATE_COOLDOWN)) return;
-        if (aiDest.target != null) return;
 
-        targetCharacter = ServerContext.Instance.GetRandomPlayer();
-        aiDest.target = targetCharacter.transform;
+        float closeDistance = float.MaxValue;
+        foreach (FpsPlayer player in ServerContext.Instance.playerList)
+        {
+            if (player.IsDead()) continue;
+
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance < closeDistance)
+            {
+                closeDistance = distance;
+                targetCharacter = player;
+            }
+        }
+
+        if(targetCharacter != null)
+            aiDest.target = targetCharacter.transform;
+
         cooldownSystem.PutOnCooldown(TARGET_UPDATE_COOLDOWN, targetUpdateInterval);
+
+        // if (aiDest.target != null) return;
+
+        // targetCharacter = ServerContext.Instance.GetRandomPlayer();
+
         /*
         if (target == null)
             targetPlayer = ServerContext.Instance.GetRandomPlayer();
