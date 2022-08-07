@@ -13,6 +13,9 @@ public class MonsterModeManager : NetworkBehaviour
     public static MonsterModeManager Instance;
     [SerializeField] private GameObject uiPrefab;
 
+    private static readonly string ADDRESS_KEY_AUDIO_HUMAN_WIN = "annoce_win_human";
+    private static readonly string ADDRESS_KEY_AUDIO_ZOMBIE_WIN = "annoce_win_zombie";
+
     public int StageTargetKillCount
     {
         get { return config.stageTargetKillCount; }
@@ -37,6 +40,12 @@ public class MonsterModeManager : NetworkBehaviour
         set { config.restTime = value; }
     }
 
+    public int MaxStage
+    {
+        get { return config.maxStage; }
+        set { config.maxStage = value; }
+    }
+
     private MonsterModeConfig config = new MonsterModeConfig();
 
     [SyncVar] private GameState currentGameState = GameState.NotStarted;
@@ -47,8 +56,8 @@ public class MonsterModeManager : NetworkBehaviour
     
     [SerializeField] public ActionCooldown spawnInterval;
     
-    [SyncVar(hook = (nameof(OnKillRemainUpdate)))] 
-    public int stageKillsRemain = 0;
+    [SyncVar(hook = (nameof(OnKillUpdate)))] 
+    public int stageKillCount = 0;
 
     // Stage must start at "1" ! 
     [SyncVar(hook = (nameof(OnStageUpdate)))] 
@@ -98,7 +107,11 @@ public class MonsterModeManager : NetworkBehaviour
     public void StartGame()
     {
         List<FpsPlayer> fpsPlayers = SharedContext.Instance.GetPlayers();
-        fpsPlayers.ForEach(player => player.TargetUpdateAmmoPack(player.connectionToClient, 5));
+        fpsPlayers.ForEach(player => { 
+            player.TargetUpdateAmmoPack(player.connectionToClient, 5);
+            player.Respawn();
+        });
+        
         activePlayers = fpsPlayers.Count;
 
         // restTime = 15;
@@ -133,7 +146,7 @@ public class MonsterModeManager : NetworkBehaviour
     [ClientRpc]
     private void RpcRestStart(int stage)
     {
-        MonsterModeUiManager.Instance.UpdateStage(stage);
+        MonsterModeUiManager.Instance.UpdateStage(stage , config.maxStage);
     }
 
     private IEnumerator DoRestTimeCountdown()
@@ -155,13 +168,29 @@ public class MonsterModeManager : NetworkBehaviour
     {
         currentGameState = GameState.Battle;
         currentMonsterCount = 0;
-        stageKillsRemain = config.stageTargetKillCount;
+        stageKillCount = 0;
         stageSpawnableList = BuildStageSpawnableList(stage);
     }
 
     public void EndStage()
     {
-        RestStart();
+        if (currentStage == config.maxStage)
+            EndGame(true);
+        else
+            RestStart();
+    }
+
+    private void EndGame(bool isHumanWin) 
+    {
+        currentGameState = GameState.NotStarted;
+        MzCharacterManager.Instance.KillAllCharacterInTeam(TeamEnum.Monster);
+        RpcEndGame(isHumanWin);
+    }
+
+    [ClientRpc]
+    private void RpcEndGame(bool isHumanWin) 
+    {
+        LocalPlayerContext.Instance.PlayAnnouncementAddressable(isHumanWin ? ADDRESS_KEY_AUDIO_HUMAN_WIN : ADDRESS_KEY_AUDIO_ZOMBIE_WIN);
     }
 
     public void Update()
@@ -234,7 +263,23 @@ public class MonsterModeManager : NetworkBehaviour
         if (fpsCharacter.team == TeamEnum.Monster)
             OnMonsterKilled(fpsCharacter);
         else if (fpsCharacter is FpsPlayer)
-            PlayerManager.Instance.QueueRespawn(fpsCharacter);
+        {
+            bool isAllDead = true;
+            foreach (FpsPlayer player in ServerContext.Instance.playerList)
+            {
+                if (!player.IsDead())
+                {
+                    isAllDead = false;
+                    break;
+                }
+            }
+
+            if(isAllDead)
+                EndGame(false);
+
+            PlayerManager.Instance.QueueRespawn(fpsCharacter, 10);
+        }
+            
     }
 
     private void OnMonsterKilled(FpsCharacter fpsCharacter)
@@ -251,9 +296,9 @@ public class MonsterModeManager : NetworkBehaviour
         {
             RollAmmoPack();
             currentMonsterCount--;
-            stageKillsRemain--;
+            stageKillCount++;
 
-            if (stageKillsRemain <= 0)
+            if (stageKillCount >= config.stageTargetKillCount)
             {
                 EndStage();
             }
@@ -302,12 +347,12 @@ public class MonsterModeManager : NetworkBehaviour
 
     private void OnStageUpdate(int oldVal , int newVal)
     {
-        MonsterModeUiManager.Instance.UpdateRestCountdown(newVal);
+        // MonsterModeUiManager.Instance.UpdateStage(newVal);
     }
 
-    private void OnKillRemainUpdate(int oldVal , int newVal)
+    private void OnKillUpdate(int oldVal , int newVal)
     {
-        MonsterModeUiManager.Instance.UpdateKillText(newVal);
+        MonsterModeUiManager.Instance.UpdateKillText(newVal , config.stageTargetKillCount);
     }
 
     private void OnRestRemainUpdate(int oldVal , int newVal)

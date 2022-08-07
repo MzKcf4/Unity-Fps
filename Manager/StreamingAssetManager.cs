@@ -12,6 +12,7 @@ public class StreamingAssetManager : MonoBehaviour
     public Dictionary<string, WeaponResources> dictNameToWeaponResource;
     public Dictionary<string, GameObject> dictMonsterNameToPrefab;
     public Dictionary<string, GameObject> dictEffectNameToPrefab;
+    public Dictionary<string, AudioClip> dictAudioNameToAudioClip;
 
     void Awake()
     {
@@ -21,6 +22,7 @@ public class StreamingAssetManager : MonoBehaviour
     void Start()
     {
         BuildWeaponResourceDict();
+        InitializeAudioSourceDict();
     }
 
     public WeaponResources GetWeaponResouce(string weaponId) 
@@ -41,6 +43,16 @@ public class StreamingAssetManager : MonoBehaviour
     public GameObject GetMonsterPrefab(string prefabName)
     {
         return dictMonsterNameToPrefab[prefabName];
+    }
+
+    public AudioClip GetAudioClip(string clipName)
+    {
+        if (!dictAudioNameToAudioClip.ContainsKey(clipName)) 
+        {
+            Debug.LogWarning("Addressable Audio clip not found " + clipName);
+            return null;
+        }
+        return dictAudioNameToAudioClip[clipName];
     }
 
     public void InitializeMonsterDict() 
@@ -73,6 +85,22 @@ public class StreamingAssetManager : MonoBehaviour
         {
             if (loadedRes == null) return;
             dictEffectNameToPrefab.Add(loadedRes.name.ToLower(), loadedRes);
+        });
+    }
+
+    public void InitializeAudioSourceDict()
+    {
+        if (dictAudioNameToAudioClip != null)
+        {
+            Debug.LogWarning("AudioSource dict already initialized!");
+            return;
+        }
+
+        dictAudioNameToAudioClip = new Dictionary<string, AudioClip>();
+        Addressables.LoadAssetsAsync<AudioClip>(Constants.ADDRESS_LABEL_AUDIO_RESOURCE, (loadedRes) =>
+        {
+            if (loadedRes == null) return;
+            dictAudioNameToAudioClip.Add(loadedRes.name.ToLower(), loadedRes);
         });
     }
 }

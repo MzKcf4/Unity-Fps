@@ -29,9 +29,9 @@ public class MonsterModeUiManager : MonoBehaviour
         LocalPlayerContext.Instance.onGamemodeMenuToggleEvent.AddListener(ToggleMenuPanel);
     }
 
-    public void UpdateKillText(int newKill)
+    public void UpdateKillText(int newKill , int targetKills)
     {
-        killText.text = newKill.ToString();
+        killText.text = "Kills : " + newKill + " / " + targetKills;
     }
 
     public void UpdateAmmoPackText(int newAmmoPack)
@@ -51,9 +51,10 @@ public class MonsterModeUiManager : MonoBehaviour
         restText.text = "Rest : " + countdown.ToString();
     }
 
-    public void UpdateStage(int stage)
+    public void UpdateStage(int currStage , int maxStage)
     {
-        SetWeaponUpgradeAvailable(stage);
+        stageText.text = "Stage : " + currStage + " / " + maxStage;
+        SetWeaponUpgradeAvailable(currStage);
     }
 
     #region WeaponUpgrade

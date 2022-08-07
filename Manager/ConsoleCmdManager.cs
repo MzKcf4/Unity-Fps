@@ -150,11 +150,18 @@ public class ConsoleCmdManager : NetworkBehaviour
         MonsterModeManager.Instance.StageRestTime = restTime;
     }
 
-    [QFSW.QC.Command("mm_killsPerStage")]
+    [QFSW.QC.Command("mm_stage_kills")]
     public void MonsterMode_SetKillsPerStage(int killCount)
     {
         if (!isServer) return;
         MonsterModeManager.Instance.StageTargetKillCount = killCount;
+    }
+
+    [QFSW.QC.Command("mm_stage_max")]
+    public void MonsterMode_SetMaxStage(int maxStage)
+    {
+        if (!isServer) return;
+        MonsterModeManager.Instance.MaxStage = maxStage;
     }
 
     [QFSW.QC.Command("mm_health_multiplier_player")]

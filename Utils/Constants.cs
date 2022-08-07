@@ -27,6 +27,7 @@ public class Constants
     public static readonly string LABEL_WEAPON_RESOURCE = "WeaponResource";
     public static readonly string ADDRESS_LABEL_MONSTER_PREFAB = "MonsterPrefab";
     public static readonly string ADDRESS_LABEL_EFFECT_PREFAB = "EffectPrefab";
+    public static readonly string ADDRESS_LABEL_AUDIO_RESOURCE = "AudioResource";
 
     public static readonly string EFFECT_NAME_GREEN_SPHERE_BLAST = "GreenSphereBlast".ToLower();
     public static readonly string EFFECT_NAME_LIGHTNING_MESH_GLOW = "LightningMeshGlow".ToLower();

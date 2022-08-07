@@ -110,12 +110,17 @@ public class PlayerManager : NetworkBehaviour
     [Server]
     public void QueueRespawn(FpsCharacter fpsCharacter)
     {
-        StartCoroutine(RespawnCoroutine(fpsCharacter));
+        QueueRespawn(fpsCharacter, 5);
     }
-    
-    IEnumerator RespawnCoroutine(FpsCharacter fpsCharacter)
+
+    public void QueueRespawn(FpsCharacter fpsCharacter, int respawnTime)
     {
-        yield return new WaitForSeconds(5);
+        StartCoroutine(RespawnCoroutine(fpsCharacter , respawnTime));
+    }
+
+    IEnumerator RespawnCoroutine(FpsCharacter fpsCharacter, int respawnTime)
+    {
+        yield return new WaitForSeconds(respawnTime);
         
         if(fpsCharacter != null)
             RespawnAndTeleport(fpsCharacter);

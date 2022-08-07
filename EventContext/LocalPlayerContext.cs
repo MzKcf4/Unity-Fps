@@ -295,4 +295,10 @@ public class LocalPlayerContext : MonoBehaviour
     {
         localPlayerAnnoucementAudioSource.PlayOneShot(clip);
     }
+
+    public void PlayAnnouncementAddressable(string key)
+    {
+        localPlayerAnnoucementAudioSource.PlayOneShot(
+            StreamingAssetManager.Instance.GetAudioClip(key));
+    }
 }
