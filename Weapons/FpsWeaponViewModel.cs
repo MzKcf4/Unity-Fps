@@ -63,14 +63,15 @@ public class FpsWeaponViewModel : MonoBehaviour
         this.weaponResources = weaponResources;
         string weaponId = weaponResources.weaponId;
 
-        E_weapon_view_info dbViewInfo = E_weapon_view_info.FindEntity(e =>
-            string.Equals(weaponResources.weaponId, e.f_weapon_info.f_name)
-        );
+        E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(weaponId);
 
-        if (dbViewInfo != null)
+        E_weapon_view_preset dbViewPresetInfo = E_weapon_view_preset.FindEntity(e => e.f_view_type == dbWeaponInfo.f_view_type);
+
+
+        if (dbViewPresetInfo != null)
         {
-            offsetFromView = dbViewInfo.f_view_offset;
-            isFlip = dbViewInfo.f_is_flip;
+            offsetFromView = dbViewPresetInfo.f_offset;
+            isFlip = dbViewPresetInfo.f_is_flip;
         }
         else
             offsetFromView = Vector3.zero;
