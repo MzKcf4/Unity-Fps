@@ -11,10 +11,15 @@ using Mirror;
 public class MzRpgCharacter : FpsCharacter
 {
 	public RaycastHelper MeleeRangeDetector { get { return meleeRangeDetector; } }
+	public int MeleeDamage
+	{
+		get { return meleeDamage; }
+		set { meleeDamage = value; }
+	}
 
 	protected RaycastHelper meleeRangeDetector;
-	// private MzEcmAStarCharacter ecmAStarCharacter;
 	private AIBase ai;
+	[SyncVar] private int meleeDamage = 10;
 
     protected override void Awake()
     {
@@ -32,13 +37,14 @@ public class MzRpgCharacter : FpsCharacter
 	}
 
 	// Usually triggered by animation events played in Client side.
+	[Client]
 	public virtual void CheckMeleeHit()
 	{
 		// ToDo: if it's only checked in client , then only need to return local player instead of all other players
 		List<FpsPlayer> playerList = GetTargetsInMeleeRange();
 		foreach(FpsPlayer player in playerList)
 		{
-			player.OnHitInLocalClient(this.gameObject);
+			player.OnHitInLocalClient(this.gameObject , meleeDamage);
 		}
 	}
 
@@ -57,8 +63,6 @@ public class MzRpgCharacter : FpsCharacter
 
 				if(fpsPlayer != null)
 					targets.Add(fpsPlayer);
-
-				
 			}
 		}
 		return targets;

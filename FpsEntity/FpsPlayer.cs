@@ -171,19 +171,19 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     #region hit_dmg
     
 	[Client]
-	public void OnHitInLocalClient(GameObject hitByObj)
+	public void OnHitInLocalClient(GameObject hitByObj , int damage)
 	{
 		if(!isClient || !isLocalPlayer) return;
 		// Tells server it is hit.
-		CmdOnHit(hitByObj);
+		CmdOnHit(hitByObj , damage);
 	}
 	
 	[Command]
-	private void CmdOnHit(GameObject hitByObj)
+	private void CmdOnHit(GameObject hitByObj , int damage)
 	{
 		// Server updates the health
 		DamageInfo dmgInfo = new DamageInfo(){
-			damage = 10,
+			damage = damage,
 			hitPoint = transform.position + transform.up
 		};
 		

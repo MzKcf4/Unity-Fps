@@ -191,6 +191,7 @@ public class MonsterModeManager : NetworkBehaviour
 
             MzRpgCharacter mzRpgCharacter = obj.GetComponent<MzRpgCharacter>();
             mzRpgCharacter.SetMaxSpeed(monsterInfo.f_move_speed);
+            mzRpgCharacter.MeleeDamage = monsterInfo.f_melee_damage;
 
             NetworkServer.Spawn(obj);
             MzCharacterManager.Instance.AddNewCharacter(mzRpgCharacter);
