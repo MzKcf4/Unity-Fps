@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using Mirror;
 
-public class MzAbilitySystem : MonoBehaviour
+public class MzAbilitySystem : NetworkBehaviour
 {
+    public UnityEvent<string> AbilityReadyEvent { get { return abilityReadyEvent; } }
+
     private FpsCharacter owner;
-    public Dictionary<string, Ability> dictAbilities = new Dictionary<string, Ability>();
+    private Dictionary<string, Ability> dictAbilities = new Dictionary<string, Ability>();
+    private UnityEvent<string> abilityReadyEvent = new UnityEvent<string>();
 
     private void Start()
     {
@@ -25,12 +29,30 @@ public class MzAbilitySystem : MonoBehaviour
         }
     }
 
+    public void OnOwnerPreDealDamage(DamageInfo damageInfo)
+    {
+        foreach (KeyValuePair<string, Ability> entry in dictAbilities)
+        {
+            Ability ability = entry.Value;
+            ability.OnOwnerPreDealDamage(damageInfo);
+        }
+    }
+
     public void OnOwnerPreTakeDamage(DamageInfo damageInfo) 
     {
         foreach (KeyValuePair<string, Ability> entry in dictAbilities)
         {
             Ability ability = entry.Value;
             ability.OnOwnerPreTakeDamage(damageInfo);
+        }
+    }
+
+    public void OnOwnerPostDealDamage(DamageInfo damageInfo)
+    {
+        foreach (KeyValuePair<string, Ability> entry in dictAbilities)
+        {
+            Ability ability = entry.Value;
+            ability.OnOwnerPostDealDamage(damageInfo);
         }
     }
 
@@ -41,6 +63,33 @@ public class MzAbilitySystem : MonoBehaviour
             Ability ability = entry.Value;
             ability.OnOwnerPostTakeDamage(damageInfo);
         }
+    }
+    public void AbilityReady(Ability ability)
+    {
+        // dictAbilities[abilityId]
+    }
+
+    [Client]
+    public void ClientAddAbility(AbilityEnum abilityEnum)
+    {
+        Ability ability = AbilityFactory.GetAbility(abilityEnum, owner);
+        if (dictAbilities.ContainsKey(ability.GetID())) {
+            return;
+        }
+        AddAbility(abilityEnum);
+        CmdAddAbility(abilityEnum);
+    }
+
+    [Command]
+    public void CmdAddAbility(AbilityEnum abilityEnum)
+    {
+        AddAbility(abilityEnum);
+    }
+
+    public void AddAbility(AbilityEnum abilityEnum) 
+    {
+        Ability ability = AbilityFactory.GetAbility(abilityEnum, owner);
+        AddAbility(ability);
     }
 
     public void AddAbility(Ability ability) 

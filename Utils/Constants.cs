@@ -43,6 +43,7 @@ public class Constants
 
     public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON = "dm_selected_weapon";
     public static readonly string ADDITIONAL_KEY_DM_SELECTED_WEAPON_SECONDARY = "dm_selected_weapon_secondary";
+    public static readonly string ADDITIONAL_KEY_MM_CHAR_INFO = "mm_char_info";
 
     public static readonly string ADDITIONAL_INFO_MONSTER_ID = "monster_id";
     public static readonly string ADDITIONAL_INFO_AMMOPACK = "ammopack";

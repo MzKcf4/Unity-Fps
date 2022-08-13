@@ -196,9 +196,9 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 		base.RpcTakeDamage(damageInfo);
         if(isLocalPlayer)
         {
-            if (UiDamageIndicatorManager.Instance != null && damageInfo.attacker != null)
+            if (UiDamageIndicatorManager.Instance != null && damageInfo.attackerNetIdentity != null)
             {
-                UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attacker.transform);
+                UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attackerNetIdentity.transform);
             }
         }
 	}

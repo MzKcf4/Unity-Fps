@@ -11,13 +11,16 @@ public class DamageInfo
     public string damageSource = "";
     public Vector3 hitPoint;
     // ToDo : Consider replace position with attacker.
-    public NetworkIdentity attacker;
+    public NetworkIdentity attackerNetIdentity;
     public Vector3 damageSourcePosition = Vector3.zero;
     public string damageWeaponName = "";
     // For calculating damage reduction over distance
     public float weaponRangeModifier = 1f;
 
     public bool isFromWeapon = true;
+
+    // This cannot be sync over the network , becareful when access this in client side
+    public FpsCharacter attacker;
     
 	
 	public static DamageInfo AsDamageInfo(int dmg, FpsCharacter attacker)
@@ -26,7 +29,8 @@ public class DamageInfo
             bodyPart = BodyPart.Chest,
             damage = dmg,
             damageSource = attacker.characterName,
-            attacker = attacker.netIdentity,
+            attackerNetIdentity = attacker.netIdentity,
+            attacker = attacker,
             isFromWeapon = false
 		};
 	}
@@ -45,8 +49,9 @@ public class DamageInfo
             damageInfo.damageSource = fromWeapon.owner.characterName;
             damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;
             damageInfo.weaponRangeModifier = fromWeapon.rangeModifier;
-            damageInfo.attacker = fromWeapon.owner.netIdentity;
+            damageInfo.attackerNetIdentity = fromWeapon.owner.netIdentity;
             damageInfo.isFromWeapon = true;
+            damageInfo.attacker = fromWeapon.owner;
         }
         
         return damageInfo;

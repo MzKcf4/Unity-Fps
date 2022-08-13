@@ -119,6 +119,14 @@ public class MonsterModeManager : NetworkBehaviour
         dictMonsterSpawnCount.Clear();
         GivePistolOnStart();
         RestStart();
+        RpcStartGame();
+    }
+
+    [ClientRpc]
+    private void RpcStartGame()
+    {
+        MonsterModeInfoDto monsterModeInfoDto = new MonsterModeInfoDto();
+        LocalPlayerContext.Instance.player.AdditionalInfoObjects[Constants.ADDITIONAL_KEY_MM_CHAR_INFO] = monsterModeInfoDto;
     }
 
     private void GivePistolOnStart()
@@ -344,6 +352,8 @@ public class MonsterModeManager : NetworkBehaviour
             abilitySystem.AddAbility(ability);
         }
     }
+
+    
 
     private void OnStageUpdate(int oldVal , int newVal)
     {

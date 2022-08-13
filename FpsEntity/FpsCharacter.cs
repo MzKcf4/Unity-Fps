@@ -15,6 +15,7 @@ using Pathfinding.RVO;
 public class FpsCharacter : FpsEntity
 {
     public Dictionary<string, string> AdditionalInfos { get { return dictAdditionalInfo; } }
+    public Dictionary<string, object> AdditionalInfoObjects { get { return dictAdditionalInfoObject; } }
     
     public FpsModel FpsModel { get { return fpsModel; } }
     public bool IsLookAtWeaponAim { get { return isLookAtWeaponAim; }
@@ -60,6 +61,7 @@ public class FpsCharacter : FpsEntity
     [HideInInspector] public UnityEvent onSpawnEvent = new UnityEvent();
 
     protected Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
+    protected Dictionary<string, System.Object> dictAdditionalInfoObject = new Dictionary<string, object>();
 
     protected MzAbilitySystem abilitySystem;
     protected Dictionary<string, VfxMarker> dictVfxMarkers = new Dictionary<string, VfxMarker>();
@@ -245,17 +247,37 @@ public class FpsCharacter : FpsEntity
         HandlePainShock();
     }
 
+    // Called before this character deals damage to others
+    protected virtual void PreDealDamage(DamageInfo damageInfo) 
+    {
+        if (abilitySystem != null)
+            abilitySystem.OnOwnerPreDealDamage(damageInfo);
+    }
+
     protected override void PreTakeDamage(DamageInfo damageInfo)
     {
         base.PreTakeDamage(damageInfo);
+
+        if(damageInfo.attacker != null)
+            damageInfo.attacker.PreDealDamage(damageInfo);
+
         if(abilitySystem != null)
             abilitySystem.OnOwnerPreTakeDamage(damageInfo);
+        // if (abilitySystem != null)
+            
+    }
+
+    protected virtual void PostDealDamage(DamageInfo damageInfo) 
+    {
+        if (abilitySystem != null)
+            abilitySystem.OnOwnerPostDealDamage(damageInfo);
     }
 
     protected override void PostTakeDamage(DamageInfo damageInfo)
     {
         base.PostTakeDamage(damageInfo);
-        if(abilitySystem != null)
+        damageInfo.attacker?.PostDealDamage(damageInfo);
+        if (abilitySystem != null)
             abilitySystem.OnOwnerPostTakeDamage(damageInfo);
     }
 

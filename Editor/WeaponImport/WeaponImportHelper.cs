@@ -30,12 +30,12 @@ public class WeaponImportHelper
 
     private static Dictionary<AnimType, List<string>> dictAnimTypeToNameList = new Dictionary<AnimType, List<string>>()
     {
-        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw"  } },
+        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw" , "a_idle_1"  } },
         { AnimType.ANIM_FIRE , new List<string>(){ "fire" , "fire_layer", "shoot" , "shoot1", "shoot_1" , "shoot_layer" } },
         { AnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload_layer"  } },
         { AnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy" , "deploy_layer" , "draw_first"  } },
         { AnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
-        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop_layer"} },
+        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" , "reload_loop_layer" } },
         { AnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end" , "reload_end_layer"} },
 
     };

@@ -158,7 +158,6 @@ public partial class FpsBot : FpsHumanoidCharacter
         // ProcessWeaponEventUpdate_Fsm(evt);
         if(evt == WeaponEvent.Shoot)
         {
-            
             float spreadMultiplier = GetActiveWeapon().spread;
             // ---------ToDo: Shotgun pallet ??--------------- //
             if(GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)

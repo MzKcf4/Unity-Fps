@@ -9,14 +9,20 @@ using UnityEngine;
 public abstract class Ability
 {
     protected FpsCharacter owner;
+    private MzAbilitySystem ownerAbilitySystem;
     protected CooldownSystem cooldownSystem;
     protected int duration = 5;
     protected int cooldown = 5;
     protected bool isActive = false;
 
+    private bool readyEventFired = true;
+
+
     public Ability(FpsCharacter owner)
     {
         this.owner = owner;
+        this.ownerAbilitySystem = owner.GetComponent<MzAbilitySystem>();
+        
         this.cooldownSystem = owner.GetComponent<CooldownSystem>();
         if (cooldownSystem == null) {
             Debug.LogError("No cooldown system found.");
@@ -28,6 +34,10 @@ public abstract class Ability
         if (isActive && !cooldownSystem.IsOnCooldown(GetDurationKey())) {
             DeactivateAbility();
         }
+
+        if (!readyEventFired && cooldownSystem.IsOnCooldown(GetCooldownKey())) {
+            ownerAbilitySystem.AbilityReady(this);
+        }
     }
 
     public void ActiviateAbility() 
@@ -36,9 +46,15 @@ public abstract class Ability
             return;
 
         ApplyEffects();
+        StartCooldown();
+        isActive = true;
+    }
+
+    protected void StartCooldown() 
+    {
         cooldownSystem.PutOnCooldown(GetCooldownKey(), duration + cooldown);
         cooldownSystem.PutOnCooldown(GetDurationKey(), duration);
-        isActive = true;
+        readyEventFired = false;
     }
 
     protected virtual void ApplyEffects() { }
@@ -55,11 +71,22 @@ public abstract class Ability
 
     protected virtual void RemoveSpeedModifier() { }
 
+    public virtual void OnOwnerPreDealDamage(DamageInfo damageInfo) { }
+
     public virtual void OnOwnerPreTakeDamage(DamageInfo damageInfo) { }
+
+    public virtual void OnOwnerPostDealDamage(DamageInfo damageInfo) { }
 
     public virtual void OnOwnerPostTakeDamage(DamageInfo damageInfo) { }
 
+    protected bool isAbilityOnCooldown() 
+    {
+        return cooldownSystem.IsOnCooldown(GetCooldownKey());
+    }
+
     public abstract string GetID();
+
+    public virtual string GetDescription() { return ""; }
 
     protected string GetDurationKey() 
     {
