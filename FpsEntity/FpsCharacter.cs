@@ -241,10 +241,24 @@ public class FpsCharacter : FpsEntity
         EffectManager.Instance.PlayEffect(vfxKey, marker.transform.position, vfxLifeTime , marker.transform);
     }
 
+    [Server]
     public override void TakeDamage(DamageInfo damageInfo)
     {
+        if (damageInfo.victim == null)
+            damageInfo.victim = this;
+
         base.TakeDamage(damageInfo);
         HandlePainShock();
+
+        // Only send to the damage dealer
+        if (damageInfo.attacker is FpsPlayer)
+            TargetSpawnDamageText(damageInfo.attackerNetIdentity.connectionToClient, damageInfo.damage, damageInfo.hitPoint,damageInfo.bodyPart == BodyPart.Head);
+    }
+
+    [TargetRpc]
+    public void TargetSpawnDamageText(NetworkConnection target, int damage, Vector3 position, bool isHeadshot)
+    {
+        LocalSpawnManager.Instance.SpawnDamageText(damage, position + Vector3.up, isHeadshot);
     }
 
     // Called before this character deals damage to others

@@ -6,5 +6,7 @@ using System.Threading.Tasks;
 
 public enum AbilityEnum
 {
-    HawkEye
+    HawkEye,
+    Demolition,
+    Overload
 }

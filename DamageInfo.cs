@@ -21,9 +21,10 @@ public class DamageInfo
 
     // This cannot be sync over the network , becareful when access this in client side
     public FpsCharacter attacker;
+    public FpsCharacter victim;
     
 	
-	public static DamageInfo AsDamageInfo(int dmg, FpsCharacter attacker)
+	public static DamageInfo AsDamageInfo(int dmg, FpsCharacter attacker, FpsCharacter victim)
 	{
         return new DamageInfo {
             bodyPart = BodyPart.Chest,
@@ -31,8 +32,10 @@ public class DamageInfo
             damageSource = attacker.characterName,
             attackerNetIdentity = attacker.netIdentity,
             attacker = attacker,
-            isFromWeapon = false
-		};
+            isFromWeapon = false,
+            hitPoint = victim.transform.position,
+            victim = victim
+        };
 	}
 	
     public static DamageInfo AsDamageInfo(FpsWeapon fromWeapon, FpsHitbox hitbox , Vector3 hitPoint)

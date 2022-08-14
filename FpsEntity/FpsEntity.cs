@@ -86,8 +86,8 @@ public class FpsEntity : NetworkBehaviour
 		if(!isServer || IsDead() || isGodMode)	return;
 		PreTakeDamage(damageInfo);
         ProcessDamageByDistance(damageInfo);
-		ProcessDamageByBodyPart(damageInfo);
-		int newHealth = health - damageInfo.damage;
+        ProcessDamageByBodyPart(damageInfo);
+        int newHealth = Mathf.Max(0, health - damageInfo.damage);
         SetHealth(newHealth);
         PostTakeDamage(damageInfo);
 		if(IsDead())

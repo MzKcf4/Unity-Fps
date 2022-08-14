@@ -14,9 +14,10 @@ public abstract class Ability
     protected int duration = 5;
     protected int cooldown = 5;
     protected bool isActive = false;
+    protected bool hasCooldown = true;
 
     private bool readyEventFired = true;
-
+    private static int hitLayer = -1;
 
     public Ability(FpsCharacter owner)
     {
@@ -27,6 +28,8 @@ public abstract class Ability
         if (cooldownSystem == null) {
             Debug.LogError("No cooldown system found.");
         }
+
+        hitLayer = hitLayer == -1 ? LayerMask.GetMask(Constants.LAYER_CHARACTER_RAYCAST_LAYER) : hitLayer;
     }
 
     public virtual void Update(float deltaTime) 
@@ -82,6 +85,19 @@ public abstract class Ability
     protected bool isAbilityOnCooldown() 
     {
         return cooldownSystem.IsOnCooldown(GetCooldownKey());
+    }
+
+    protected void DoRadiusDamage(Vector3 position , FpsCharacter attacker, int dmg, float radius, TeamEnum targetTeam)
+    {
+        Collider[] colliders = Physics.OverlapSphere(position, radius, hitLayer);
+        foreach (Collider c in colliders)
+        {
+            FpsCharacter character = c.GetComponent<FpsCharacter>();
+            if (character == null || character.IsDead() || character.team != targetTeam)
+                continue;
+
+            character.TakeDamage(DamageInfo.AsDamageInfo(dmg, attacker, character));
+        }
     }
 
     public abstract string GetID();

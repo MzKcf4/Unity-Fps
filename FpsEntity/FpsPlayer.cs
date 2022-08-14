@@ -248,8 +248,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
                 if (hitEntity)
                 {
                     hitEntity.TakeDamage(hitInfo.damageInfo);
-                    // Only send to the damage dealer
-                    TargetSpawnDamageText(hitInfo.attackerIdentity.connectionToClient, hitInfo.damageInfo.damage, hitInfo.damageInfo.hitPoint, hitInfo.damageInfo.bodyPart == BodyPart.Head);
                 }
             }
 
@@ -260,11 +258,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         RpcFireWeapon();
     }
 
-    [TargetRpc]
-    public void TargetSpawnDamageText(NetworkConnection target, int damage, Vector3 position , bool isHeadshot)
-    {
-        LocalSpawnManager.Instance.SpawnDamageText(damage, position + Vector3.up , isHeadshot);
-    }
+
     // ==================================================== //
     
     // Server then do Raycast to check if it hits

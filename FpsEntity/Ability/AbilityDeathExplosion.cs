@@ -29,7 +29,7 @@ public class AbilityDeathExplosion : Ability
             Debug.Log(hitChar);
             if(hitChar == null || hitChar.team == TeamEnum.Monster) continue;
 
-            hitChar.TakeDamage(DamageInfo.AsDamageInfo(20, this.owner));
+            hitChar.TakeDamage(DamageInfo.AsDamageInfo(20, this.owner , hitChar));
         }
     }
 

@@ -31,6 +31,8 @@ public class Constants
 
     public static readonly string EFFECT_NAME_GREEN_SPHERE_BLAST = "GreenSphereBlast".ToLower();
     public static readonly string EFFECT_NAME_LIGHTNING_MESH_GLOW = "LightningMeshGlow".ToLower();
+    public static readonly string EFFECT_NAME_FIRE_SMALL_EXPLOSION = "FireSmallExplosion".ToLower();
+    public static readonly string EFFECT_NAME_FIRE_LARGE_EXPLOSION = "FireLargeExplosion".ToLower();
 
     public static readonly string WEAPON_SOUND_FIRE = "fire";
     
