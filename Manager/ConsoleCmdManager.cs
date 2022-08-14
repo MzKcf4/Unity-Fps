@@ -178,6 +178,13 @@ public class ConsoleCmdManager : NetworkBehaviour
         MonsterModeManager.Instance.HealthMultiplierPerStage = multiplier;
     }
 
+    [QFSW.QC.Command("mm_max_monsters")]
+    public void MonsterMode_SetMaxMonsters(int maxMonsters)
+    {
+        if (!isServer) return;
+        MonsterModeManager.Instance.MaxMonsters = maxMonsters;
+    }
+
     [QFSW.QC.Command("db_reload")]
     public void ReloadDB()
     {

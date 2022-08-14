@@ -46,6 +46,12 @@ public class MonsterModeManager : NetworkBehaviour
         set { config.maxStage = value; }
     }
 
+    public int MaxMonsters
+    {
+        get { return config.maxMonsters; }
+        set { config.maxMonsters = value; }
+    }
+
     private MonsterModeConfig config = new MonsterModeConfig();
 
     [SyncVar] private GameState currentGameState = GameState.NotStarted;
