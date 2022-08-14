@@ -115,12 +115,5 @@ public class MzAbilitySystem : NetworkBehaviour
         return null;
     }
 
-    public void ActiviateAbility(string key)
-    {
-        if (dictAbilities.ContainsKey(key))
-            dictAbilities[key].ActiviateAbility();
-        else
-            Debug.LogWarning("No ability " + key + " is found ");
-    }
 }
 

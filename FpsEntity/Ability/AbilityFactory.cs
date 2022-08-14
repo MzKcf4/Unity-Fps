@@ -9,7 +9,8 @@ public class AbilityFactory
     public static List<AbilityEnum> AbilitiesForPlayer = new List<AbilityEnum>() {
         AbilityEnum.HawkEye,
         AbilityEnum.Demolition,
-        AbilityEnum.Overload
+        AbilityEnum.Overload,
+        AbilityEnum.Safeguard
     };
 
     public static Ability GetAbility(AbilityEnum abilityEnum, FpsCharacter owner)
@@ -22,6 +23,8 @@ public class AbilityFactory
                 return new AbilityDemolition(owner);
             case AbilityEnum.Overload:
                 return new AbilityOverload(owner);
+            case AbilityEnum.Safeguard:
+                return new AbilitySafeguard(owner);
             default:
                 return null;
         }

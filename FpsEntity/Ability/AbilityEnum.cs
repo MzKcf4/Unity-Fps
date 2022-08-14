@@ -8,5 +8,6 @@ public enum AbilityEnum
 {
     HawkEye,
     Demolition,
-    Overload
+    Overload,
+    Safeguard
 }
