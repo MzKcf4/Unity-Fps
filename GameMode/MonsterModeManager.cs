@@ -57,8 +57,6 @@ public class MonsterModeManager : NetworkBehaviour
     [SyncVar] private GameState currentGameState = GameState.NotStarted;
 
     private List<Transform> monsterSpawnPoints = new List<Transform>();
-
-    private MonsterStageConfig activeStageConfig;
     
     [SerializeField] public ActionCooldown spawnInterval;
     
