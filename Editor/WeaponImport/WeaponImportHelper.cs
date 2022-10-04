@@ -8,16 +8,6 @@ using System.Text.RegularExpressions;
 
 public class WeaponImportHelper
 {
-    enum AnimType 
-    {
-        ANIM_IDLE,
-        ANIM_FIRE,
-        ANIM_RELOAD,
-        ANIM_DRAW,
-        ANIM_RELOAD_PALLET_START,
-        ANIM_RELOAD_PALLET_INSERT,
-        ANIM_RELOAD_PALLET_END,
-    }
     private static readonly string WEAPON_PREFAB_ASSET_PATH = "Assets/FpsResources/Prefabs/Weapons";
 
     private static List<string> fireSoundNameList = new List<string>()
@@ -28,18 +18,18 @@ public class WeaponImportHelper
         "fp"
     };
 
-    private static Dictionary<AnimType, List<string>> dictAnimTypeToNameList = new Dictionary<AnimType, List<string>>()
+    private static Dictionary<WeaponAnimType, List<string>> dictStandardWeaponAnimTypeToAnimationClipNameList = new Dictionary<WeaponAnimType, List<string>>()
     {
-        { AnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw" , "a_idle_1"  } },
-        { AnimType.ANIM_FIRE , new List<string>(){ "fire" , "fire_layer", "shoot" , "shoot1", "shoot_1" , "shoot_layer" } },
-        { AnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload_layer"  } },
-        { AnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy" , "deploy_layer" , "draw_first"  } },
-        { AnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
-        { AnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" , "reload_loop_layer" } },
-        { AnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end" , "reload_end_layer"} },
+        { WeaponAnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw" , "a_idle_1"} },
+        { WeaponAnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot1"} },
+        { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" } },
+        { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy" } },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" , "reload_loop_layer" } },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end" , "reload_end_layer"} },
 
     };
-
+    
     [MenuItem("Assets/Auto populate weapon resource")]
     public static void PopulateWeaponResourceByQc()
     {
@@ -95,7 +85,7 @@ public class WeaponImportHelper
     {
         string qcFilePath = context.qcFileSystemPath;
 
-        List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>();
+        // List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>();
 
         string[] fileLines = File.ReadAllLines(qcFilePath);
         for (int i = 0; i < fileLines.Length; i++)
@@ -136,17 +126,20 @@ public class WeaponImportHelper
                     sequenceName = sequenceName
                 };
 
-                int lineParsed = ParseQcSequence(fileLines, i, sequenceEventInfo);
+                int lineParsed = ParseQcAnimationSequence(fileLines, i, sequenceEventInfo);
                 i += lineParsed;
 
-                sequenceEventInfoList.Add(sequenceEventInfo);
+                bool isStandardAnimationSequence = MapQcSequenceToStandardAnimation(context, sequenceEventInfo);
+                if (!isStandardAnimationSequence) 
+                {
+                    Debug.Log("Non standard animation skipped : " + sequenceName);
+                    // context.nonStandardAnimEventInfoList.Add(sequenceEventInfo);
+                }
             }
         }
-
-        context.sequenceEventInfoList = sequenceEventInfoList;
     }
-
-    private static int ParseQcSequence(string[] fileLines, int startLine, QcSequenceEventInfo sequenceEventInfo)
+     
+    private static int ParseQcAnimationSequence(string[] fileLines, int startLine, QcSequenceEventInfo sequenceEventInfo)
     {
         Dictionary<int, string> dictFrameToSoundName = new Dictionary<int, string>();
 
@@ -162,11 +155,9 @@ public class WeaponImportHelper
                 // fps 42.5
                 string[] fpsParts = line.Split(' ');
                 sequenceEventInfo.fpsMultiplier = float.Parse(fpsParts[1]) / 24f;
-                break;
             }
-             
             // 'event 5004' means play sound
-            if (line.Contains("event 5004"))
+            else if (line.Contains("event 5004"))
             {
                 // 0   1    2   3       4                5
                 // { event 5004 15 "TFA_CSGO_AUG.Clipout }"
@@ -188,6 +179,19 @@ public class WeaponImportHelper
                 dictFrameToSoundName.Add(frame, soundName);
                 Debug.Log("Added " + frame + " : " + soundName);
             }
+            else if (line.Contains("}"))
+            {
+                if (line.Contains("{"))
+                {
+                    // Other types of events "{event XXX}", currently have no use}
+                }
+                else 
+                {
+                    // End of whole sequence
+                    lineParsed++;
+                    break;
+                }
+            }
 
             lineParsed++;
         }
@@ -197,9 +201,40 @@ public class WeaponImportHelper
         return lineParsed;
     }
 
+    private static bool MapQcSequenceToStandardAnimation(WeaponImportContext context, QcSequenceEventInfo sequenceEventInfo) 
+    {
+        string seqName = sequenceEventInfo.sequenceName;
+        // If the name is "_layer" , it's supplementory info 
+        if ("idle".Equals(seqName) || "idle1".Equals(seqName) || "idle_raw".Equals(seqName) || "a_idle_1".Equals(seqName) || "idle_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_IDLE].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_IDLE].WeaponAnimType = WeaponAnimType.ANIM_IDLE;
+            return true;
+        }
+        else if ("shoot1".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].WeaponAnimType = WeaponAnimType.ANIM_FIRE;
+            return true;
+        }
+            
+        else if ("reload".Equals(seqName) || "reload_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].WeaponAnimType = WeaponAnimType.ANIM_RELOAD;
+            return true;
+        }
+        else if ("draw".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].WeaponAnimType = WeaponAnimType.ANIM_DRAW;
+            return true;
+        }
+        return false;
+    }
+
     private static void PopulateAnimationClipFromQc(WeaponImportContext context)
     {
-        List<QcSequenceEventInfo> sequenceEventInfoList = context.sequenceEventInfoList;
         string animationFolder = Path.Combine(context.modelFolderFileSystemPath, "Animations");
         DirectoryInfo dirInfo = new DirectoryInfo(animationFolder);
         FileInfo[] animationFileInfos = dirInfo.GetFiles("*.anim", SearchOption.TopDirectoryOnly);
@@ -209,7 +244,7 @@ public class WeaponImportHelper
             string assetPath = Path.Combine(context.modelFolderAssetPath, "Animations", fileInfo.Name);
             Debug.Log("Handling animation events for " + fileInfo.Name);
 
-            QcSequenceEventInfo sequenceEventInfo = GetRelatedSequenceEventInfo(assetPath, sequenceEventInfoList);
+            QcSequenceEventInfo sequenceEventInfo = GetRelatedSequenceEventInfo(assetPath, context);
             if (sequenceEventInfo == null)
             {
                 Debug.Log("Skipped " + fileInfo.Name);
@@ -227,50 +262,55 @@ public class WeaponImportHelper
 
     private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, QcSequenceEventInfo sequenceEventInfo)
     {
-        
-        foreach (KeyValuePair<AnimType, List<string>> entry in dictAnimTypeToNameList)
+        WeaponAnimType weaponAnimType = sequenceEventInfo.WeaponAnimType;
+        if (weaponAnimType == WeaponAnimType.OTHER)
         {
-            AnimType animType = entry.Key;
-            List<string> possibleNameList = entry.Value;
-
-            if (!string.IsNullOrEmpty(possibleNameList.Find(str => fileName.EndsWith(str))))
-            {
-                if (animType == AnimType.ANIM_IDLE)
-                    clip.wrapMode = WrapMode.Loop;
-
-                ClipTransition clipTransitionToMap = null;
-                if (AnimType.ANIM_DRAW == animType)
-                    clipTransitionToMap = weaponResources.drawClip;
-                else if (AnimType.ANIM_IDLE == animType)
-                    clipTransitionToMap = weaponResources.idleClip;
-                else if (AnimType.ANIM_FIRE == animType)
-                    clipTransitionToMap = weaponResources.shootClip;
-                else if (AnimType.ANIM_RELOAD == animType)
-                    clipTransitionToMap = weaponResources.reloadClip;
-                else if (AnimType.ANIM_RELOAD_PALLET_START == animType)
-                    clipTransitionToMap = weaponResources.palletReload_StartClip;
-                else if (AnimType.ANIM_RELOAD_PALLET_INSERT == animType)
-                    clipTransitionToMap = weaponResources.palletReload_InsertClip;
-                else if (AnimType.ANIM_RELOAD_PALLET_END == animType)
-                    clipTransitionToMap = weaponResources.palletReload_EndClip;
-                else
-                    continue;
-
-                clipTransitionToMap.Clip = clip;
-                clipTransitionToMap.Speed = sequenceEventInfo.fpsMultiplier;
-
-                Debug.Log("Mapped " + fileName + " to " + animType);
-            } 
+            Debug.LogError("Non-standard animation clip is currently not supported : " + fileName);
+            return;
         }
-    }
 
-    private static QcSequenceEventInfo GetRelatedSequenceEventInfo(string animationClipName, List<QcSequenceEventInfo> sequenceEventInfoList)
+        if (weaponAnimType == WeaponAnimType.ANIM_IDLE)
+            clip.wrapMode = WrapMode.Loop;
+
+        ClipTransition clipTransitionToMap = null;
+        if (WeaponAnimType.ANIM_DRAW == weaponAnimType)
+            clipTransitionToMap = weaponResources.drawClip;
+        else if (WeaponAnimType.ANIM_IDLE == weaponAnimType)
+            clipTransitionToMap = weaponResources.idleClip;
+        else if (WeaponAnimType.ANIM_FIRE == weaponAnimType)
+            clipTransitionToMap = weaponResources.shootClip;
+        else if (WeaponAnimType.ANIM_RELOAD == weaponAnimType)
+            clipTransitionToMap = weaponResources.reloadClip;
+        else if (WeaponAnimType.ANIM_RELOAD_PALLET_START == weaponAnimType)
+            clipTransitionToMap = weaponResources.palletReload_StartClip;
+        else if (WeaponAnimType.ANIM_RELOAD_PALLET_INSERT == weaponAnimType)
+            clipTransitionToMap = weaponResources.palletReload_InsertClip;
+        else if (WeaponAnimType.ANIM_RELOAD_PALLET_END == weaponAnimType)
+            clipTransitionToMap = weaponResources.palletReload_EndClip;
+
+        clipTransitionToMap.Clip = clip;
+        clipTransitionToMap.Speed = sequenceEventInfo.fpsMultiplier;
+
+        Debug.Log("Mapped " + fileName + " to " + weaponAnimType);
+    }
+    private static QcSequenceEventInfo GetRelatedSequenceEventInfo(string animationClipName, WeaponImportContext context)
     {
+        string clipFileNameNoExt = Path.GetFileNameWithoutExtension(animationClipName);
+        // Check the standard animation first
+        foreach (KeyValuePair<WeaponAnimType, List<string>> entry in dictStandardWeaponAnimTypeToAnimationClipNameList)
+            foreach (string possibleClipName in entry.Value)
+                if (clipFileNameNoExt.EndsWith(possibleClipName))
+                    return context.dictStandardAnimTypeInfo[entry.Key];
+                
+        
+        // Then non-stand animation ( ToDo : )
+        /*
         foreach (QcSequenceEventInfo sequenceEventInfo in sequenceEventInfoList)
         {
             if (Path.GetFileNameWithoutExtension(animationClipName).EndsWith(sequenceEventInfo.sequenceName))
                 return sequenceEventInfo;
         }
+        */
         return null;
     }
 
@@ -296,7 +336,8 @@ public class WeaponImportHelper
 
     private static void PopulateAudioClipInResource(WeaponImportContext context)
     {
-        List<QcSequenceEventInfo> sequenceEventInfoList = context.sequenceEventInfoList;
+        // List<QcSequenceEventInfo> sequenceEventInfoList = context.sequenceEventInfoList;
+        List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>(context.dictStandardAnimTypeInfo.Values);
         WeaponResources weaponResources = context.weaponResources;
 
         weaponResources.dictWeaponSounds = new Dictionary<string, AudioClip>();

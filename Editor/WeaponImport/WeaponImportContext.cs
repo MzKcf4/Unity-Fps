@@ -12,7 +12,7 @@ public class WeaponImportContext
     public string modelFolderFileSystemPath;
 
     public string qcFileSystemPath;
-    public List<QcSequenceEventInfo> sequenceEventInfoList;
+    // public List<QcSequenceEventInfo> sequenceEventInfoList;
     public List<WeaponModelAttachment> weaponAttachmentList = new List<WeaponModelAttachment>();
 
     // The path of WeaponResource ScriptableObject
@@ -23,5 +23,19 @@ public class WeaponImportContext
     public string wModelAssetPath;
 
 
+    // The standard animations available in WeaponResource
+    public Dictionary<WeaponAnimType, QcSequenceEventInfo> dictStandardAnimTypeInfo = new Dictionary<WeaponAnimType, QcSequenceEventInfo>()
+    {
+        { WeaponAnimType.ANIM_IDLE , new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_FIRE , new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_RELOAD , new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_DRAW ,new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_START , new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new QcSequenceEventInfo() },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_END , new QcSequenceEventInfo() },
+    };
+
+    // Non standard sequenceEvents
+    public List<QcSequenceEventInfo> nonStandardAnimEventInfoList = new List<QcSequenceEventInfo>();
 }
 
