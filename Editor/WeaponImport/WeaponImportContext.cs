@@ -12,8 +12,9 @@ public class WeaponImportContext
     public string modelFolderFileSystemPath;
 
     public string qcFileSystemPath;
-    // public List<QcSequenceEventInfo> sequenceEventInfoList;
     public List<WeaponModelAttachment> weaponAttachmentList = new List<WeaponModelAttachment>();
+
+    public bool isShotgunReloadFound = false;
 
     // The path of WeaponResource ScriptableObject
     public string weaponResourceAssetPath;

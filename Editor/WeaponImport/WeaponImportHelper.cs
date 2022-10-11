@@ -25,8 +25,8 @@ public class WeaponImportHelper
         { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" } },
         { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy" } },
         { WeaponAnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
-        { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" , "reload_loop_layer" } },
-        { WeaponAnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end" , "reload_end_layer"} },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" } },
+        { WeaponAnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end"} },
 
     };
     
@@ -84,8 +84,6 @@ public class WeaponImportHelper
     private static void ParseQcFile(WeaponImportContext context)
     {
         string qcFilePath = context.qcFileSystemPath;
-
-        // List<QcSequenceEventInfo> sequenceEventInfoList = new List<QcSequenceEventInfo>();
 
         string[] fileLines = File.ReadAllLines(qcFilePath);
         for (int i = 0; i < fileLines.Length; i++)
@@ -211,23 +209,37 @@ public class WeaponImportHelper
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_IDLE].WeaponAnimType = WeaponAnimType.ANIM_IDLE;
             return true;
         }
-        else if ("shoot1".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName))
+        else if ("shoot1".Equals(seqName) || "shoot_layer".Equals(seqName)|| "shoot1_layer".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].WeaponAnimType = WeaponAnimType.ANIM_FIRE;
             return true;
         }
-            
-        else if ("reload".Equals(seqName) || "reload_layer".Equals(seqName))
+        else if ("draw".Equals(seqName) || "draw_layer".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].WeaponAnimType = WeaponAnimType.ANIM_DRAW;
+            return true;
+        }
+        else if ("reload".Equals(seqName) || "reload1".Equals(seqName) || "reload_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].WeaponAnimType = WeaponAnimType.ANIM_RELOAD;
             return true;
         }
-        else if ("draw".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName))
+        else if ("reload_loop".Equals(seqName) || "reload_loop_layer".Equals(seqName))
         {
-            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].CopyFrom(sequenceEventInfo);
-            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].WeaponAnimType = WeaponAnimType.ANIM_DRAW;
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD_PALLET_INSERT].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD_PALLET_INSERT].WeaponAnimType = WeaponAnimType.ANIM_RELOAD_PALLET_INSERT;
+            // L4D2 shotgun reload start uses "reload" , so need to set this flag when shotgun reload type is found
+            context.isShotgunReloadFound = true;
+            return true;
+        }
+        else if ("reload_end".Equals(seqName) || "reload_end_layer".Equals(seqName))
+        {
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD_PALLET_END].CopyFrom(sequenceEventInfo);
+            context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD_PALLET_END].WeaponAnimType = WeaponAnimType.ANIM_RELOAD_PALLET_END;
+            context.isShotgunReloadFound = true;
             return true;
         }
         return false;
@@ -256,11 +268,11 @@ public class WeaponImportHelper
             AnimationUtility.SetAnimationEvents(animationClip, createdEvents);
 
             // ----- Map to ClipTransitions --- //
-            MapAnimClipToWeaponResource(Path.GetFileNameWithoutExtension(fileInfo.Name), animationClip, context.weaponResources, sequenceEventInfo);
+            MapAnimClipToWeaponResource(Path.GetFileNameWithoutExtension(fileInfo.Name), animationClip, context.weaponResources, sequenceEventInfo , context.isShotgunReloadFound);
         }
     }
 
-    private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, QcSequenceEventInfo sequenceEventInfo)
+    private static void MapAnimClipToWeaponResource(string fileName, AnimationClip clip, WeaponResources weaponResources, QcSequenceEventInfo sequenceEventInfo , bool isShotgun)
     {
         WeaponAnimType weaponAnimType = sequenceEventInfo.WeaponAnimType;
         if (weaponAnimType == WeaponAnimType.OTHER)
@@ -280,7 +292,7 @@ public class WeaponImportHelper
         else if (WeaponAnimType.ANIM_FIRE == weaponAnimType)
             clipTransitionToMap = weaponResources.shootClip;
         else if (WeaponAnimType.ANIM_RELOAD == weaponAnimType)
-            clipTransitionToMap = weaponResources.reloadClip;
+            clipTransitionToMap = isShotgun ? weaponResources.palletReload_StartClip : weaponResources.reloadClip;
         else if (WeaponAnimType.ANIM_RELOAD_PALLET_START == weaponAnimType)
             clipTransitionToMap = weaponResources.palletReload_StartClip;
         else if (WeaponAnimType.ANIM_RELOAD_PALLET_INSERT == weaponAnimType)

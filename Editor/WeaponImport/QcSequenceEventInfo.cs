@@ -15,10 +15,10 @@ public class QcSequenceEventInfo
             this.fpsMultiplier = other.fpsMultiplier;
 
         foreach (KeyValuePair<int, string> kvp in other.dictFrameToSoundName)
-            this.dictFrameToSoundName.Add(kvp.Key, kvp.Value);
+            this.dictFrameToSoundName[kvp.Key] = kvp.Value;
 
         foreach(KeyValuePair<string, AudioClip> kvp in other.dictNameToAudioClip)
-            this.dictNameToAudioClip.Add(kvp.Key, kvp.Value);
+            this.dictNameToAudioClip[kvp.Key] = kvp.Value;
     }
 }
 
