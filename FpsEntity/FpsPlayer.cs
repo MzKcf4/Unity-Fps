@@ -225,7 +225,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         HitInfoDto hitInfoDto = CoreGameManager.Instance.DoLocalWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
         if (hitInfoDto == null || hitInfoDto.IsHitNothing()) 
         {
-            CmdHandleHitInfo(null);
+            CmdHandleHitInfo(fromPos, null);
             return;
         }
             
@@ -233,12 +233,12 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         {
             UiHitMarker.Instance.ShowHitMarker();
         }
-        CmdHandleHitInfo(hitInfoDto);
+        CmdHandleHitInfo(fromPos, hitInfoDto);
     }
     
     // Tells the server side that I hit something on these locations , process damage for them and spawn fx
     [Command]
-    public void CmdHandleHitInfo(HitInfoDto hitInfoDto)
+    public void CmdHandleHitInfo(Vector3 from, HitInfoDto hitInfoDto)
     {
         if (hitInfoDto != null)
         {
@@ -251,7 +251,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
                 }
             }
 
-            CoreGameManager.Instance.RpcSpawnFxHitInfo(hitInfoDto);
+            CoreGameManager.Instance.RpcSpawnFxHitInfo(from, hitInfoDto);
         }
         
         // Audio / Muzzle effects

@@ -29,6 +29,9 @@ public class Constants
     public static readonly string ADDRESS_LABEL_EFFECT_PREFAB = "EffectPrefab";
     public static readonly string ADDRESS_LABEL_AUDIO_RESOURCE = "AudioResource";
 
+    public static readonly string EFFECT_NAME_BULLET_TRACE = "BulletTrace".ToLower();
+    public static readonly string EFFECT_NAME_BULLET_TRACE_SMOKE = "BulletTraceSmoke".ToLower();
+
     public static readonly string EFFECT_NAME_GREEN_SPHERE_BLAST = "GreenSphereBlast".ToLower();
     public static readonly string EFFECT_NAME_LIGHTNING_MESH_GLOW = "LightningMeshGlow".ToLower();
     public static readonly string EFFECT_NAME_FIRE_SMALL_EXPLOSION = "FireSmallExplosion".ToLower();

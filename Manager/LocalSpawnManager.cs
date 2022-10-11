@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using PathologicalGames;
 using MoreMountains.Feedbacks;
+using Andtech.ProTracer;
 
 public class LocalSpawnManager : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class LocalSpawnManager : MonoBehaviour
     [SerializeField] private GameObject bulletEffectPrefab;
     [SerializeField] private GameObject bulletDecalPrefab;
     [SerializeField] private GameObject damageTextPrefab;
+    [SerializeField] private GameObject bulletTracerPrefab;
+    [SerializeField] private GameObject bulletTracerSmokePrefab;
 
     void Awake()
     {
@@ -44,6 +47,35 @@ public class LocalSpawnManager : MonoBehaviour
 
         PoolManager.Pools["FX"].Despawn(decalTransform, 5f);
         PoolManager.Pools["FX"].Despawn(effectTransform, 5f);
+    }
+
+    public void SpawnBulletTracer(Vector3 from, Vector3 endPoint)
+    {
+        float offset = 0.0f;
+
+        // Instantiate the tracer graphics
+        GameObject bulletObj = Instantiate(bulletTracerPrefab);
+        Bullet bullet = bulletObj.GetComponent<Bullet>();
+
+        GameObject smokeTrailObj = Instantiate(bulletTracerSmokePrefab);
+        SmokeTrail smokeTrail = smokeTrailObj.GetComponent<SmokeTrail>();
+
+        // Setup callbacks
+        bullet.Completed += OnCompleted;
+        smokeTrail.Completed += OnCompleted;
+
+        static void OnCompleted(object sender, System.EventArgs e)
+        {
+            // Handle complete event here
+            if (sender is TracerObject tracerObject)
+            {
+                Destroy(tracerObject.gameObject);
+            }
+        }
+
+        // Since start and end point are known, use DrawLine
+        bullet.DrawLine(from, endPoint, 300.0f, offset);
+        smokeTrail.DrawLine(from, endPoint, 300.0f, offset);
     }
 
     public void SpawnDamageText(int damage, Vector3 position, bool isHeadshot)

@@ -50,6 +50,7 @@ public class FpsCharacter : FpsEntity
     protected float currentMaxSpeed;
 
     [SerializeField] protected CharacterAnimationResource charAnimationRes;
+    [SerializeField] protected CharacterResources characterResources;
     protected Character ecmCharacter;
     protected CharacterMovement characterMovement;
     protected MzCharacterAnimator characterAnimator;
@@ -306,6 +307,12 @@ public class FpsCharacter : FpsEntity
 
         audioSourceCharacter.PlayOneShot(hurtSoundClip);
 
+        if (characterResources != null && characterResources.hurtVoiceList != null && characterResources.hurtVoiceList.Count > 0)
+        {
+            AudioClip clip = Utils.GetRandomElement<AudioClip>(characterResources.hurtVoiceList);
+            audioSourceCharacter.PlayOneShot(clip);
+        }
+
     }
 
     protected virtual void HandlePainShock() 
@@ -319,6 +326,12 @@ public class FpsCharacter : FpsEntity
         base.Killed(damageInfo);
         ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
         MzCharacterManager.Instance.OnCharacterKilled.Invoke(this);
+
+        if (characterResources != null && characterResources.deathVoiceList != null && characterResources.deathVoiceList.Count > 0)
+        {
+            AudioClip clip = Utils.GetRandomElement<AudioClip>(characterResources.deathVoiceList);
+            audioSourceCharacter.PlayOneShot(clip);
+        }
     }
     
     [ClientRpc]

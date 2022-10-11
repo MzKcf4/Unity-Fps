@@ -68,6 +68,12 @@ public class MzRpgCharacter : FpsCharacter
 		return targets;
 	}
 
+	// Triggered by AniEvent or from RpcCalls
+	public void ShootProjectile()
+	{ 
+		
+	}
+
     public override void SetMaxSpeed(float maxSpeed)
     {
 		base.SetMaxSpeed(maxSpeed);

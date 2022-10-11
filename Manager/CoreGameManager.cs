@@ -95,7 +95,7 @@ public class CoreGameManager : NetworkBehaviour
             }
         }
         
-        RpcSpawnFx(hitWallRayList , hitCharacterRayList);
+        RpcSpawnBulletHitFx(fromPos, hitWallRayList, hitCharacterRayList);
     }
     
     public HitInfoDto DoLocalWeaponRaycast(FpsHumanoidCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
@@ -235,23 +235,37 @@ public class CoreGameManager : NetworkBehaviour
     
     
     [ClientRpc]
-    public void RpcSpawnFx(List<HitPointInfoDto> hitWallRayList , List<HitPointInfoDto> hitCharacterRayList)
+    public void RpcSpawnBulletHitFx(Vector3 from, List<HitPointInfoDto> hitWallRayList , List<HitPointInfoDto> hitCharacterRayList)
     {
-        foreach(HitPointInfoDto hitInfo in hitWallRayList)
-            LocalSpawnManager.Instance.SpawnBulletDecalFx(hitInfo.hitPoint , hitInfo.hitPointNormal);
-            
-        foreach(HitPointInfoDto hitInfo in hitCharacterRayList)
+        foreach (HitPointInfoDto hitInfo in hitWallRayList)
+        {
+            LocalSpawnManager.Instance.SpawnBulletDecalFx(hitInfo.hitPoint, hitInfo.hitPointNormal);
+            LocalSpawnManager.Instance.SpawnBulletTracer(from , hitInfo.hitPoint);
+        }
+
+        foreach (HitPointInfoDto hitInfo in hitCharacterRayList)
+        {
             LocalSpawnManager.Instance.SpawnBloodFx(hitInfo.hitPoint);
+            LocalSpawnManager.Instance.SpawnBulletTracer(from, hitInfo.hitPoint);
+        }
     }
     
     [ClientRpc]
-    public void RpcSpawnFxHitInfo(HitInfoDto hitInfoDto)
+    public void RpcSpawnFxHitInfo(Vector3 from, HitInfoDto hitInfoDto)
     {
-        foreach(HitWallInfoDto hitInfo in hitInfoDto.hitWallInfoDtoList)
-            LocalSpawnManager.Instance.SpawnBulletDecalFx(hitInfo.hitPoint , hitInfo.hitPointNormal);
+        foreach (HitWallInfoDto hitInfo in hitInfoDto.hitWallInfoDtoList) 
+        {
+            LocalSpawnManager.Instance.SpawnBulletDecalFx(hitInfo.hitPoint, hitInfo.hitPointNormal);
+            LocalSpawnManager.Instance.SpawnBulletTracer(from, hitInfo.hitPoint);
+        }
+            
         
         foreach(HitEntityInfoDto hitInfo in hitInfoDto.hitEntityInfoDtoList)
+        {
             LocalSpawnManager.Instance.SpawnBloodFx(hitInfo.damageInfo.hitPoint);
+            LocalSpawnManager.Instance.SpawnBulletTracer(from, hitInfo.damageInfo.hitPoint);
+        }
+            
     }
 
     [Server]
