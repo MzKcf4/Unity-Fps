@@ -25,8 +25,16 @@ public partial class FpsPlayer
             UpdateAmmoDisplay();
         else if (evt == WeaponEvent.OutOfAmmo)
             OnTriggerEmptyAmmo();
+        else if (evt == WeaponEvent.Draw)
+            OnWeaponDeploy();
     }
-        
+
+    private void OnWeaponDeploy()
+    {
+        FpsWeapon fpsWeapon = GetActiveWeapon();
+        LocalPlayerContext.Instance.OnWeaponDeployEvent.Invoke(fpsWeapon);
+    }
+
     private void OnWeaponReloadEvent()
     {
         // RpcReloadWeapon_Animation();

@@ -13,6 +13,8 @@ public class LocalPlayerContext : MonoBehaviour
     private static PlayerInputActions playerInputActions;
     private Dictionary<string, string> dictAdditionalInfo = new Dictionary<string, string>();
 
+    public UnityEvent<FpsWeapon> OnWeaponDeployEvent { get { return onWeaponDeploy; } }
+
     // ----- Input events : events fired when corresponding input key pressed -----
     [HideInInspector] public InputWeaponPrimaryActionEvent weaponPrimaryActionInputEvent = new InputWeaponPrimaryActionEvent();
     [HideInInspector] public UnityEvent<KeyPressState> weaponSecondaryActionInputEvent = new UnityEvent<KeyPressState>();
@@ -34,6 +36,7 @@ public class LocalPlayerContext : MonoBehaviour
     private HashSet<InputAction> actionsToDisableInMenu = new HashSet<InputAction>();
 
     [HideInInspector] public UnityEvent<WeaponEvent> onWeaponEventUpdate = new UnityEvent<WeaponEvent>();
+    private UnityEvent<FpsWeapon> onWeaponDeploy = new UnityEvent<FpsWeapon>();
 
     [HideInInspector] public FpsPlayer player;
 

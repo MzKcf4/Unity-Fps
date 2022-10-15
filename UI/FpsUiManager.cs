@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class FpsUiManager : MonoBehaviour
 {
@@ -25,7 +26,24 @@ public class FpsUiManager : MonoBehaviour
     private GameObject crosshairContainer;
 	[SerializeField]
 	private GameObject infoPanelContainer;
-	
+
+	[SerializeField]
+	private Image weaponTypeImage;
+	[SerializeField]
+	private Sprite weaponTypeSpriteRifle;
+	[SerializeField]
+	private Sprite weaponTypeSpriteSniper;
+	[SerializeField]
+	private Sprite weaponTypeSpriteMg;
+	[SerializeField]
+	private Sprite weaponTypeSpritePistol;
+	[SerializeField]
+	private Sprite weaponTypeSpriteShotgun;
+	[SerializeField]
+	private Sprite weaponTypeSpriteSmg;
+
+	private readonly Dictionary<WeaponCategory , Sprite> weaponTypeSprite = new Dictionary<WeaponCategory , Sprite>();
+
 	void Awake()
 	{
 		Instance = this;
@@ -35,8 +53,16 @@ public class FpsUiManager : MonoBehaviour
     {
 	    LocalPlayerContext.Instance.onWeaponShootEvent.AddListener(OnWeaponShoot);
 	    LocalPlayerContext.Instance.onHealthUpdateEvent.AddListener(OnHealthUpdate);
-	    // ProgressionManager.Instance.onProgressUpdateEvent.AddListener(OnProgressionUpdate);
-    }
+		LocalPlayerContext.Instance.OnWeaponDeployEvent.AddListener(OnWeaponDeploy);
+
+		weaponTypeSprite[WeaponCategory.Shotgun] = weaponTypeSpriteShotgun;
+		weaponTypeSprite[WeaponCategory.Sniper] = weaponTypeSpriteSniper;
+		weaponTypeSprite[WeaponCategory.Smg] = weaponTypeSpriteSmg;
+		weaponTypeSprite[WeaponCategory.Rifle] = weaponTypeSpriteRifle;
+		weaponTypeSprite[WeaponCategory.Mg] = weaponTypeSpriteMg;
+		weaponTypeSprite[WeaponCategory.Pistol] = weaponTypeSpritePistol;
+		weaponTypeSprite[WeaponCategory.Melee] = null;
+	}
 
     void Update()
     {
@@ -46,6 +72,13 @@ public class FpsUiManager : MonoBehaviour
 	protected void OnWeaponShoot()
 	{
 		Crosshair.Instance.DoLerp();
+	}
+
+	private void OnWeaponDeploy(FpsWeapon fpsWeapon)
+	{
+		if (fpsWeapon == null) return;
+		weaponTypeImage.sprite = weaponTypeSprite[fpsWeapon.weaponCategory];
+
 	}
 	
 	public void OnWeaponAmmoUpdate(int currentClip)
@@ -77,39 +110,7 @@ public class FpsUiManager : MonoBehaviour
 		killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name, isHeadshot);
 		
 	}
-	
-	protected void OnProgressionUpdate()
-	{
-		/*
-		ProgressionState currState = ProgressionManager.Instance.progressionState;
-		int stage = ProgressionManager.Instance.currentStage + 1;
-		int targetKills = ProgressionManager.Instance.stageTargetKills;
-		int currKills = ProgressionManager.Instance.stageCurrentKills;
-		if(currState == ProgressionState.Started)
-		{
-			int timeRemain = ProgressionManager.Instance.stageTimeDisplay;
-			string topText = "Stage : " + stage + " ( " + timeRemain + " )";
-			string bottomText = "Kills : " + currKills + " / " + targetKills;
-			progressText.text = topText + "\n" + bottomText;
-		}
-		else if (currState == ProgressionState.Rest)
-		{
-			int timeRemain = ProgressionManager.Instance.restTimeDisplay;
-			progressText.text =  "Stage " + (stage+1) + " in : " + timeRemain;
-		}
-		else if (currState == ProgressionState.Enraged)
-		{
-			string topText = "Stage : " + stage + " ( Enraged )";
-			string bottomText = "Kills : " + currKills + " / " + targetKills;
-			progressText.text = topText + "\n" + bottomText;
-		}
-		else
-		{
-			progressText.text = "";
-		}
-		*/
-	}
-    
+
     public void ToggleScope(bool enable)
     {
         scopeContainer.SetActive(enable);
