@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Mirror;
-using Michsky.UI.ModernUIPack;
+using Michsky.UI.Shift;
 using System.IO;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using TMPro;
+using UnityEngine.UI;
 
 public class NetworkRoomUi : MonoBehaviour
 {
@@ -17,24 +18,25 @@ public class NetworkRoomUi : MonoBehaviour
     [SerializeField] private Transform playerStatusPanel;
     [SerializeField] private GameObject playerStatusPrefab;
     
-    [SerializeField] private CustomDropdown sceneDropdown;
+    [SerializeField] private TMP_Dropdown sceneDropdown;
     [SerializeField] private TextMeshProUGUI sceneText;
 
-    [SerializeField] private CustomDropdown gameModeDropdown;
+    [SerializeField] private TMP_Dropdown gameModeDropdown;
     [SerializeField] private TextMeshProUGUI gamemodeText;
 
-    [SerializeField] private ButtonManagerBasic startButton;
+    [SerializeField] private Button startButton;
 
     public UnityEvent<string> OnSceneUpdateEvent = new UnityEvent<string>();
     public UnityEvent<string> OnGamemodeUpdateEvent = new UnityEvent<string>();
 
     public bool isInitialized = false;
     private bool isServer = false;
+    private int selectedSceneIdx = 0;
 
     private void Awake()
     {
         Instance = this;
-        startButton.clickEvent.AddListener(DoChangeScene);
+        startButton.onClick.AddListener(DoChangeScene);
     }
 
     public void Initialize(bool isServer)
@@ -56,27 +58,30 @@ public class NetworkRoomUi : MonoBehaviour
 
         sceneText.gameObject.SetActive(!isServer);
         gamemodeText.gameObject.SetActive(!isServer);
+        selectedSceneIdx = 0;
     }
 
     private void InitializeSceneList()
     {
         List<string> sceneList = GetScenes();
+        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
         foreach (string scene in sceneList)
         {
-            sceneDropdown.CreateNewItemFast(scene, null);
+            options.Add(new TMP_Dropdown.OptionData(scene));
         }
-        sceneDropdown.SetupDropdown();
-        sceneDropdown.dropdownEvent.AddListener(OnSceneDropdownChanged);
+        sceneDropdown.AddOptions(options);
+        sceneDropdown.onValueChanged.AddListener(OnSceneDropdownChanged);
     }
 
     private void InitializeGamemodeList()
     {
+        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
         foreach (int i in Enum.GetValues(typeof(GameModeEnum)))
         {
-            gameModeDropdown.CreateNewItemFast(Enum.GetName(typeof(GameModeEnum), i) , null);
+            options.Add(new TMP_Dropdown.OptionData(Enum.GetName(typeof(GameModeEnum), i)));
         }
-        gameModeDropdown.SetupDropdown();
-        gameModeDropdown.dropdownEvent.AddListener(OnGamemodeDropdownChanged);
+        gameModeDropdown.AddOptions(options);
+        gameModeDropdown.onValueChanged.AddListener(OnGamemodeDropdownChanged);
     }
 
     public void UpdateSceneText(string text)
@@ -88,9 +93,11 @@ public class NetworkRoomUi : MonoBehaviour
     {
         if (isServer)
         {
-            OnSceneUpdateEvent.Invoke(sceneDropdown.dropdownItems[sceneDropdown.selectedItemIndex].itemName);
+            OnSceneUpdateEvent.Invoke(sceneDropdown.options[idx].text);
+            this.selectedSceneIdx = idx;
         }
     }
+
 
     public void UpdateGamemodeText(string text)
     {
@@ -101,7 +108,7 @@ public class NetworkRoomUi : MonoBehaviour
     {
         if (isServer)
         {
-            OnGamemodeUpdateEvent.Invoke(gameModeDropdown.dropdownItems[gameModeDropdown.selectedItemIndex].itemName);
+            OnGamemodeUpdateEvent.Invoke(gameModeDropdown.options[idx].text);
         }
     }
 
@@ -127,8 +134,9 @@ public class NetworkRoomUi : MonoBehaviour
 
     private void DoChangeScene()
     {
-        if (!isServer) return;
-        string sceneName = sceneDropdown.dropdownItems[sceneDropdown.selectedItemIndex].itemName;
+        if (!isServer || selectedSceneIdx <= 0) return;
+        
+        string sceneName = sceneDropdown.options[selectedSceneIdx].text;
         FpsNetworkRoomManager.Instance.ServerChangeScene(sceneName);
     }
 
