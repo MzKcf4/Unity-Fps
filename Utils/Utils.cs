@@ -6,39 +6,47 @@ using UnityEngine.InputSystem;
 
 public class Utils
 {    
-    public static RayHitInfo CastRayAndGetHitInfo(FpsCharacter fpsCharacter, Vector3 fromPos, Vector3 direction, int mask , float spread)
+    public static List<RayHitInfo> CastRayAndGetHitInfo(FpsCharacter shooter, Vector3 fromPos, Vector3 direction, int mask , float spread)
     {
         Vector3 directionWithSpread = GetRandomizedSpreadDirection(fromPos , direction , spread);
         Vector3 originPos = fromPos;
-        
-        RaycastHit[] hits;
-        hits = Physics.RaycastAll(originPos ,directionWithSpread, 100.0f , mask);
-        
+
+        List<RayHitInfo> rayHitInfos = new List<RayHitInfo>();
+        RaycastHit[] hits = Physics.RaycastAll(originPos ,directionWithSpread, 100.0f , mask);
+        if (hits?.Length == 0)
+            return rayHitInfos;
+
         // ascending distance
         List<RaycastHit> sortedHits = hits.OrderBy(hit => Vector3.Distance(fromPos , hit.point)).ToList();
-        
-        foreach(RaycastHit hit in sortedHits)
+
+        bool hasHitCharacter = false;
+        foreach (RaycastHit hit in sortedHits)
         {
+            if(hasHitCharacter)
+                break;
+
             GameObject hitObject = hit.transform.gameObject;
             FpsHitbox hitbox = hitObject.GetComponent<FpsHitbox>();
             if(hitbox != null)
             {
                 FpsEntity hitEntity = hitbox.fpsEntity;
                 // Hit self for some reason , ignore and keep processing
-                if(hitEntity == fpsCharacter)
+                if(hitEntity == shooter)
                     continue;
+                hasHitCharacter = true;
             }
-            
-            RayHitInfo info = new RayHitInfo(){
+
+            RayHitInfo info = new RayHitInfo() {
                 hitPoint = hit.point,
                 hitObject = hit.transform.gameObject,
+                isHitWall = (hitbox == null),
                 normal = hit.normal
             };
-            return info;
+            rayHitInfos.Add(info);
         }
-        return null;
+        return rayHitInfos;
     }
-    
+
     public static Vector3 GetRandomizedSpreadDirection(Vector3 fromPos , Vector3 direction, float spread)
     {
         // random vector within circle
@@ -94,7 +102,6 @@ public class Utils
                 child.gameObject.layer = LayerMask.NameToLayer(newLayerName);    
             }
         }
-            
     }
     
     

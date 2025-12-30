@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NUnit.Framework;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,11 +31,11 @@ public class MaterialMapper
         }
     }
 
-    [MenuItem("Assets/AutoMapMaterials")]
-    public static void TT()
+    [MenuItem("Assets/AutoMapMaterials (Click fbx)")]
+    public static void MapFbxMaterials()
     {
         Object selectedObject = Selection.activeObject;
-        string assetPath = AssetDatabase.GetAssetPath(selectedObject);
+        string weaponFbxPath = AssetDatabase.GetAssetPath(selectedObject);
         string ext = Path.GetFileName(AssetDatabase.GetAssetPath(selectedObject));
         if (!ext.Contains(".fbx"))
         {
@@ -47,27 +48,29 @@ public class MaterialMapper
         string textureFolderAssetPath = Path.Combine(currentFolderAssetPath, TEXTURE_FOLDER);
         string materialFolderAssetPath = Path.Combine(currentFolderAssetPath, MATERIAL_FOLDER);
 
-
+        /*
         // First gather a list of materials required for the model
-        List<MaterialSettings> fbxMaterials = ExtractFbxMaterials(assetPath, materialFolderAssetPath);
+        List<MaterialSettings> fbxMaterials = ExtractFbxMaterials(weaponFbxPath, materialFolderAssetPath);
         foreach (MaterialSettings fbxMaterial in fbxMaterials)
         {
-            ExtractMaterialSettings(vmtFolderAssetPath, fbxMaterial.MaterialName, fbxMaterial);
+            ExtractVmtMaterialSettings(vmtFolderAssetPath, fbxMaterial.MaterialName, fbxMaterial);
             // Now we have path to texture , make material file from them
             CreateMaterial(textureFolderAssetPath, materialFolderAssetPath, fbxMaterial);
         }
+        */
 
-        /*
-        Dictionary<string, MaterialSettings> dictMaterialNameToSettings = MapMaterialNames(assetPath);
 
-        // Then try to read the corresponding .vmt file for the textures
+        // Gather a list of materials required for the model
+        Dictionary<string, MaterialSettings> dictMaterialNameToSettings = MapMaterialNames(weaponFbxPath);
+
+        // Then  read the corresponding .vmt file to load the textures
         foreach (KeyValuePair<string, MaterialSettings> kvp in dictMaterialNameToSettings)
         {
-            ExtractMaterialSettings(vmtFolderAssetPath, kvp.Key, kvp.Value);
+            ExtractVmtMaterialSettings(vmtFolderAssetPath, kvp.Key, kvp.Value);
             // Now we have path to texture , make material file from them
             CreateMaterial(textureFolderAssetPath, materialFolderAssetPath, kvp.Value);
         }
-        */
+        
     }
 
     private static List<MaterialSettings> ExtractFbxMaterials(string weaponFbxPath , string materialFolderAssetPath) 
@@ -84,7 +87,7 @@ public class MaterialMapper
                 {
                     MaterialName = material.name,
                 };
-
+                Debug.Log("Found material : " + material.name);
                 list.Add(materialSettings);
             }
         }
@@ -105,13 +108,14 @@ public class MaterialMapper
             MaterialSettings materialSettings = new MaterialSettings();
             materialSettings.MaterialName = name;
             dictMaterialNameToSettings.Add(name, materialSettings);
+            Debug.Log("Found material : " + name);
         }
             
 
         return dictMaterialNameToSettings;
     }
 
-    private static void ExtractMaterialSettings(string vmtFolderAssetPath, string assetMaterialName, MaterialSettings materialSettings)
+    private static void ExtractVmtMaterialSettings(string vmtFolderAssetPath, string assetMaterialName, MaterialSettings materialSettings)
     {
         // Try go to vmt folder to find corresponding vmt file
         string targetVmtName = assetMaterialName + ".vmt";
@@ -147,4 +151,6 @@ public class MaterialMapper
         // If not then create from texture
         MaterialCreator.CreateMaterial(textureFolderAssetPath, materialFolderAssetPath, materialSettings);
     }
+
+    private static void UpdateMaterialFromSetting() { }
 }

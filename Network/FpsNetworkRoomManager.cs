@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Enviro;
 using Mirror;
 using UnityEngine;
 
@@ -59,7 +60,7 @@ public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
     {
         base.OnRoomClientEnter();
 
-        if (IsSceneActive(RoomScene))
+        if (Mirror.Utils.IsSceneActive(RoomScene))
         {
             NetworkRoomUi.Instance.RefreshPlayerStatus(roomSlots);
         }
@@ -106,11 +107,29 @@ public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
     {
         base.OnServerSceneChanged(sceneName);
 
-        if(SharedContext.Instance)
+        // Note that this will trigger when return to room scene as well
+        if (SharedContext.Instance)
             SharedContext.Instance.ClearList();
 
         if(CoreGameManager.Instance)
             CoreGameManager.Instance.SpawnGameModeManager(gameMode);
+
+        if(EnviroManager.instance)
+        {
+            var randomWeather = Utils.GetRandomElement(EnviroManager.instance.Weather.Settings.weatherTypes);
+            // Debug.Log("Setting weather to: " + randomWeather.name);
+
+            EnviroManager.instance.Weather.ChangeWeather(randomWeather);
+            EnviroManager.instance.Audio.Settings.ambientMasterVolume = 0.2f;
+            EnviroManager.instance.Audio.Settings.weatherMasterVolume = 0.3f;
+            EnviroManager.instance.Audio.Settings.thunderMasterVolume = 0.2f;
+
+            var latitude = UnityEngine.Random.Range(-35f, 35f);
+            var longitude = UnityEngine.Random.Range(-35f, 35f);
+            EnviroManager.instance.Time.SetTimeOfDay(8f);
+            EnviroManager.instance.Time.Settings.latitude = latitude;
+            EnviroManager.instance.Time.Settings.longitude = longitude;
+        }
     }
 
     public override void OnClientSceneChanged()
@@ -132,7 +151,7 @@ public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
 
     public override void OnGUI()
     {
-        if (NetworkServer.active && !IsSceneActive(RoomScene))
+        if (NetworkServer.active && !Mirror.Utils.IsSceneActive(RoomScene))
         {
             GUILayout.BeginArea(new Rect(Screen.width - 150f, 10f, 140f, 30f));
             if (GUILayout.Button("Return to Room"))

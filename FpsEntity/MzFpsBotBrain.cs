@@ -50,6 +50,8 @@ public class MzFpsBotBrain : MzBotBrainBase
             SharedContext.Instance.characterRemoveEvent.AddListener(character => SyncSignalsWithContext());
 
             SyncSignalsWithContext();
+
+            fpsCharacter.onKilledEvent.AddListener(OnKilled);
         }
     }
 
@@ -93,6 +95,11 @@ public class MzFpsBotBrain : MzBotBrainBase
             RpcReloadActiveWeapon();
         }
         */
+    }
+
+    public void OnKilled(GameObject gameObject)
+    {
+        BotBrainHive.Instance.RegisterNodeKilled(character.team, character.transform.position);
     }
 
     public void OnTeammateKilled(Vector3 deathPos, DamageInfo damageInfo)
@@ -140,7 +147,7 @@ public class MzFpsBotBrain : MzBotBrainBase
 
     public Transform GetVisibleHitBoxFromAimTarget(GameObject targetObject)
     {
-        Debug.Log(targetObject);
+        // Debug.Log(targetObject);
         detectedHitboxes.Clear();
         // Let's just assume all aim target is FpsCharacter first.
         losSensor.Pulse();
@@ -162,6 +169,15 @@ public class MzFpsBotBrain : MzBotBrainBase
         }
         
         return null;
+    }
+
+    protected override void OnCharacterSpawn()
+    {
+        base.OnCharacterSpawn();
+
+        // Disable to prevent spawning at death position
+        TogglePathingFindingAI(false);
+        TogglePathingFindingAI(true);
     }
 
     public void OnTakeHit(DamageInfo damageInfo)

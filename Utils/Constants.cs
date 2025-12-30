@@ -54,5 +54,6 @@ public class Constants
     public static readonly string ADDITIONAL_INFO_AMMOPACK = "ammopack";
 
     public static readonly string ACTION_KEY_MELEE = "melee";
+    public static readonly string ACTION_KEY_RANGE = "range";
     public static readonly string ACTION_KEY_SKILL = "skill";
 }

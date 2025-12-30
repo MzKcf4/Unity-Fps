@@ -39,6 +39,8 @@ public class CoreGameManager : NetworkBehaviour
             mgrObj = Instantiate(WeaponAssetManager.Instance.monsterGameModePrefab);
             // NetworkServer.Spawn(Instantiate(WeaponAssetManager.Instance.debugGameModePrefab));
         }
+        else if(GameModeEnum.Deathmatch == gameMode)
+            mgrObj = Instantiate(WeaponAssetManager.Instance.deathMatchManagerPrefab);
         else
             mgrObj = Instantiate(WeaponAssetManager.Instance.gunGameManagerPrefab);
         
@@ -49,7 +51,7 @@ public class CoreGameManager : NetworkBehaviour
     public void DoWeaponRaycast(FpsCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
         float spread = processSpread(fpsWeapon , character);
-        int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
+        int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX , Constants.LAYER_CHARACTER_MODEL));
         
         // Gather the hit points from valid hits on walls / entities
         List<HitPointInfoDto> hitWallRayList = new List<HitPointInfoDto>();
@@ -57,16 +59,16 @@ public class CoreGameManager : NetworkBehaviour
         
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
-            RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
+            List<RayHitInfo> hitInfos = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
 
-            if(hitInfo == null)
+            if(hitInfos.Count == 0)
                 continue;
                 
-            GameObject objOnHit = hitInfo.hitObject;
+            GameObject objOnHit = hitInfos[0].hitObject;
             // Hits wall
             if ( (1 << objOnHit.layer) == MASK_WALL.value)
             {
-                hitWallRayList.Add(hitInfo.asHitPointInfoDto());
+                hitWallRayList.Add(hitInfos[0].asHitPointInfoDto());
                 continue;
             }
             
@@ -83,14 +85,14 @@ public class CoreGameManager : NetworkBehaviour
                 
             if(hitEntity != null)
             {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);
+                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfos[0].hitPoint , true, 0);
                 if(character is FpsPlayer)
                 {
                     ((FpsPlayer)character).TargetOnWeaponHitEnemy(character.netIdentity.connectionToClient);    
                 }
                 
                 hitEntity.TakeDamage(dmgInfo);
-                hitCharacterRayList.Add(hitInfo.asHitPointInfoDto());
+                hitCharacterRayList.Add(hitInfos[0].asHitPointInfoDto());
                 continue;
             }
         }
@@ -100,12 +102,9 @@ public class CoreGameManager : NetworkBehaviour
     
     public HitInfoDto DoLocalWeaponRaycast(FpsHumanoidCharacter character, FpsWeapon fpsWeapon, Vector3 fromPos, Vector3 direction)
     {
-        if (fpsWeapon.weaponCategory == WeaponCategory.Melee)
-            return DoMeleeWeaponRaycast(character, fpsWeapon);
-
         // Non-melee handling
         float spread = processSpread(fpsWeapon , character);
-        int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX));
+        int mask = (LayerMask.GetMask(Constants.LAYER_HITBOX , Constants.LAYER_GROUND, Constants.LAYER_LOCAL_PLAYER_HITBOX , Constants.LAYER_CHARACTER_MODEL));
         
         // Gather the hit points from valid hits on walls / entities
         List<HitWallInfoDto> hitWallDtoList = new List<HitWallInfoDto>();
@@ -115,50 +114,64 @@ public class CoreGameManager : NetworkBehaviour
         
         for(int i = 0 ; i < fpsWeapon.palletPerShot ; i++)
         {
-            RayHitInfo hitInfo = Utils.CastRayAndGetHitInfo(character, fromPos , direction , mask , spread);
-            if (hitInfo == null)
+            List<RayHitInfo> hitInfos = Utils.CastRayAndGetHitInfo(character, fromPos, direction, mask, spread);
+            if (hitInfos.Count == 0)
                 continue;
-            GameObject objOnHit = hitInfo.hitObject;
-            // Hits wall
-            if ( (1 << objOnHit.layer) == MASK_WALL.value)
+
+            int wallPenetrated = 0;
+            for (int j = 0; j < hitInfos.Count; j++)
             {
-                hitWallDtoList.Add(hitInfo.asHitWallInfoDto());
-                continue;
-            }
-            
-            // Else should expect hitting hitbox
-            FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
-            if (enemyHitBox == null)
-                return null;
-            
-            FpsEntity hitEntity = enemyHitBox.fpsEntity;
-                
-            if(hitEntity is FpsCharacter)
-            {
-                TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
-                if(hitTeam == character.team)   
-                    continue;
-            }
-                
-            if(hitEntity != null)
-            {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox , hitInfo.hitPoint);                
-                HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
+                var hitInfo = hitInfos[j];
+                if (hitInfo.isHitWall)
                 {
-                    attackerIdentity = character.netIdentity,
-                    victimIdentity = hitEntity.netIdentity,
-                    damageInfo = dmgInfo
-                };
-                
-                hitEntityDtoList.Add(hitEntityInfoDto);
-                continue;
+                    if (j == 0)
+                        hitWallDtoList.Add(hitInfo.asHitWallInfoDto());
+                    wallPenetrated++;
+
+                    if (fpsWeapon.penetrationPower - wallPenetrated < 0)
+                        break;
+                }
+                else
+                {
+                    // Else should expect hitting hitbox
+                    GameObject objOnHit = hitInfo.hitObject;
+                    FpsHitbox enemyHitBox = objOnHit.GetComponent<FpsHitbox>();
+                    if (enemyHitBox == null)
+                    {
+                        Debug.LogError("Hitbox is null on hit object " + objOnHit.name);
+                        return null;
+                    }
+                    FpsEntity hitEntity = enemyHitBox.fpsEntity;
+
+                    if (hitEntity is FpsCharacter)
+                    {
+                        TeamEnum hitTeam = ((FpsCharacter)hitEntity).team;
+                        if (hitTeam == character.team)
+                            continue;
+                    }
+
+                    if (hitEntity != null)
+                    {
+                        DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox, hitInfo.hitPoint, true, wallPenetrated);
+                        HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
+                        {
+                            attackerIdentity = character.netIdentity,
+                            victimIdentity = hitEntity.netIdentity,
+                            damageInfo = dmgInfo
+                        };
+
+                        hitEntityDtoList.Add(hitEntityInfoDto);
+                        // Stop when hit an entity
+                        break;
+                    }
+                }
             }
         }
         
         return hitInfoDto;
     }
 
-    public HitInfoDto DoMeleeWeaponRaycast(FpsHumanoidCharacter fpsCharacter, FpsWeapon fpsWeapon)
+    public HitInfoDto DoLocalMeleeWeaponRaycast(FpsHumanoidCharacter fpsCharacter, FpsWeapon fpsWeapon, bool isPrimary)
     {
         RaycastHelper meleeRaycastHelper = fpsCharacter.meleeRaycastHelper;
         if (meleeRaycastHelper == null)
@@ -210,7 +223,8 @@ public class CoreGameManager : NetworkBehaviour
 
             if (hitEntity != null)
             {
-                DamageInfo dmgInfo = DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox, enemyHitBox.transform.position);
+                DamageInfo dmgInfo = 
+                    DamageInfo.AsDamageInfo(fpsWeapon, enemyHitBox, enemyHitBox.transform.position, isPrimary, 0);
                 HitEntityInfoDto hitEntityInfoDto = new HitEntityInfoDto()
                 {
                     attackerIdentity = fpsCharacter.netIdentity,
@@ -227,7 +241,7 @@ public class CoreGameManager : NetworkBehaviour
     
     private float processSpread(FpsWeapon weapon , FpsCharacter character)
     {
-        float baseSpread = weapon.spread;
+        float baseSpread = weapon.GetEffectiveSpread();
         float movementSpread = weapon.spreadInMove * (character.GetMovementVelocity().magnitude / 5.5f);
         return baseSpread + movementSpread;
         

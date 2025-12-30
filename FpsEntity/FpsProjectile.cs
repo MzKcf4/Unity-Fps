@@ -1,40 +1,43 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
 
-public class FpsProjectile : NetworkBehaviour
+public class FpsProjectile : MonoBehaviour
 {
     public LayerMask collideWithLayer;
+	public GameObject hitEffect;
     
-    public Vector3 forwardRotation = Vector3.zero;
 	private Vector3 shootDir;
 	public float speed = 10f;
-    
-    private Vector3 positionLastFrame;
-		
+
 	public void Setup(Vector3 shootDir)
 	{
 		this.shootDir = shootDir;
-		
+		transform.LookAt(shootDir);	
 	}
 	
-	// Start is called before the first frame update
 	void Start()
 	{
-        transform.eulerAngles = forwardRotation;
-        positionLastFrame = transform.position;
-        ServerContext.Instance.DestroyAfterSeconds(2 , gameObject);
-	}
+
+    }
 
 	// Update is called once per frame
 	void Update()
 	{
 		transform.position += shootDir * speed * Time.deltaTime;
 	}
-    
-    void FixedUpdate()
-    {
 
+    private void OnTriggerEnter(Collider other)
+    {
+		if(!other.CompareTag(Constants.TAG_PLAYER)) return;
+
+		Debug.Log(other.gameObject);
+		if(hitEffect != null) 
+		{
+			hitEffect.SetActive(true);
+			hitEffect.transform.SetParent(null, true);
+			Destroy(hitEffect, 1f);
+		}
+        Destroy(gameObject);
     }
 }

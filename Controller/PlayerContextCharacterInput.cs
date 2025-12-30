@@ -24,6 +24,7 @@ public class PlayerContextCharacterInput : CharacterInput
 	
     public void OnJump(InputAction.CallbackContext value)
     {
+		Debug.Log("Jump input: " + value.phase);
         isJumpKeyPressed = !value.canceled;
     }
     

@@ -5,6 +5,8 @@ using UnityEditor;
 using System.IO;
 using Animancer;
 using System.Text.RegularExpressions;
+using System.Linq;
+using NPOI.POIFS.Properties;
 
 public class WeaponImportHelper
 {
@@ -21,16 +23,16 @@ public class WeaponImportHelper
     private static Dictionary<WeaponAnimType, List<string>> dictStandardWeaponAnimTypeToAnimationClipNameList = new Dictionary<WeaponAnimType, List<string>>()
     {
         { WeaponAnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw" , "a_idle_1"} },
-        { WeaponAnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot1"} },
-        { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" } },
-        { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy" } },
+        { WeaponAnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot" , "shoot1" , "awm_fire"} },
+        { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload1" , "awm_reload"} },
+        { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy", "awm_draw" } },
         { WeaponAnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
         { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" } },
         { WeaponAnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end"} },
 
     };
     
-    [MenuItem("Assets/Auto populate weapon resource")]
+    [MenuItem("Assets/Auto populate weapon resource (Click on QC file) ( deprecated )")]
     public static void PopulateWeaponResourceByQc()
     {
         Object selectedObject = Selection.activeObject;
@@ -203,25 +205,29 @@ public class WeaponImportHelper
     {
         string seqName = sequenceEventInfo.sequenceName;
         // If the name is "_layer" , it's supplementory info 
-        if ("idle".Equals(seqName) || "idle1".Equals(seqName) || "idle_raw".Equals(seqName) || "a_idle_1".Equals(seqName) || "idle_layer".Equals(seqName))
+        if ("idle".Equals(seqName) || "idle1".Equals(seqName) || "idle_raw".Equals(seqName) 
+            || "a_idle_1".Equals(seqName) || "idle_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_IDLE].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_IDLE].WeaponAnimType = WeaponAnimType.ANIM_IDLE;
             return true;
         }
-        else if ("shoot1".Equals(seqName) || "shoot_layer".Equals(seqName)|| "shoot1_layer".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName))
+        else if ("shoot1".Equals(seqName) || "shoot_layer".Equals(seqName)|| "shoot1_layer".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName)
+            || "awm_fire".Equals(seqName) || "awm_fire_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].WeaponAnimType = WeaponAnimType.ANIM_FIRE;
             return true;
         }
-        else if ("draw".Equals(seqName) || "draw_layer".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName))
+        else if ("draw".Equals(seqName) || "draw_layer".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName)
+            || "awm_draw".Equals(seqName) || "awm_draw_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].WeaponAnimType = WeaponAnimType.ANIM_DRAW;
             return true;
         }
-        else if ("reload".Equals(seqName) || "reload1".Equals(seqName) || "reload_layer".Equals(seqName))
+        else if ("reload".Equals(seqName) || "reload1".Equals(seqName) || "reload_layer".Equals(seqName)
+            || "awm_reload".Equals(seqName) || "awm_reload_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].WeaponAnimType = WeaponAnimType.ANIM_RELOAD;
@@ -382,6 +388,7 @@ public class WeaponImportHelper
 
                 if (!found)
                 {
+                    weaponResources.dictWeaponSounds.Add(soundName, null);
                     Debug.LogWarning(soundName + " not found in sound files !");
                 }
             }
@@ -426,7 +433,8 @@ public class WeaponImportHelper
         // ----- w model -------- //
         GameObject wModelFbx = (GameObject)AssetDatabase.LoadMainAssetAtPath(context.wModelAssetPath);
         GameObject wModelInstance = (GameObject)PrefabUtility.InstantiatePrefab(wModelFbx);
-        wModelInstance.AddComponent(typeof(FpsWeaponWorldModel));
+        ProcessWModel(wModelInstance);
+
         string wModelSavePath = Path.Combine(WEAPON_PREFAB_ASSET_PATH, context.weaponName + "_w_variant.prefab");
         var wModelVariant = PrefabUtility.SaveAsPrefabAsset(wModelInstance, wModelSavePath);
         Object.DestroyImmediate(wModelInstance);
@@ -450,8 +458,20 @@ public class WeaponImportHelper
         attachment.AddComponent<ViewMuzzleMarker>();
         attachment.transform.SetParent(attachTo, false);
         attachment.transform.localPosition = modelAttachment.offset;
-        attachment.transform.rotation = modelAttachment.rotation;
+        // attachment.transform.rotation = modelAttachment.rotation;
         Debug.Log("Binded " + attachment.name + " to " + attachTo.name);
+    }
+
+    private static void ProcessWModel(GameObject wModel)
+    {
+        wModel.AddComponent(typeof(FpsWeaponWorldModel));
+
+        for (int i = 0; i < wModel.transform.childCount; i++)
+        {
+            Transform child = wModel.transform.GetChild(i);
+            if (child.name.Contains("physics"))
+                child.gameObject.SetActive(false);
+        }
     }
 
     #endregion Prefab Creation

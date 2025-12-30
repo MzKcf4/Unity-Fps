@@ -39,7 +39,7 @@ public partial class FpsBot : FpsHumanoidCharacter
             seeker = GetComponent<Seeker>();
             aiDest = GetComponent<AIDestinationSetter>();
             
-            Start_Fsm();
+            // Start_Fsm();
         }
         if(objAttachToModel != null)
         {
@@ -51,9 +51,12 @@ public partial class FpsBot : FpsHumanoidCharacter
     protected override void Update()
     {
         base.Update();
-        if(!isServer || IsDead() || !aiEnabled)   return;
+    }
+
+    protected void FixedUpdate()
+    {
+        if (!isServer || IsDead() || !aiEnabled) return;
         RecoverSpeed();
-        
         Update_Fsm();
     }
 
@@ -139,7 +142,23 @@ public partial class FpsBot : FpsHumanoidCharacter
             otherBot.OnTeammateKilled(transform.position, damageInfo);
         }
     }
-    
+    protected override void SyncMovementVelocity()
+    {
+        currentVelocity = characterMovement.velocity;
+        // RpcSyncMovementVelocity(currentVelocity);
+        
+        // Then , for all clients , order the mover to move according to received velocity
+        // else if (isClient)
+        //    characterMovement.velocity = currentVelocity;
+
+        /*
+        if (isServer)
+            currentVelocity = GetMovementVelocity();
+
+        if (!isLocalPlayer)
+            characterMovement.velocity = currentVelocity;
+        */
+    }
     public override Vector3 GetMovementVelocity()
     {
         if(isServer)
@@ -152,7 +171,7 @@ public partial class FpsBot : FpsHumanoidCharacter
         
         return currentVelocity;
     }
-    
+
     public override void ProcessWeaponEventUpdate(WeaponEvent evt)
     {
         // ProcessWeaponEventUpdate_Fsm(evt);

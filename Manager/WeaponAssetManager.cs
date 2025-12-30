@@ -12,6 +12,7 @@ public class WeaponAssetManager : MonoBehaviour
     public GameObject gunGameManagerPrefab;
     public GameObject debugGameModePrefab;
     public GameObject monsterGameModePrefab;
+    public GameObject deathMatchManagerPrefab;
 
     private List<string> activeWeaponIdList = new List<string>();
     

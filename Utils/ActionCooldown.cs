@@ -44,13 +44,13 @@ public class ActionCooldown
     }
     
     
-    public bool CanExecuteAfterDeltaTime(bool resetCooldown)
+    public bool CanExecuteAfterDeltaTime(bool resetCooldownIfAvailable)
     {
         ReduceCooldown(Time.deltaTime);
         
         if(!IsOnCooldown())
         {
-            if(resetCooldown)
+            if(resetCooldownIfAvailable)
                 StartCooldown();
             
             return true;

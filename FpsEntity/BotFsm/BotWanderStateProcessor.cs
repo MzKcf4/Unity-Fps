@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,14 +31,16 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
 
     public override void ProcessState()
     {
-        if (fpsBot.aiEnableWander && fpsBot.IsReachedDesination())
+        fpsCharacter.AimAtMovementDirection();
+
+        if (fpsBotBrain.aiEnableWander && fpsBotBrain.IsReachedDesination())
         {
             SetNewDestWaypoint();
         }
 
-        if (!fpsBot.aiIgnoreEnemy && scanCooldown.CanExecuteAfterDeltaTime(true))
+        if (!fpsBotBrain.aiIgnoreEnemy && scanCooldown.CanExecuteAfterDeltaTime(true))
         {
-            FpsModel detectedEnemy = fpsBot.ScanForShootTarget();
+            FpsModel detectedEnemy = fpsBotBrain.ScanForShootTarget();
             if (detectedEnemy != null)
             {
                 botFsmDto.shootTargetModel = detectedEnemy;
@@ -47,15 +50,18 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
         }
 
         // Pre Aim ended.
-        if(teammateKilledPreAimTimer.CanExecuteAfterDeltaTime())
-            fpsCharacter.AimAtMovementDirection();
+        // if(teammateKilledPreAimTimer.CanExecuteAfterDeltaTime())
+
 
     }
 
     private void SetNewDestWaypoint()
     {
-        Transform newDest = Utils.GetRandomElement<Transform>(WaypointManager.Instance.mapGoalList);
-        fpsBot.SetDestination(newDest);
+        // Transform newDest = Utils.GetRandomElement<Transform>(WaypointManager.Instance.mapGoalList);
+        // List<Transform> waypointsByDistance = new List<Transform>();
+        var waypointList = new List<Transform>(WaypointManager.Instance.mapGoalList);
+        Transform newDest = waypointList.OrderByDescending(obj => Vector3.Distance(fpsBotBrain.transform.position, obj.position)).First();
+        fpsBotBrain.SetDestination(newDest);
         botFsmDto.targetWaypoint = newDest.position;
     }
 
@@ -63,12 +69,12 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
     {
         base.OnTeammateKilled(deathPos, damageInfo);
         if (damageInfo.damageSourcePosition == Vector3.zero) return;
-        if (Vector3.Distance(fpsBot.transform.position, deathPos) > teammateKilledReactionDistance) return;
+        if (Vector3.Distance(fpsBotBrain.transform.position, deathPos) > teammateKilledReactionDistance) return;
         if (!Utils.WithinChance(0.5f)) return;
 
         // Set preAim + move to where teammate died;
         teammateKilledPreAimTimer.StartCooldown();
-        fpsBot.SetDestination(deathPos);
+        fpsBotBrain.SetDestination(deathPos);
         botFsmDto.targetWaypoint = deathPos;
         preAimPosition = damageInfo.damageSourcePosition;
         fpsCharacter.AimAtPosition(preAimPosition);

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEditor;
 using System.Text.RegularExpressions;
+using QFSW.QC.Utilities;
 
 public class VmtReader
 {
@@ -32,17 +33,63 @@ public class VmtReader
             // Only consider texture paths
             if (line.Contains("$") && (line.Contains("/") || line.Contains("\\")))
             {
+                line = line.TrimStart(' ');
                 line = line.Trim();
                 line = Regex.Replace(line.Replace("\t", " "), REGEX_REDUCE_MULTI_SPACE, " ");
+                line = line.Replace("\"\"", "\" \"");
                 line = line.Replace("\"", "");
 
                 string[] parts = line.Split(' ');
 
-                if (parts[0].Contains("$basetexture"))
-                    materialSettings.baseMapName = Path.GetFileNameWithoutExtension(parts[1]);
-                else if (parts[0].Contains("$bumpmap"))
-                    materialSettings.normalMapName = Path.GetFileNameWithoutExtension(parts[1]);
+                if (parts[0].ToLower().Contains("$basetexture"))
+                {
+                    string baseMapName;
+                    if (parts.Length > 1)
+                    {
+                        var fullPath = string.Join(" ", parts, 1, parts.Length - 1);
+                        baseMapName = GetLastPathSegment(fullPath);
+                    }
+                    else
+                        baseMapName = parts[1];
+
+                    materialSettings.baseMapName = baseMapName;
+                    Debug.Log("Found base map : " + materialSettings.baseMapName);
+                }
+                else if (parts[0].ToLower().Contains("$bumpmap"))
+                {
+                    string normalMapName;
+                    if (parts.Length > 1)
+                    {
+                        var fullPath = string.Join(" ", parts, 1, parts.Length - 1);
+                        normalMapName = GetLastPathSegment(fullPath);
+                    }
+                    else
+                        normalMapName = parts[1];
+
+                    materialSettings.normalMapName = normalMapName;
+                    // materialSettings.normalMapName = Path.GetFileNameWithoutExtension(parts[1]);
+                    Debug.Log("Found normal map : " + materialSettings.normalMapName);
+                }
+                else if (parts[0].ToLower().Contains("$translucent"))
+                {
+                    materialSettings.isTransparent = true;
+                }
             }
         }
+    }
+
+    public static string GetLastPathSegment(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return string.Empty;
+
+        // Normalize path separators
+        path = path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+
+        // Remove trailing separators
+        path = path.TrimEnd(Path.DirectorySeparatorChar);
+
+        // Get the last segment
+        return Path.GetFileNameWithoutExtension(path);
     }
 }

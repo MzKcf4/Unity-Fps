@@ -107,7 +107,8 @@ public class FpsUiManager : MonoBehaviour
 
 		E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(damageInfo.damageWeaponName);
 		bool isHeadshot = damageInfo.bodyPart == BodyPart.Head;
-		killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name, isHeadshot);
+		bool isWallPen = damageInfo.wallsPenetrated > 0;
+        killListing.SetKillInfo(damageInfo.damageSource, victim, dbWeaponInfo.f_display_name, isHeadshot, isWallPen);
 		
 	}
 

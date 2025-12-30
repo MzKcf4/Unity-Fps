@@ -3,45 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
 using EasyCharacterMovement;
+using Mirror;
 
 
 public class MzEcmAStarCharacter : EasyCharacterMovement.Character
 {
     protected IAstarAI ai;
-    protected Seeker seeker;
-
-    private Vector3 aiNextPosition;
-    private Quaternion aiNextRotation;
-
-    private FpsCharacter mzCharacter;
-
     private bool isServer;
+    [SerializeField]
+    protected GameObject aiMover;
 
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
-        ai = GetComponent<IAstarAI>();
-        seeker = GetComponent<Seeker>();
-
-        mzCharacter = GetComponent<FpsCharacter>();
-        isServer = mzCharacter.isServer;
-
-        ai.canMove = false;
+        ai = GetComponentInChildren<IAstarAI>();
+        isServer = GetComponent<NetworkIdentity>().isServer;
     }
 
     private void SyncAStarMovement()
     {
-        ai.MovementUpdate(Time.deltaTime, out aiNextPosition, out aiNextRotation);
+        SetMovementDirection(ai.desiredVelocity.normalized);
+    }
 
-
-        Vector3 planarDesiredVelocity = ai.desiredVelocity.projectedOnPlane(GetUpVector());
-
-        if (planarDesiredVelocity.sqrMagnitude < MathLib.Square(minAnalogWalkSpeed))
-            planarDesiredVelocity = planarDesiredVelocity.normalized * minAnalogWalkSpeed;
-
-        
-        SetMovementDirection(planarDesiredVelocity.normalized * ComputeAnalogInputModifier(planarDesiredVelocity));
+    protected override Vector3 CalcDesiredVelocity()
+    {
+        return ai.desiredVelocity;
     }
 
     private void SyncAStarSpeed()
@@ -58,8 +45,6 @@ public class MzEcmAStarCharacter : EasyCharacterMovement.Character
         }
 
         base.Move();
+        aiMover.transform.localPosition = Vector3.zero;
     }
-    
-
-
 }

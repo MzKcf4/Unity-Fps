@@ -114,6 +114,7 @@ public class MonsterModeUiManager : MonoBehaviour
         Utils.DestroyChildren(selectionPanel);
     }
 
+
     #endregion WeaponUpgrade
 
     #region

@@ -18,6 +18,7 @@ public class DamageInfo
     public float weaponRangeModifier = 1f;
 
     public bool isFromWeapon = true;
+    public int wallsPenetrated = 0;
 
     // This cannot be sync over the network , becareful when access this in client side
     public FpsCharacter attacker;
@@ -34,11 +35,12 @@ public class DamageInfo
             attacker = attacker,
             isFromWeapon = false,
             hitPoint = victim.transform.position,
-            victim = victim
+            victim = victim,
+            wallsPenetrated = 0,
         };
 	}
 	
-    public static DamageInfo AsDamageInfo(FpsWeapon fromWeapon, FpsHitbox hitbox , Vector3 hitPoint)
+    public static DamageInfo AsDamageInfo(FpsWeapon fromWeapon, FpsHitbox hitbox , Vector3 hitPoint, bool isPrimary, int wallsPenetrated)
     {
         DamageInfo damageInfo = new DamageInfo(){
             bodyPart = hitbox.bodyPart,
@@ -48,13 +50,18 @@ public class DamageInfo
         if(fromWeapon != null)
         {
             damageInfo.damageWeaponName = fromWeapon.weaponName;
-            damageInfo.damage = fromWeapon.damage;
+            damageInfo.damage = isPrimary
+                ? fromWeapon.damage
+                : fromWeapon.damageSecondary;
+
+            damageInfo.damage = (int)(damageInfo.damage * Mathf.Pow(0.5f, wallsPenetrated));
             damageInfo.damageSource = fromWeapon.owner.characterName;
             damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;
             damageInfo.weaponRangeModifier = fromWeapon.rangeModifier;
             damageInfo.attackerNetIdentity = fromWeapon.owner.netIdentity;
             damageInfo.isFromWeapon = true;
             damageInfo.attacker = fromWeapon.owner;
+            damageInfo.wallsPenetrated = wallsPenetrated;
         }
         
         return damageInfo;

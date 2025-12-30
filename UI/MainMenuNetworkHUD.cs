@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 using TMPro;
+using Michsky.UI.Shift;
 
 public class MainMenuNetworkHUD : MonoBehaviour
 {
@@ -22,7 +23,8 @@ public class MainMenuNetworkHUD : MonoBehaviour
 
         if (LocalPlayerSettingManager.Instance && !string.IsNullOrEmpty(LocalPlayerSettingManager.Instance.GetPlayerName()))
             inputFieldPlayerName.text = LocalPlayerSettingManager.Instance.GetPlayerName();
-
+        else 
+            inputFieldPlayerName.text = "player";
 
         btnHost.onClick.AddListener(DoHostServer);
         btnConnect.onClick.AddListener(DoConnectToServer);

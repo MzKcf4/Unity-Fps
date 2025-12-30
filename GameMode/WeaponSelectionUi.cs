@@ -4,16 +4,29 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using Mirror;
 
 public class WeaponSelectionUi : MonoBehaviour
 {
     [SerializeField] private GameObject weaponButtonPrefab;
     [SerializeField] private Transform mainWeaponSelectionPanelTransform;
-    [SerializeField] private GameObject primaryWeaponSelectionPanel;
-    [SerializeField] private GameObject secondaryWeaponSelectionPanel;
 
-    [SerializeField] private ButtonManagerBasic primaryWeaponButton;
-    [SerializeField] private ButtonManagerBasic secondaryWeaponButton;
+    [SerializeField] private GameObject pistolSelectionPanel;
+    [SerializeField] private GameObject shotgunSelectionPanel;
+    [SerializeField] private GameObject smgSelectionPanel;
+    [SerializeField] private GameObject rifleSelectionPanel;
+    [SerializeField] private GameObject sniperSelectionPanel;
+    [SerializeField] private GameObject mgSelectionPanel;
+    private List<GameObject> selectionPanels;
+
+    [SerializeField] private ButtonManagerBasic pistolButton;
+    [SerializeField] private ButtonManagerBasic shotgunButton;
+    [SerializeField] private ButtonManagerBasic smgButton;
+    [SerializeField] private ButtonManagerBasic rifleButton;
+    [SerializeField] private ButtonManagerBasic sniperButton;
+    [SerializeField] private ButtonManagerBasic mgButton;
+
+
 
     void Awake()
     {
@@ -23,20 +36,49 @@ public class WeaponSelectionUi : MonoBehaviour
     void Start()
     {
         LocalPlayerContext.Instance.onTempDeathmatchWeaponMenuToggleEvent.AddListener(this.OnWeaponSelectionPanelToggle);
+        selectionPanels = new List<GameObject>
+        {
+            pistolSelectionPanel,
+            shotgunSelectionPanel,
+            smgSelectionPanel,
+            rifleSelectionPanel,
+            sniperSelectionPanel,
+            mgSelectionPanel
+        };
 
-        primaryWeaponButton.clickEvent.AddListener(() =>
+        pistolButton.clickEvent.AddListener(() =>
         {
-            OnPrimaryWeaponButtonClick();
+            ShowOnlySelectionPanel(pistolSelectionPanel);
         });
-        secondaryWeaponButton.clickEvent.AddListener(() =>
+
+        shotgunButton.clickEvent.AddListener(() =>
         {
-            OnSecondaryWeaponButtonClick();
+            ShowOnlySelectionPanel(shotgunSelectionPanel);
+        });
+        smgButton.clickEvent.AddListener(() =>
+        {
+            ShowOnlySelectionPanel(smgSelectionPanel);
+        });
+        rifleButton.clickEvent.AddListener(() =>
+        {
+            ShowOnlySelectionPanel(rifleSelectionPanel);
+        });
+        sniperButton.clickEvent.AddListener(() =>
+        {
+            ShowOnlySelectionPanel(sniperSelectionPanel);
+        });
+        mgButton.clickEvent.AddListener(() =>
+        {
+            ShowOnlySelectionPanel(mgSelectionPanel);
         });
 
         List<E_weapon_info> sortedInfoList = E_weapon_info.FindEntities(e => true,
             null, (e1, e2) => e1.f_display_name.CompareTo(e2.f_display_name));
 
         sortedInfoList.ForEach(weaponInfo => {
+            if (weaponInfo.f_category == WeaponCategory.Melee)
+                return;
+
             if (weaponInfo.f_active)
             {
                 AddWeaponButton(weaponInfo);
@@ -47,11 +89,29 @@ public class WeaponSelectionUi : MonoBehaviour
     private void AddWeaponButton(E_weapon_info weaponInfo)
     {
         GameObject buttonObj = null;
-        if (WeaponCategory.Pistol == weaponInfo.f_category)
-            buttonObj = Instantiate(weaponButtonPrefab, secondaryWeaponSelectionPanel.transform);
-        else
-            buttonObj = Instantiate(weaponButtonPrefab, primaryWeaponSelectionPanel.transform);
-
+        switch (weaponInfo.f_category) {
+            case WeaponCategory.Pistol:
+                buttonObj = Instantiate(weaponButtonPrefab, pistolSelectionPanel.transform);
+                break;
+            case WeaponCategory.Shotgun:
+                buttonObj = Instantiate(weaponButtonPrefab, shotgunSelectionPanel.transform);
+                break;
+            case WeaponCategory.Smg:
+                buttonObj = Instantiate(weaponButtonPrefab, smgSelectionPanel.transform);
+                break;
+            case WeaponCategory.Rifle:
+                buttonObj = Instantiate(weaponButtonPrefab, rifleSelectionPanel.transform);
+                break;
+            case WeaponCategory.Sniper:
+                buttonObj = Instantiate(weaponButtonPrefab, sniperSelectionPanel.transform);
+                break;
+            case WeaponCategory.Mg:
+                buttonObj = Instantiate(weaponButtonPrefab, mgSelectionPanel.transform);
+                break;
+            default:
+                Debug.LogError("Unknown weapon category: " + weaponInfo.f_category);
+                return;
+        }
 
         ButtonManagerBasic button = buttonObj.GetComponent<ButtonManagerBasic>();
 
@@ -76,16 +136,14 @@ public class WeaponSelectionUi : MonoBehaviour
         button.UpdateUI();
     }
 
-    private void OnSecondaryWeaponButtonClick()
-    {
-        primaryWeaponSelectionPanel.SetActive(false);
-        secondaryWeaponSelectionPanel.SetActive(true);
-    }
-
-    private void OnPrimaryWeaponButtonClick()
-    {
-        primaryWeaponSelectionPanel.SetActive(true);
-        secondaryWeaponSelectionPanel.SetActive(false);
+    private void ShowOnlySelectionPanel(GameObject targetPanel) {
+        foreach (var panel in selectionPanels)
+        {
+            if(panel == targetPanel)
+                panel.SetActive(true);
+            else
+                panel.SetActive(false);
+        }
     }
 
     private void OnWeaponSelectionPanelToggle()

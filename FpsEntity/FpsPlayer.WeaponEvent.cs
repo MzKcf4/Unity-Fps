@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,7 +15,9 @@ public partial class FpsPlayer
 
         // Process events for other logic / UI
         if (evt == WeaponEvent.Shoot)
-            OnWeaponFireEvent();
+            OnWeaponFireEvent(true);
+        if (evt == WeaponEvent.ShootSecondary)
+            OnWeaponFireEvent(false);
         else if (evt == WeaponEvent.Scope)
             OnWeaponScopeEvent();
         else if (evt == WeaponEvent.UnScope)
@@ -32,6 +35,13 @@ public partial class FpsPlayer
     private void OnWeaponDeploy()
     {
         FpsWeapon fpsWeapon = GetActiveWeapon();
+        if(!isWalking)
+            SetMaxSpeed(fpsWeapon.moveSpeed);
+
+        if (fpsWeapon.weaponCategory == WeaponCategory.Sniper)
+            FpsUiManager.Instance.ToggleCrosshair(false);
+        else
+            FpsUiManager.Instance.ToggleCrosshair(true);
         LocalPlayerContext.Instance.OnWeaponDeployEvent.Invoke(fpsWeapon);
     }
 
@@ -39,7 +49,21 @@ public partial class FpsPlayer
     {
         // RpcReloadWeapon_Animation();
     }
-    
+
+    /*
+    [Command]
+    private void CmdReloadWeapon_Animation()
+    {
+        RpcReloadWeapon_Animation();
+    }
+
+    [ClientRpc]
+    private void RpcReloadWeapon_Animation()
+    {
+        LocalPlayerContext.Instance.OnWeaponReloadEvent.Invoke(GetActiveWeapon());
+    }
+    */
+
     private void OnWeaponScopeEvent()
     {
         FpsUiManager.Instance.ToggleCrosshair(false);
@@ -52,7 +76,12 @@ public partial class FpsPlayer
     
     private void OnWeaponUnScopeEvent()
     {
-        FpsUiManager.Instance.ToggleCrosshair(true);
+        FpsWeapon fpsWeapon = GetActiveWeapon();
+        if (fpsWeapon.weaponCategory == WeaponCategory.Sniper)
+            FpsUiManager.Instance.ToggleCrosshair(false);
+        else
+            FpsUiManager.Instance.ToggleCrosshair(true);
+
         FpsUiManager.Instance.ToggleScope(false);
         LocalPlayerContext.Instance.ToggleScope(false);
         ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetMouseSpeed();
@@ -62,7 +91,7 @@ public partial class FpsPlayer
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 
     //   notify the server to do corresponding actions
-    private void OnWeaponFireEvent()
+    private void OnWeaponFireEvent(bool isPrimary)
     {
         Vector3 fromPos = Camera.main.transform.position;
         Vector3 forwardVec = Camera.main.transform.forward;
@@ -70,7 +99,11 @@ public partial class FpsPlayer
         if (GetActiveWeapon().weaponCategory != WeaponCategory.Melee)
             ApplyRecoil();
 
-        LocalFireWeapon(fromPos , forwardVec);
+        LocalFireWeapon(fromPos , forwardVec, isPrimary);
+
+        if (isLocalPlayer)
+            CmdPlayAnimationByKey("shoot_rifle", false, true);
+
     }
     
     private void UpdateAmmoDisplay()

@@ -21,9 +21,11 @@ public class LocalPlayerContext : MonoBehaviour
 
     [HideInInspector] public InputActionContextEvent movementInputEvent = new InputActionContextEvent();
     [HideInInspector] public UnityEvent<InputAction.CallbackContext> mouseLookInputEvent = new UnityEvent<InputAction.CallbackContext>();
+    [HideInInspector] public UnityEvent<bool> walkActionInputEvent = new UnityEvent<bool>();
     [HideInInspector] public UnityEvent weaponReloadInputEvent = new UnityEvent();
     [HideInInspector] public UnityEvent<int> onSwitchWeaponSlotEvent = new UnityEvent<int>();
     [HideInInspector] public UnityEvent previousWeaponInputEvent = new UnityEvent();
+    [HideInInspector] public UnityEvent weaponDropInputEvent = new UnityEvent();
     // ---------------
     [HideInInspector] public UnityEvent onWeaponShootEvent = new UnityEvent();
     [HideInInspector] public UnityEvent<int,int> onHealthUpdateEvent = new UnityEvent<int,int>();
@@ -79,7 +81,9 @@ public class LocalPlayerContext : MonoBehaviour
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Jump);
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.WeaponSecondaryAction);
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.PreviousWeapon);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.DropWeapon);
         actionsToDisableInMenu.Add(playerInputActions.PlayerControls.BuyAmmo);
+        actionsToDisableInMenu.Add(playerInputActions.PlayerControls.Walk);
 
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.MouseLook, OnMouseLookInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Movement, OnMovementInput);
@@ -90,9 +94,11 @@ public class LocalPlayerContext : MonoBehaviour
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Slot3, OnSwitchWeaponSlot3);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Reload, OnWeaponReloadInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Jump, OnJump);
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.Walk, OnWalkActionInputEvent);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.WeaponSecondaryAction, OnWeaponSecondaryActionInputEvent);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.PreviousWeapon, OnPreviousWeaponInput);
-        
+        MapInputActionToHandlerMethod(playerInputActions.PlayerControls.DropWeapon, OnWeaponDropInput);
+
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleOptionMenu, OnOptionMenuToggleInput);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.TempDeathmatchWeaponMenu, OnTempDeathmatchWeaponMenuToggle);
         MapInputActionToHandlerMethod(playerInputActions.PlayerControls.ToggleGamemodeMenu, OnGamemodeMenuToggle);
@@ -123,8 +129,16 @@ public class LocalPlayerContext : MonoBehaviour
         
 		if(cameraShake == null)	return;
         cameraShake.GenerateImpulse(Camera.main.transform.forward * player.GetActiveWeapon().cameraShake);
-	}
-    
+    }
+
+    public void OnWalkActionInputEvent(InputAction.CallbackContext value)
+    {
+        if (value.started || value.performed)
+            walkActionInputEvent.Invoke(true);
+        else
+            walkActionInputEvent.Invoke(false);
+    }
+
     public float TakeWeaponRecoilImpulse()
     {
         if(weaponRecoilImpulse > 0f)
@@ -197,6 +211,12 @@ public class LocalPlayerContext : MonoBehaviour
 	{
 		onWeaponShootEvent.Invoke();
 	}
+
+    public void OnWeaponDropInput(InputAction.CallbackContext value)
+    {
+        if (value.started)
+            weaponDropInputEvent.Invoke();
+    }
 	
 	public void OnMovementInput(InputAction.CallbackContext value)
 	{
@@ -255,7 +275,6 @@ public class LocalPlayerContext : MonoBehaviour
         {
             Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ?
                                          CursorLockMode.None : CursorLockMode.Locked;
-            Debug.Log(Cursor.lockState);
         }
         
     }

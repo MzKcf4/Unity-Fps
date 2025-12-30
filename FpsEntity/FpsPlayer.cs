@@ -6,6 +6,7 @@ using CMF;
 using Animancer;
 using EasyCharacterMovement;
 using UnityEngine.InputSystem;
+using UnityEngine.TextCore.Text;
 
 public partial class FpsPlayer : FpsHumanoidCharacter
 {
@@ -43,9 +44,6 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     [HideInInspector] public AudioSource audioSourceLocalPlayer;
     [HideInInspector] public AudioSource audioSourceAnnouncement;
 
-    
-    // [SerializeField] private InputActionAsset playerInputAction;
-    
     protected override void Start()
 	{
 		base.Start();
@@ -58,6 +56,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 	    	LocalPlayerContext.Instance.InitalizeFieldsOnFirstSpawn(this);
             LocalPlayerSettingManager.Instance.OnPlayerSettingUpdateEvent.AddListener(LoadLocalPlayerSettings);
             LocalPlayerContext.Instance.buyAmmoInputEvent.AddListener(OnBuyAmmoInput);
+            LocalPlayerContext.Instance.walkActionInputEvent.AddListener(OnWalkInput);
 
             fpsWeaponView = GetComponentInChildren<FpsWeaponView>();
 
@@ -73,7 +72,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
             LoadLocalPlayerSettings();
             
             CmdSetupPlayer(LocalPlayerSettingManager.Instance.GetPlayerName());
-            CmdGetWeapon("csgo_knife_butterfly", 2);
+            // CmdGetWeapon("csgo_knife_butterfly", 2);
+            CmdGetWeapon("gmod_knife_butterfly", 2);
         }
 	    else
 	    {
@@ -134,7 +134,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     protected override void Update()
     {
 	    base.Update();
-        if(isLocalPlayer)
+
+        if (isLocalPlayer)
         {
             weaponAimAt.position = localPlayerLookAt.position;
             LerpHandView();
@@ -200,6 +201,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
             {
                 UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attackerNetIdentity.transform);
             }
+            LocalPlayerContext.Instance.ShakeCamera();
         }
 	}
     
@@ -220,18 +222,41 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 	}
     
     // ========== Hitscan detection on local side =========== //
-    protected void LocalFireWeapon(Vector3 fromPos , Vector3 forwardVec)
+    protected void LocalFireWeapon(Vector3 fromPos , Vector3 forwardVec, bool isPrimary)
     {
-        HitInfoDto hitInfoDto = CoreGameManager.Instance.DoLocalWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
+        // Emit fire sound locally to avoid delay
+        audioSourceWeapon.Stop();
+        audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
+
+        HitInfoDto hitInfoDto = GetActiveWeapon().isMelee
+             ? CoreGameManager.Instance.DoLocalMeleeWeaponRaycast(this, GetActiveWeapon(), isPrimary) 
+             : CoreGameManager.Instance.DoLocalWeaponRaycast(this, GetActiveWeapon(), fromPos, forwardVec);
+
         if (hitInfoDto == null || hitInfoDto.IsHitNothing()) 
         {
             CmdHandleHitInfo(fromPos, null);
+            if (GetActiveWeapon().isMelee)
+            {
+                if (isPrimary)
+                    LocalPlayerContext.Instance.EmitWeaponEvent(WeaponEvent.MeleeLightMiss);
+                else
+                    LocalPlayerContext.Instance.EmitWeaponEvent(WeaponEvent.MeleeHeavyMiss);
+            }
             return;
         }
             
         if( hitInfoDto.hitEntityInfoDtoList != null && hitInfoDto.hitEntityInfoDtoList.Count > 0)
         {
-            UiHitMarker.Instance.ShowHitMarker();
+            if(hitInfoDto.hitEntityInfoDtoList[0].damageInfo.wallsPenetrated <= 0 )
+                UiHitMarker.Instance.ShowHitMarker();
+
+            if (GetActiveWeapon().isMelee)
+            {
+                if (isPrimary)
+                    LocalPlayerContext.Instance.EmitWeaponEvent(WeaponEvent.MeleeLight);
+                else
+                    LocalPlayerContext.Instance.EmitWeaponEvent(WeaponEvent.MeleeHeavy);
+            }
         }
         CmdHandleHitInfo(fromPos, hitInfoDto);
     }
@@ -253,7 +278,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 
             CoreGameManager.Instance.RpcSpawnFxHitInfo(from, hitInfoDto);
         }
-        
+
         // Audio / Muzzle effects
         RpcFireWeapon();
     }
@@ -263,13 +288,17 @@ public partial class FpsPlayer : FpsHumanoidCharacter
     
     // Server then do Raycast to check if it hits
     //    and tells other clients to create weapon fire effects (e.g  muzzleFlash , audio )
+    /*
     [Command]
     public void CmdFireWeapon(Vector3 fromPos , Vector3 forwardVec)
     {
         CoreGameManager.Instance.DoWeaponRaycast(this , GetActiveWeapon() , fromPos , forwardVec);
+        // Plays fire sound on local client
+        audioSourceWeapon.Stop();
+        audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
         RpcFireWeapon();
     }
-        
+        */
     [TargetRpc]
     public void TargetOnWeaponHitEnemy(NetworkConnection target)
     {
@@ -303,7 +332,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
                 
         // Disable the Mover's collider/rigidbody so it won't fly to sky
         GetComponent<CapsuleCollider>().enabled = isRagdollState ? false : true;
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
         
         // Local player only settings  e.g MainCamera , LocalPlayerModel layer for cullingMask
         if(isLocalPlayer)
@@ -357,7 +386,17 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         if(isLocalPlayer)
             LocalPlayerContext.Instance.OnHealthUpdate(health , maxHealth);
     }
-    
+
+    public void LocalDropWeapon()
+    {
+        if (activeWeaponSlot == 2)
+            return;
+
+        CmdDropWeapon(activeWeaponSlot);
+        LocalSwitchPreviousWeapon();
+
+    }
+
     protected void LocalSwitchWeapon(int slot)
     {        
         if(weaponSlots[slot] == null)
@@ -386,6 +425,33 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         }
     }
 
+    public override Vector3 GetMovementVelocity()
+    {
+        return characterMovement.velocity;
+    }
+
+    protected override void SyncMovementVelocity()
+    {
+        // LocalPlayer sync its velocity to server.
+        if (isLocalPlayer)
+        {
+            currentVelocity = GetMovementVelocity();
+            CmdSyncMovementVelocity(currentVelocity);
+        }
+    }
+
+    [Command]
+    protected void CmdSyncMovementVelocity(Vector3 velocity)
+    {
+        currentVelocity = velocity;
+    }
+
+    [ClientRpc]
+    protected void RpcSyncMovementVelocity(Vector3 velocity)
+    {
+        currentVelocity = velocity;
+    }
+
     protected override void OnHealthSync(int oldHealth, int newHealth)
     {
         base.OnHealthSync(oldHealth, newHealth);
@@ -394,6 +460,18 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         {
             LocalPlayerContext.Instance.OnHealthUpdate(newHealth, maxHealth);
         }
+    }
+
+    private void OnWalkInput(bool isPressed)
+    {
+        if (GetActiveWeapon() == null)
+            return;
+
+        isWalking = isPressed;
+        if (isPressed)
+            SetMaxSpeed(WALKING_SPEED);
+        else
+            SetMaxSpeed(GetActiveWeapon().moveSpeed);
     }
 
     private void OnBuyAmmoInput()

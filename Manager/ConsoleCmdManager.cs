@@ -90,14 +90,14 @@ public class ConsoleCmdManager : NetworkBehaviour
     public void RestartDeathMatch()
     {
         if(!isServer)   return;
-        DeathMatchManager.Instance.RestartMatch();
+        DeathMatchManager.Instance.RoundStart();
     }
 
     [QFSW.QC.Command("dm_score")]
     public void SetDeathMatchScore(int newScore)
     {
         if (!isServer) return;
-        DeathMatchManager.Instance.UpdateTargetScore(newScore);
+        DeathMatchManager.Instance.SetTargetScore(newScore);
     }
 
     [QFSW.QC.Command("gg_restart")]
@@ -120,14 +120,6 @@ public class ConsoleCmdManager : NetworkBehaviour
         if (!isServer) return;
         GunGameManager.Instance.killsPerLevelRedTeam = killsPerLevel;
     }
-
-    [QFSW.QC.Command("gg_weapon_count")]
-    public void SetGunGameWeaponCount(int weaponCount)
-    {
-        if (!isServer) return;
-        GunGameManager.Instance.weaponCount = weaponCount;
-    }
-
 
     [QFSW.QC.Command("kill")]
     public void KillSelf()

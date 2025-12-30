@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using System;
 
 public class DeathmatchWeaponSelectionUi : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class DeathmatchWeaponSelectionUi : MonoBehaviour
     
     void Start()
     {
+        Console.Out.WriteLine("DeathmatchWeaponSelectionUi Start");
         LocalPlayerContext.Instance.onTempDeathmatchWeaponMenuToggleEvent.AddListener(this.OnWeaponSelectionPanelToggle);
 
         primaryWeaponButton.clickEvent.AddListener(() =>

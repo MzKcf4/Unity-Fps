@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using UnityEngine.Events;
+using Enviro;
 
 public class FpsNetworkManager : NetworkManager
 {
@@ -76,6 +77,10 @@ public class FpsNetworkManager : NetworkManager
 
         SharedContext.Instance.ClearList();
         CoreGameManager.Instance.SpawnGameModeManager(gameMode);
+
+        var randomWeather = Utils.GetRandomElement(EnviroManager.instance.Weather.Settings.weatherTypes);
+        Debug.Log("Setting weather to: " + randomWeather.name);
+        EnviroManager.instance.Weather.ChangeWeather(randomWeather);
     }
 
     public override void OnClientSceneChanged()

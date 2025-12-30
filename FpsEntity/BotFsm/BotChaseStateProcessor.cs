@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-public class BotChaseStateProcessor : AbstractBotStateProcessor
+﻿public class BotChaseStateProcessor : AbstractBotStateProcessor
 {
     private readonly ActionCooldown scanCooldown = new ActionCooldown { interval = 0.2f };
     private readonly ActionCooldown preAimTimer = new ActionCooldown { interval = 2f };
@@ -19,7 +12,7 @@ public class BotChaseStateProcessor : AbstractBotStateProcessor
     {
         if (botFsmDto.shootTargetLastSeenPosition != null)
         {
-            fpsBot.SetDestination(botFsmDto.shootTargetLastSeenPosition);
+            fpsBotBrain.SetDestination(botFsmDto.shootTargetLastSeenPosition);
             fpsCharacter.AimAtPosition(botFsmDto.shootTargetLastSeenPosition);
             preAimTimer.StartCooldown();
         }
@@ -31,16 +24,16 @@ public class BotChaseStateProcessor : AbstractBotStateProcessor
 
     public override void ProcessState()
     {
-        if (fpsBot.IsReachedDesination())
+        if (fpsBotBrain.IsReachedDesination())
         {
             ExitToState(BotStateEnum.Wandering);
             return;
         }
 
         // Scan other enemies while chasing
-        if (!fpsBot.aiIgnoreEnemy && scanCooldown.CanExecuteAfterDeltaTime(true))
+        if (!fpsBotBrain.aiIgnoreEnemy && scanCooldown.CanExecuteAfterDeltaTime(true))
         {
-            FpsModel detectedEnemy = fpsBot.ScanForShootTarget();
+            FpsModel detectedEnemy = fpsBotBrain.ScanForShootTarget();
             if (detectedEnemy != null)
             {
                 botFsmDto.shootTargetModel = detectedEnemy;

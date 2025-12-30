@@ -64,6 +64,7 @@ public class NetworkRoomUi : MonoBehaviour
     private void InitializeSceneList()
     {
         List<string> sceneList = GetScenes();
+        sceneList.Sort();
         List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
         foreach (string scene in sceneList)
         {
@@ -113,7 +114,7 @@ public class NetworkRoomUi : MonoBehaviour
     }
 
 
-    public void RefreshPlayerStatus(List<NetworkRoomPlayer> networkRoomPlayers)
+    public void RefreshPlayerStatus(HashSet<NetworkRoomPlayer> networkRoomPlayers)
     {
         int childs = playerStatusPanel.transform.childCount;
         for (int i = childs - 1; i > 0; i--)

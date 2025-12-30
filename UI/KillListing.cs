@@ -10,7 +10,8 @@ public class KillListing : MonoBehaviour
     [SerializeField] TextMeshProUGUI killedDisplay;
     [SerializeField] TextMeshProUGUI weaponDisplay;
     [SerializeField] Image headshotIcon;
-    
+    [SerializeField] Image wallPenIcon;
+
     void Start()
     {
         Destroy(gameObject , 5f);
@@ -22,11 +23,12 @@ public class KillListing : MonoBehaviour
         
     }    
 
-    public void SetKillInfo(string killer, string victim, string killWeapon , bool isHeadshot)
+    public void SetKillInfo(string killer, string victim, string killWeapon , bool isHeadshot, bool isWallPen)
     {
         killerDisplay.text = killer;
         killedDisplay.text = victim;
         weaponDisplay.text = "[" + killWeapon + "]";
         headshotIcon.enabled = isHeadshot;
+        wallPenIcon.enabled = isWallPen;
     }
 }

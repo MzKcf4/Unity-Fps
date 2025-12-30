@@ -1,11 +1,13 @@
+using Kit.Physic;
+using NUnit.Framework.Interfaces;
+using Pathfinding;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Pathfinding;
-using Kit.Physic;
 
 // A bot has following properties
 // - Make use of and manages pathfinding components
@@ -24,7 +26,6 @@ public abstract class MzBotBrainBase : MonoBehaviour
     public bool aiEnableWander = true;
 
     protected IAstarAI ai;
-    protected Seeker seeker;
     protected AIDestinationSetter aiDest;
     protected float targetUpdateInterval = 5.0f;
 
@@ -32,22 +33,23 @@ public abstract class MzBotBrainBase : MonoBehaviour
     public float speedRecoverDuration = 0.5f;
     public float speedRecoverElapsed = 0f;
 
+    private GameObject destinationObj;
+
 
     protected virtual void Start()
     {
         character = GetComponent<FpsCharacter>();
         if (character.isServer)
         {
-            ai = GetComponent<IAstarAI>();
-            seeker = GetComponent<Seeker>();
-            aiDest = GetComponent<AIDestinationSetter>();
+            destinationObj = new GameObject($"{gameObject.name}-AIDestination");
+            ai = GetComponentInChildren<IAstarAI>();
+            aiDest = GetComponentInChildren<AIDestinationSetter>();
             cooldownSystem = GetComponent<CooldownSystem>();
 
             character.onTakeDamageEvent.AddListener(OnCharacterTakeDamage);
             character.onKilledEvent.AddListener(OnCharacterKilled);
             character.onSpawnEvent.AddListener(OnCharacterSpawn);
 
-            ai.canMove = false;
             ai.maxSpeed = moveSpeed;
 
         }
@@ -61,8 +63,14 @@ public abstract class MzBotBrainBase : MonoBehaviour
 
     protected virtual void Update()
     {
+
+    }
+
+    protected void FixedUpdate()
+    {
         if (!character.isServer || character.IsDead() || !aiEnabled) return;
 
+        character.ServerSetVelocity(ai.velocity);
         RecoverSpeed();
     }
 
@@ -93,7 +101,8 @@ public abstract class MzBotBrainBase : MonoBehaviour
 
     public void SetDestination(Vector3 position)
     {
-        ai.destination = position;
+        destinationObj.transform.position = position;
+        aiDest.target = destinationObj.transform;
     }
 
     public void StopMoving()
@@ -103,11 +112,31 @@ public abstract class MzBotBrainBase : MonoBehaviour
 
     protected void TogglePathingFindingAI(bool isEnable)
     {
-        ai.canMove = isEnable;
         ai.canSearch = isEnable;
-        seeker.enabled = isEnable;
         aiDest.enabled = isEnable;
+        if (isEnable)
+        {
+            StartCoroutine(DelayEnablePathFinding(1f));
+        }
+        
+        if(!isEnable)
+        {
+            // ai.simulateMovement = isEnable;
+            aiDest.target = null;
+        }
     }
+
+    IEnumerator DelayEnablePathFinding(float delayTime)
+    {
+        //Wait for the specified delay time before continuing.
+        yield return new WaitForSeconds(delayTime);
+
+        // ai.simulateMovement = true;
+        ai.canSearch = true;
+        aiDest.enabled = true;
+    }
+    
+
 
     private void OnCharacterTakeDamage(DamageInfo damageInfo)
     {
@@ -120,7 +149,7 @@ public abstract class MzBotBrainBase : MonoBehaviour
         TogglePathingFindingAI(false);
     }
 
-    private void OnCharacterSpawn()
+    protected virtual void OnCharacterSpawn()
     {
         TogglePathingFindingAI(true);
     }

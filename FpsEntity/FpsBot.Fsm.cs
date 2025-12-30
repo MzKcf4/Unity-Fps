@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// *******FOR ZOMBIE USE ONLY*******
 // FpsBot.Fsm
 public partial class FpsBot
 {

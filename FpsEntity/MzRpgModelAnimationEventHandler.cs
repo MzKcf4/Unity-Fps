@@ -17,7 +17,7 @@ public class MzRpgModelAnimationEventHandler : MonoBehaviour
     }
 
     public void AniEvent_ShootProjectile()
-    { 
-        
+    {
+        character.ShootProjectile();
     }
 }

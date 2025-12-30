@@ -26,8 +26,6 @@ public class GunGameManager : NetworkBehaviour
     [SyncVar]
     private bool isMatchActive = false;
 
-    public int weaponCount = 15;
-
     [SerializeField] private AudioClip levelUpClip;
     [SerializeField] private AudioClip winClip;
     [SerializeField] private GameObject uiPrefab;
@@ -93,15 +91,29 @@ public class GunGameManager : NetworkBehaviour
     private void RandomizeWeapon()
     {
         weaponNamesPerLevelList.Clear();
-        List<E_weapon_info> availableWeaponList = E_weapon_info.FindEntities(e => e.f_active && e.f_category != WeaponCategory.Melee);
+        List<E_weapon_info> availableWeaponList =
+            E_weapon_info.FindEntities(e => e.f_active && e.f_category != WeaponCategory.Melee);
 
-        for (int x = 0; x < weaponCount; x++)
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(4, WeaponCategory.Rifle));
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(4, WeaponCategory.Sniper));
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(3, WeaponCategory.Mg));
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(3, WeaponCategory.Smg));
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(3, WeaponCategory.Shotgun));
+        weaponNamesPerLevelList.AddRange(GetRandomWeaponsByTypes(3, WeaponCategory.Pistol));
+    }
+
+    private List<string> GetRandomWeaponsByTypes(int count, WeaponCategory category) 
+    {
+        List<E_weapon_info> availableWeaponList = E_weapon_info.FindEntities(e => e.f_active && e.f_category == category);
+        List<string> selectedWeapons = new List<string>();
+        for (int x = 0; x < count; x++)
         {
             int idx = UnityEngine.Random.Range(0, availableWeaponList.Count);
             string weaponName = availableWeaponList[idx].f_name;
             availableWeaponList.RemoveAt(idx);
-            weaponNamesPerLevelList.Add(weaponName);
+            selectedWeapons.Add(weaponName);
         }
+        return selectedWeapons;
     }
 
     [Server]
@@ -226,6 +238,8 @@ public class GunGameManager : NetworkBehaviour
         foreach (FpsCharacter fpsCharacter in fpsCharacters) 
         {
             if (!fpsCharacter || !fpsCharacter.isServer) continue;
+
+            fpsCharacter.onSpawnEvent.Invoke();
             PlayerManager.Instance.TeleportCharacterToSpawnPoint(fpsCharacter);
         }
     }

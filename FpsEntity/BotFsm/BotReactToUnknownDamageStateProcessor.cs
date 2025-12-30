@@ -10,13 +10,19 @@ public class BotReactToUnknownDamageStateProcessor : AbstractBotStateProcessor
 
     public BotReactToUnknownDamageStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) : base(fpsBot,character, botFsmDto)
     {
-        this.isReactToUnknownDamage = false;
-        isReactToTeammateKilled = false;
+       isReactToUnknownDamage = false;
+       isReactToTeammateKilled = false;
+       aimToDmgSourceTimer.interval = fpsBot.reactionTime;
     }
 
     public override void EnterState()
     {
         if (botFsmDto.lastUnexpectedDamage == null)
+        {
+            ExitToState(BotStateEnum.Wandering);
+            return;
+        }
+        if(botFsmDto.lastUnexpectedDamage.wallsPenetrated > 0)
         {
             ExitToState(BotStateEnum.Wandering);
             return;
@@ -27,7 +33,9 @@ public class BotReactToUnknownDamageStateProcessor : AbstractBotStateProcessor
     public override void ProcessState()
     {
         // Stop and aim to damage source for certain time
-        fpsBot.StopMoving();
+        if (Utils.WithinChance(0.4f))
+            fpsBotBrain.StopMoving();
+
         fpsCharacter.AimAtPosition(botFsmDto.lastUnexpectedDamage.damageSourcePosition);
 
         if (!aimToDmgSourceTimer.CanExecuteAfterDeltaTime())

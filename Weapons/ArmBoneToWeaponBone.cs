@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ArmBoneToWeaponBone : MonoBehaviour
 {
+	public bool isL4DArm = true;
 	// The partial bone names that should exist in the weapon's bone name
 	static string[] partialBoneNames = new string[]
 	{

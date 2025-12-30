@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using EasyCharacterMovement;
-
-using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 
 namespace EasyCharacterMovement
 {
@@ -399,7 +396,7 @@ namespace EasyCharacterMovement
             // Mouse Look Input
 
             Vector2 mouseLookInput = GetMouseLookInput();
-            mouseLookInput.y += TakeWeaponRecoil();
+            mouseLookInput.y += TakeWeaponRecoil() * 10.0f;
             if (mouseLookInput.sqrMagnitude > 0.0f)
             {
                 // Perform 'Look' rotation with Mouse
@@ -408,7 +405,10 @@ namespace EasyCharacterMovement
                     AddYawInput(mouseLookInput.x * characterLook.mouseHorizontalSensitivity);
 
                 if (mouseLookInput.y != 0.0f)
+                {
+                    // Debug.Log(mouseLookInput.y);
                     AddEyePitchInput(mouseLookInput.y * characterLook.mouseVerticalSensitivity);
+                }
             }
             else
             {

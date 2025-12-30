@@ -11,6 +11,8 @@
 // *** Note that weapons variables are managed by players locally ! ***
 public class FpsWeapon
 {
+    private static int SPREAD_LEVELS = 6;
+    private static float SPREAD_COOLDOWN = 0.7f;
     public string weaponName;
     public bool UseBackAmmo { get { return useBackAmmo; } }
     
@@ -19,6 +21,8 @@ public class FpsWeapon
     private ActionCooldown cooldownUntilIdle = new ActionCooldown();
     private float secondaryActionInterval = 0.2f;
     private ActionCooldown secondaryActionCooldown = new ActionCooldown();
+    private ActionCooldown spreadCooldown = new ActionCooldown();
+
     
     private WeaponState weaponState = WeaponState.Idle;
     private WeaponSecondaryState weaponSecondaryState = WeaponSecondaryState.None;
@@ -31,7 +35,11 @@ public class FpsWeapon
 
     public int currentClip;
     
-    [HideInInspector] public int damage = 20;
+    public int damage = 20;
+    public int damageSecondary = 60;
+    // power = 1 means can penetrate 1 wall
+    public int penetrationPower = 1;
+
     private int clipSize = 30;
     private float reloadTime = 3f;
     private float reloadTime_PalletStart = 0.2f;
@@ -45,18 +53,25 @@ public class FpsWeapon
     
     [HideInInspector] public float rangeModifier = 1f;
     [HideInInspector] public float shootInterval = 0.1f;
+    [HideInInspector] public float shootIntervalSecondary = 0.1f;
     [HideInInspector] public int palletPerShot = 1;
     [HideInInspector] public float spreadInMove = 0f;
     
     public float spread = 0f;
+    private float[] spreadPerLevel = new float[SPREAD_LEVELS];
+    private int spreadLevel;
+
     public float recoil = 0f;
     public float currentRecoil = 0f;
     public float cameraShake = 0f;
     public int dmKillScore = 5;
+    public float moveSpeed = 6f;
     
     [HideInInspector] public FpsHumanoidCharacter owner;
     public string displayName = "";
     private bool useBackAmmo = false;
+
+    public bool isMelee;
 
     public FpsWeapon(){}
     
@@ -74,8 +89,11 @@ public class FpsWeapon
         E_weapon_info dbWeaponInfo = E_weapon_info.GetEntity(weaponName);
         
         damage = dbWeaponInfo.f_base_damage;
+        damageSecondary = dbWeaponInfo.f_secondary_damage;
+        penetrationPower = dbWeaponInfo.f_penetration;
         clipSize = dbWeaponInfo.f_clip_size;
         shootInterval = dbWeaponInfo.f_shoot_interval;
+        shootIntervalSecondary = dbWeaponInfo.f_shoot_interval_secondary;
         reloadType = dbWeaponInfo.f_reload_type;
         weaponCategory = dbWeaponInfo.f_category;
         reloadTime = dbWeaponInfo.f_reload_time;
@@ -86,12 +104,19 @@ public class FpsWeapon
         palletPerShot = dbWeaponInfo.f_pallet_per_shot;
         
         spread = dbWeaponInfo.f_spread;
+        float spreadPerLv = spread / (SPREAD_LEVELS-1);
+        for (int i = 0; i < SPREAD_LEVELS; i++)
+        {
+            spreadPerLevel[i] = i * spreadPerLv;
+        }
+
         recoil = dbWeaponInfo.f_recoil;
         cameraShake = dbWeaponInfo.f_camera_shake;
 
         rangeModifier = dbWeaponInfo.f_range_modifier;
         spreadInMove = dbWeaponInfo.f_spread_move;
-        
+        moveSpeed = dbWeaponInfo.f_speed;
+
         dmKillScore = dbWeaponInfo.f_dm_kill_score;
         isSemiAuto = dbWeaponInfo.f_is_semi_auto;
 
@@ -104,6 +129,7 @@ public class FpsWeapon
         }
 
         useBackAmmo = weaponCategory != WeaponCategory.Melee && CoreGameManager.Instance.GameMode == GameModeEnum.Monster;
+        isMelee = dbWeaponInfo.f_category == WeaponCategory.Melee;
     }
     
     public void Reset()
@@ -132,6 +158,7 @@ public class FpsWeapon
     {
         if(owner.IsDead())  return;
         // cooldown with secondary action
+        HandleSpreadCooldown();
         HandleCooldownInterrupt();
         HandleWeaponStateCooldown();
         if(owner is FpsPlayer && owner.isLocalPlayer)
@@ -147,7 +174,17 @@ public class FpsWeapon
             }
         }
     }
-    
+
+    private void HandleSpreadCooldown()
+    {
+        if (spreadCooldown.IsOnCooldown(true) || spreadLevel <= 0) return;
+
+        spreadCooldown.ReduceCooldown();
+        spreadLevel--;
+        if(spreadLevel > 0)
+            spreadCooldown.StartCooldown(SPREAD_COOLDOWN);
+    }
+
     private void HandleCooldownInterrupt()
     {
         if(weaponState == WeaponState.Idle || !cooldownUntilIdle.IsOnCooldown()) return;
@@ -231,7 +268,7 @@ public class FpsWeapon
 
     private void CheckAmmoAndAutoReload()
     {
-        if (!isOutOfAmmo() || primaryActionState != KeyPressState.Released || weaponState != WeaponState.Idle || !OwnerHasBackAmmo())
+        if (!IsOutOfAmmo() || primaryActionState != KeyPressState.Released || weaponState != WeaponState.Idle || !OwnerHasBackAmmo())
             return;
 
         DoWeaponReload();
@@ -266,23 +303,30 @@ public class FpsWeapon
     
     public void DoWeaponSecondaryAction()
     {
-        if(weaponCategory == WeaponCategory.Sniper)
+        if (weaponCategory == WeaponCategory.Sniper)
         {
-            if(!secondaryActionCooldown.IsOnCooldown() && secondaryActionState == KeyPressState.Holding)
+            if (!secondaryActionCooldown.IsOnCooldown() && secondaryActionState == KeyPressState.Holding)
             {
                 secondaryActionCooldown.StartCooldown();
-                
-                if(weaponSecondaryState == WeaponSecondaryState.None)
+
+                if (weaponSecondaryState == WeaponSecondaryState.None)
                 {
                     weaponSecondaryState = WeaponSecondaryState.Scoped;
                     EmitWeaponViewEvent(WeaponEvent.Scope);
                 }
-                else if(weaponSecondaryState == WeaponSecondaryState.Scoped)
+                else if (weaponSecondaryState == WeaponSecondaryState.Scoped)
                 {
                     weaponSecondaryState = WeaponSecondaryState.None;
                     EmitWeaponViewEvent(WeaponEvent.UnScope);
                 }
             }
+        }
+        else if (weaponCategory == WeaponCategory.Melee)
+        {
+            if (secondaryActionCooldown.IsOnCooldown()) return;
+
+            secondaryActionCooldown.StartCooldown();
+            DoWeaponSecondaryFire();
         }
     }
     
@@ -295,12 +339,12 @@ public class FpsWeapon
         }
     }
     
-    public void DoWeaponReload()
+    public bool DoWeaponReload()
     {
-        if (weaponCategory == WeaponCategory.Melee) return;
+        if (weaponCategory == WeaponCategory.Melee) return false;
 
-        if(weaponState != WeaponState.Idle || currentClip == clipSize || !OwnerHasBackAmmo())
-            return;
+        if(weaponState != WeaponState.Idle || weaponState == WeaponState.Reloading || currentClip == clipSize || !OwnerHasBackAmmo())
+            return false;
 
         ResetWeaponSecondaryState();
         if(reloadType == WeaponReloadType.Clip)
@@ -308,13 +352,16 @@ public class FpsWeapon
             EmitWeaponViewEvent(WeaponEvent.Reload);
             weaponState = WeaponState.Reloading;
             cooldownUntilIdle.StartCooldown(reloadTime);
+            return true;
         }
         else if (reloadType == WeaponReloadType.Pallet)
         {
             EmitWeaponViewEvent(WeaponEvent.Reload_PalletStart);
             weaponState = WeaponState.Reloading_PalletStart;
             cooldownUntilIdle.StartCooldown(reloadTime_PalletStart);
+            return true;
         }
+        return false;
     }
     
     public void DoWeaponDraw()
@@ -326,16 +373,19 @@ public class FpsWeapon
         cooldownUntilIdle.StartCooldown(drawTime);
     }
     
-    public void DoWeaponPrimaryAction()
+    public bool DoWeaponPrimaryAction()
     {
         if(!CanTriggerFire())  
-            return;
+            return false;
 
-        if (isOutOfAmmo())
+        if (IsOutOfAmmo())
+        {
             DoWeaponFireOutOfAmmo();
+            return false;
+        }
         else
             DoWeaponFire();
-        
+        return true;
     }
 
     public void DoWeaponFireOutOfAmmo()
@@ -366,9 +416,35 @@ public class FpsWeapon
         if (weaponCategory == WeaponCategory.Melee) return;
 
         currentClip--;
+        spreadLevel = spreadLevel >= SPREAD_LEVELS-1 ? spreadLevel : ++spreadLevel;
+        spreadCooldown.StartCooldown(SPREAD_COOLDOWN);
+
         IncreaseRecoil();
         EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
         
+    }
+
+    public void DoWeaponSecondaryFire()
+    {
+        EmitWeaponViewEvent(WeaponEvent.ShootSecondary);
+
+        if (isSemiAuto)
+            ResetWeaponSecondaryState();
+
+        cooldownUntilIdle.StartCooldown(shootIntervalSecondary);
+
+        weaponState = WeaponState.Shooting;
+        if (isSemiAuto)
+        {
+            isPrimayActionWatingRelease = true;
+        }
+
+        if (weaponCategory == WeaponCategory.Melee) return;
+
+        currentClip--;
+        IncreaseRecoil();
+        EmitWeaponViewEvent(WeaponEvent.AmmoUpdate);
+
     }
 
     private void IncreaseRecoil()
@@ -381,19 +457,7 @@ public class FpsWeapon
         if (currentRecoil > recoil)
             currentRecoil = recoil;
     }
-    
-    // Temp way for bot to use weapon's cooldown
-    public void DoCooldownFromShoot()
-    {
-        weaponState = WeaponState.Shooting;
-        cooldownUntilIdle.StartCooldown(shootInterval);
-    }
-    
-    public void FireWeapon(Vector3 dest)
-    {
-        // weaponWorldModel.ShootProjectile(dest);
-    }
-                
+                        
     public bool CanTriggerFire()
     {
         if (weaponCategory == WeaponCategory.Melee)
@@ -426,8 +490,21 @@ public class FpsWeapon
         // return weaponWorldModel.muzzleTransform.position;
     }
 
-    private bool isOutOfAmmo()
+    public float GetEffectiveSpread()
+    {
+        if (weaponCategory == WeaponCategory.Shotgun)
+            return spread;
+
+        return spreadPerLevel[spreadLevel];
+    }
+
+    public bool IsOutOfAmmo()
     {
         return currentClip <= 0 && weaponCategory != WeaponCategory.Melee;
+    }
+
+    public bool IsReloading()
+    {
+        return weaponState == WeaponState.Reloading || weaponState == WeaponState.Reloading_PalletStart || weaponState == WeaponState.Reloading_PalletInsert || weaponState == WeaponState.Reloading_PalletEnd;
     }
 }

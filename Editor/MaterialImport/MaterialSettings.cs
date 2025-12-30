@@ -14,6 +14,7 @@ public class MaterialSettings
     public string baseMapName;
     public string normalMapName;
     public string specMapName;
+    public bool isTransparent;
 
     public override string ToString()
     {

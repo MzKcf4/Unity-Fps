@@ -14,6 +14,7 @@ using Pathfinding.RVO;
 
 public class FpsCharacter : FpsEntity
 {
+    protected static float WALKING_SPEED = 2.5f;
     public Dictionary<string, string> AdditionalInfos { get { return dictAdditionalInfo; } }
     public Dictionary<string, object> AdditionalInfoObjects { get { return dictAdditionalInfoObject; } }
     
@@ -49,7 +50,14 @@ public class FpsCharacter : FpsEntity
     protected float maxSpeed;
     protected float currentMaxSpeed;
 
+    [SyncVar]
+    protected bool isWalking = false;
+
+
+    // ToDo: Remove this ! Use MzCharacterAnimator instead
     [SerializeField] protected CharacterAnimationResource charAnimationRes;
+
+
     [SerializeField] protected CharacterResources characterResources;
     protected Character ecmCharacter;
     protected CharacterMovement characterMovement;
@@ -67,6 +75,7 @@ public class FpsCharacter : FpsEntity
     protected MzAbilitySystem abilitySystem;
     protected Dictionary<string, VfxMarker> dictVfxMarkers = new Dictionary<string, VfxMarker>();
 
+    protected bool isBot = false;
 
     public override void OnStartClient()
     {
@@ -79,7 +88,9 @@ public class FpsCharacter : FpsEntity
         characterCommonResources = WeaponAssetManager.Instance.GetCharacterCommonResources();
         audioSourceWeapon = gameObject.AddComponent<AudioSource>();
         audioSourceCharacter = gameObject.AddComponent<AudioSource>();
+
         InitializeAudioSource(audioSourceWeapon);
+        audioSourceWeapon.minDistance = 8;
         InitializeAudioSource(audioSourceCharacter);
         
     }
@@ -117,6 +128,7 @@ public class FpsCharacter : FpsEntity
     {
         base.Start();
         abilitySystem = GetComponent<MzAbilitySystem>();
+        isBot = GetComponent<MzBotBrainBase>() != null;
 
         AttachModel();
         SetRagdollState(false);
@@ -206,20 +218,18 @@ public class FpsCharacter : FpsEntity
         }
     }
 
+    [Command]
+    public void CmdPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
+    {
+        RpcPlayAnimationByKey(key, isFullBody, isForceExecute);
+    }
+
     [ClientRpc]
     protected void RpcPlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
     {
-        PlayAnimationByKey(key, isFullBody , isForceExecute);
-    }
+        characterAnimator.PlayAnimationByKey(key, isFullBody, isForceExecute);
 
-    public void PlayAnimationByKey(string key, bool isFullBody, bool isForceExecute)
-    {
-        if (!charAnimationRes.actionClips.ContainsKey(key)) {
-            Debug.LogWarning("Action clip key not found : " + key);
-            return;
-        }
-
-        characterAnimator.PlayActionAnimation(charAnimationRes.actionClips[key].actionClip , isFullBody, isForceExecute);
+        // PlayAnimationByKey(key, isFullBody , isForceExecute);
     }
 
     [Server]
@@ -252,7 +262,7 @@ public class FpsCharacter : FpsEntity
         HandlePainShock();
 
         // Only send to the damage dealer
-        if (damageInfo.attacker is FpsPlayer)
+        if (damageInfo.attacker is FpsPlayer && damageInfo.wallsPenetrated <= 0)
             TargetSpawnDamageText(damageInfo.attackerNetIdentity.connectionToClient, damageInfo.damage, damageInfo.hitPoint,damageInfo.bodyPart == BodyPart.Head);
     }
 
@@ -326,12 +336,6 @@ public class FpsCharacter : FpsEntity
         base.Killed(damageInfo);
         ServerContext.Instance.UpdateCharacterKilledEvent(this , damageInfo);
         MzCharacterManager.Instance.OnCharacterKilled.Invoke(this);
-
-        if (characterResources != null && characterResources.deathVoiceList != null && characterResources.deathVoiceList.Count > 0)
-        {
-            AudioClip clip = Utils.GetRandomElement<AudioClip>(characterResources.deathVoiceList);
-            audioSourceCharacter.PlayOneShot(clip);
-        }
     }
     
     [ClientRpc]
@@ -340,11 +344,23 @@ public class FpsCharacter : FpsEntity
         base.RpcKilled(damageInfo);
         
         SetControllableState(false);
+        ApplyForceOnRagdoll(damageInfo);
         FpsUiManager.Instance.AddNewKillListing(damageInfo , characterName);
 
         if (useDeathAnimation && charAnimationRes.deathClips.Count > 0)
         {
             characterAnimator.PlayDeathAnimation(Utils.GetRandomElement<ClipTransition>(charAnimationRes.deathClips));
+        }
+
+        if (characterResources != null && characterResources.deathVoiceList != null && characterResources.deathVoiceList.Count > 0)
+        {
+            AudioClip clip = Utils.GetRandomElement<AudioClip>(characterResources.deathVoiceList);
+            audioSourceCharacter.PlayOneShot(clip);
+        }
+        else
+        {
+            AudioClip clip = Utils.GetRandomElement<AudioClip>(characterCommonResources.deathSoundList);
+            audioSourceCharacter.PlayOneShot(clip);
         }
     }
     
@@ -352,6 +368,17 @@ public class FpsCharacter : FpsEntity
     {
         SetRagdollState(!controllable);
         SetComponentsControllable(controllable);
+    }
+
+    protected void ApplyForceOnRagdoll(DamageInfo damageInfo) 
+    {
+        var direction = Utils.GetDirection(damageInfo.damageSourcePosition, damageInfo.hitPoint);
+        var force = direction * damageInfo.damage * 10f;
+        Rigidbody[] rbJoints = modelObject.GetComponentsInChildren<Rigidbody>(true);
+        foreach (Rigidbody rb in rbJoints)
+        {
+            rb.AddForce(force);
+        }
     }
     
     protected void SetComponentsControllable(bool controllable)
@@ -430,44 +457,22 @@ public class FpsCharacter : FpsEntity
 
     protected virtual void SyncMovementVelocity()
     {
-        // LocalPlayer sync its velocity to server.
-        if (isLocalPlayer)
-        {
-            currentVelocity = GetMovementVelocity();
-            CmdSyncMovementVelocity(GetMovementVelocity());
-        }
-        // Server syncs back velocity from other clients or bots to clients
-        else if (isServer)
-            currentVelocity = GetMovementVelocity();
-        // RpcSyncMovementVelocity(GetMovementVelocity());
-        // Then , for all clients , order the mover to move according to received velocity
-        // else if (isClient)
-        //    characterMovement.velocity = currentVelocity;
-
-        /*
+        // Currently used by BOT only
         if (isServer)
             currentVelocity = GetMovementVelocity();
-
-        if (!isLocalPlayer)
-            characterMovement.velocity = currentVelocity;
-        */
     }
 
-    [Command]
-    protected void CmdSyncMovementVelocity(Vector3 velocity)
-    {
-        currentVelocity = velocity;
-    }
 
-    [ClientRpc]
-    protected void RpcSyncMovementVelocity(Vector3 velocity)
+    [Server]
+    public void ServerSetVelocity(Vector3 velocity)
     {
         currentVelocity = velocity;
     }
 
     public virtual Vector3 GetMovementVelocity() 
-    { 
-        return ecmCharacter.GetVelocity();
+    {
+        // return currentVelocity;
+        return characterMovement.velocity;
     }
         
     public Vector3 GetCurrentVelocity()
@@ -484,8 +489,9 @@ public class FpsCharacter : FpsEntity
     {
         audioSource.outputAudioMixerGroup = LocalPlayerContext.Instance.audioMixerGroup;
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0.5f;
+        audioSource.spatialBlend = 1.0f;
         audioSource.spread = 1f;
+        audioSource.minDistance = 2;
     }
 
     public void AimAtMovementDirection()
@@ -510,8 +516,6 @@ public class FpsCharacter : FpsEntity
     public virtual void SetCanMove(bool canMove)
     {
         ecmCharacter.SetMovementMode(canMove ? MovementMode.Walking : MovementMode.None);
-        // this.maxSpeed = maxSpeed;
-        // ecmCharacter.maxWalkSpeed = maxSpeed;
     }
 
     private void OnMaxSpeedChanged(float oldMaxSpeed, float newMaxSpeed)
@@ -529,5 +533,10 @@ public class FpsCharacter : FpsEntity
     {
         yield return new WaitForSeconds(durationInSecond);
         SetCanMove(canMove);
+    }
+
+    public bool IsBot()
+    {
+        return isBot;
     }
 }

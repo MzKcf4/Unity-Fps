@@ -16,6 +16,7 @@ public class FpsWeaponPlayerInputHandler
         LocalPlayerContext.Instance.weaponSecondaryActionInputEvent.AddListener(OnWeaponSecondaryAction);
         LocalPlayerContext.Instance.weaponReloadInputEvent.AddListener(DoWeaponReload);
         LocalPlayerContext.Instance.previousWeaponInputEvent.AddListener(DoSwitchWeapon);
+        LocalPlayerContext.Instance.weaponDropInputEvent.AddListener(DoDropWeapon);
     }
     
     public void OnWeaponPrimaryAction(KeyPressState keyPressState)
@@ -36,7 +37,7 @@ public class FpsWeaponPlayerInputHandler
     {
         if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
             return;
-        fpsPlayer.GetActiveWeapon().DoWeaponReload();
+        fpsPlayer.DoWeaponReload();
     }
     
     public void DoSwitchWeapon()
@@ -44,5 +45,12 @@ public class FpsWeaponPlayerInputHandler
         if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
             return;
         fpsPlayer.LocalSwitchPreviousWeapon();
+    }
+
+    public void DoDropWeapon()
+    {
+        if (fpsPlayer.IsDead() || fpsPlayer.GetActiveWeapon() == null)
+            return;
+        fpsPlayer.LocalDropWeapon();
     }
 }

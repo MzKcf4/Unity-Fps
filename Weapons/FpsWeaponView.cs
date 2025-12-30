@@ -1,15 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 public class FpsWeaponView : MonoBehaviour
 {    
-    [SerializeField] private ArmBoneToWeaponBone arm;
+    [SerializeField] private ArmBoneToWeaponBone armL4d;
+    [SerializeField] private ArmBoneToWeaponBone armGmod;
+
+    private ArmBoneToWeaponBone activeArm;
+
     public FpsWeaponViewModel[] weaponViewModelSlots = new FpsWeaponViewModel[Constants.WEAPON_SLOT_MAX];
     
     private FpsWeaponViewModel activeWeaponViewModel;
     
     void Awake()
     {
-        arm = GetComponentInChildren<ArmBoneToWeaponBone>();
+        armL4d = GetComponentsInChildren<ArmBoneToWeaponBone>().Where(bone => bone.isL4DArm).First();
+        armGmod = GetComponentsInChildren<ArmBoneToWeaponBone>().Where(bone => !bone.isL4DArm).First();
+        activeArm = armL4d;
         LocalPlayerContext.Instance.onWeaponEventUpdate.AddListener(OnWeaponEventUpdate);
         
     }
@@ -59,7 +66,20 @@ public class FpsWeaponView : MonoBehaviour
         
         activeWeaponViewModel = weaponViewModelSlots[slot];
         activeWeaponViewModel.gameObject.SetActive(true);
-        arm.AttachToWeapon(activeWeaponViewModel.gameObject);
+
+        // Switch armL4d model
+        if (activeWeaponViewModel.isFromL4D && activeArm != armL4d)
+        {
+            activeArm.gameObject.SetActive(false);
+            activeArm = armL4d;
+        }
+        else if (!activeWeaponViewModel.isFromL4D && activeArm != armGmod)
+        {
+            activeArm.gameObject.SetActive(false);
+            activeArm = armGmod;
+        }
+        activeArm.gameObject.SetActive(true);
+        activeArm.AttachToWeapon(activeWeaponViewModel.gameObject);
 
         // Flip the "FpsView" object itself
         if (activeWeaponViewModel.isFlip)

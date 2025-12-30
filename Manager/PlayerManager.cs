@@ -86,7 +86,7 @@ public class PlayerManager : NetworkBehaviour
     public void RespawnAndTeleport(FpsCharacter fpsCharacter)
     {
         Transform spawn = GetSpawnTransform(fpsCharacter.team);
-        Vector3 spawnPos = spawn.position + transform.up;
+        Vector3 spawnPos = spawn.position;
         
         fpsCharacter.Respawn();
         

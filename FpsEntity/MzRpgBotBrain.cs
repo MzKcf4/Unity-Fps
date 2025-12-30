@@ -12,13 +12,22 @@ public class MzRpgBotBrain : MzBotBrainBase
 {
     protected static readonly string MELEE_COOLDOWN = "bot-melee-cooldown";
     protected static readonly string MELEE_CHECK = "bot-melee-check";
+    protected static readonly string RANGE_COOLDOWN = "bot-range-cooldown";
+    protected static readonly string RANGE_CHECK = "bot-range-check";
     protected static readonly string ABILITY_CHECK = "bot-ability-check";
+
+    public FpsCharacter TargetCharacter { get { return targetCharacter; } }
+
 
     public bool canMeleeAttack = true;
     public float meleeCooldown = 5.0f;
     public float meleeCheckInterval = 1.0f;
 
     public bool canRangeAttack = false;
+    public float rangeAttackCooldown = 5.0f;
+    public float rangeCheckInterval = 1.0f;
+
+
     private MzRpgCharacter rpgCharacter;
     private MzAbilitySystem abilitySystem;
 
@@ -51,6 +60,7 @@ public class MzRpgBotBrain : MzBotBrainBase
 
         SeekTarget();
         CheckMeleeRange();
+        CheckRangeAttack();
         LockOnTarget();
         CheckAndUseAbility();
     }
@@ -75,6 +85,27 @@ public class MzRpgBotBrain : MzBotBrainBase
     {
         rpgCharacter.ServerExtendMeleeRange(targetCharacter);
         character.ServerPlayAnimationByKey(Constants.ACTION_KEY_MELEE, false , false);
+    }
+
+    private void CheckRangeAttack()
+    {
+        if(!canRangeAttack) return;
+        if (!cooldownSystem.IsOnCooldown(RANGE_COOLDOWN) && !cooldownSystem.IsOnCooldown(RANGE_CHECK))
+        {
+            Debug.Log("rangeAttack");
+            // if (DetectedTarget())
+            // {
+                ExecuteRangeAttack();
+                cooldownSystem.PutOnCooldown(RANGE_COOLDOWN, rangeAttackCooldown);
+            // }
+            cooldownSystem.PutOnCooldown(RANGE_CHECK, rangeCheckInterval);
+            
+        }
+    }
+
+    private void ExecuteRangeAttack()
+    {
+        character.ServerPlayAnimationByKey(Constants.ACTION_KEY_RANGE, false, true);
     }
 
     protected override void SeekTarget()

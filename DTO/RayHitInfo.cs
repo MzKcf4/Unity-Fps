@@ -6,8 +6,9 @@ public class RayHitInfo
 {
 	public Vector3 hitPoint;
 	public GameObject hitObject;
+    public bool isHitWall;
     public Vector3 normal;
-    
+
     public HitPointInfoDto asHitPointInfoDto()
     {
         return new HitPointInfoDto()

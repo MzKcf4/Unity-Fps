@@ -62,7 +62,9 @@ public partial class FpsHumanoidCharacter
 
     public void ReloadActiveWeapon()
     {
-        weaponSlots[activeWeaponSlot].DoWeaponReload();
+        if(GetActiveWeapon() == null)
+            return;
+        GetActiveWeapon().DoWeaponReload();
     }
 
     public bool HasWeapon(string weaponName)
@@ -87,6 +89,71 @@ public partial class FpsHumanoidCharacter
     {
         // RpcReloadWeapon_Animation();
     }
+
+
+    [Command]
+    public void CmdDropWeapon(int slot)
+    {
+        if (slot == 2) return;
+        ServerCmdDropWeapon(slot);
+    }
+
+    [Server]
+    public void ServerCmdDropWeapon(int slot)
+    {
+        ServerDropWeapon(slot);
+        RpcDropWeapon(slot);
+    }
+
+    public void ServerDropWeapon(int slot)
+    {
+        // Server just need to set itself have FpsWeapon , without World/View model.
+        weaponSlots[slot] = null;
+        syncWeaponNameInSlots[slot] = null;
+    }
+
+    [ClientRpc]
+    public void RpcDropWeapon(int slot)
+    {
+        ClientDropWeapon(slot);
+
+        if (isLocalPlayer)
+            CmdSwitchWeapon(2);
+        else if (isServer)
+            RpcSwitchWeapon(2);
+    }
+
+    public void ClientDropWeapon(int slot)
+    {
+        weaponSlots[slot] = null;
+
+        /*
+        // ----------------World------------------
+        // Check if the slot already has weapon , if yes , destroy the existing weapon
+        if (fpsWeaponWorldSlot[slot] != null)
+        {
+            Destroy(fpsWeaponWorldSlot[slot].gameObject, 0.5f);
+        }
+
+        WeaponResources weaponResource = StreamingAssetManager.Instance.GetWeaponResouce(weaponName);
+        GameObject weaponWorldObject = GameObject.Instantiate(weaponResource.weaponWorldPrefab, weaponRootTransform);
+        weaponWorldObject.transform.localPosition = Vector3.zero;
+        weaponWorldObject.gameObject.SetActive(false);
+        fpsWeaponWorldSlot[slot] = weaponWorldObject.GetComponent<FpsWeaponWorldModel>();
+        if (isLocalPlayer)
+        {
+            // Change the local weapon model to camera's culling mask too !
+            Utils.ChangeLayerRecursively(weaponWorldObject, Constants.LAYER_LOCAL_PLAYER_MODEL, true);
+        }
+
+        // ----------- View ( Local Player only ) -----------------
+        if (isLocalPlayer)
+        {
+            fpsWeaponView.AddViewWeaponNew(weaponResource, slot);
+        }
+        */
+    }
+
 
     public void LocalCmdGetWeapon(string weaponName, int slot)
     {
@@ -160,12 +227,6 @@ public partial class FpsHumanoidCharacter
         }
     }
 
-
-    public void FireWeapon()
-    {
-
-    }
-
     [ClientRpc]
     public void RpcFireWeapon()
     {
@@ -173,11 +234,11 @@ public partial class FpsHumanoidCharacter
         Vector3 shootSoundPos = fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform == null ? fpsWeaponWorldSlot[activeWeaponSlot].transform.position
                                                                                              : fpsWeaponWorldSlot[activeWeaponSlot].muzzleTransform.position;
 
-        audioSourceWeapon.Stop();
-        audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
-
         if (!isLocalPlayer)
         {
+            // Fire sound already played in local player
+            audioSourceWeapon.Stop();
+            audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
             fpsWeaponWorldSlot[activeWeaponSlot].ShootProjectile();
             // RpcFireWeapon_Animation();
         }
@@ -231,7 +292,7 @@ public partial class FpsHumanoidCharacter
         if (evt == WeaponEvent.Shoot)
         {
 
-            float spreadMultiplier = GetActiveWeapon().spread;
+            float spreadMultiplier = GetActiveWeapon().GetEffectiveSpread();
             // ---------ToDo: Shotgun pallet ??--------------- //
             if (GetActiveWeapon().weaponCategory != WeaponCategory.Shotgun)
             {
@@ -266,4 +327,51 @@ public partial class FpsHumanoidCharacter
             dictBackAmmo.Add(ammoKey, 0);
         return dictBackAmmo[ammoKey];
     }
+
+    public void DoWeaponPrimaryAction()
+    {
+        if (GetActiveWeapon() == null)
+            return;
+
+        bool isFired = GetActiveWeapon().DoWeaponPrimaryAction();
+        if (!isFired)
+            return;
+
+        if(isServer)
+            RpcPlayAnimationByKey("shoot_rifle", false, true);
+        else if (isLocalPlayer)
+            CmdPlayAnimationByKey("shoot_rifle", false, true);
+    }
+
+    public bool IsWeaponOutOfAmmo()
+    {
+        if (GetActiveWeapon() == null)
+            return false;
+
+        return GetActiveWeapon().IsOutOfAmmo();
+    }
+
+    public bool IsWeaponReloading()
+    {
+        if (GetActiveWeapon() == null)
+            return false;
+
+        return GetActiveWeapon().IsReloading();
+    }
+
+    public void DoWeaponReload()
+    {
+        if (GetActiveWeapon() == null)
+            return;
+
+        bool isExecuted = GetActiveWeapon().DoWeaponReload();
+        if (!isExecuted)
+            return;
+
+        if (isServer)
+            RpcPlayAnimationByKey("reload_rifle", false, true);
+        else if (isLocalPlayer)
+            CmdPlayAnimationByKey("reload_rifle", false, true);
+    }
+
 }

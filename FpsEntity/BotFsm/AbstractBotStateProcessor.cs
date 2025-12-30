@@ -8,23 +8,26 @@ using UnityEngine;
 [Serializable]
 public abstract class AbstractBotStateProcessor
 {
-    protected readonly MzFpsBotBrain fpsBot;
+    protected readonly MzFpsBotBrain fpsBotBrain;
+    // A DTO to communicate between different processors
     protected readonly BotFsmDto botFsmDto;
     protected readonly FpsHumanoidCharacter fpsCharacter;
     protected bool isReactToUnknownDamage = true;
     protected bool isReactToTeammateKilled = true;
 
-    public AbstractBotStateProcessor(MzFpsBotBrain fpsBot, FpsHumanoidCharacter character, BotFsmDto botFsmDto) 
+    public AbstractBotStateProcessor(MzFpsBotBrain fpsBotBrain, FpsHumanoidCharacter character, BotFsmDto botFsmDto) 
     {
-        this.fpsBot = fpsBot;
+        this.fpsBotBrain = fpsBotBrain;
         this.botFsmDto = botFsmDto;
         this.fpsCharacter = character;
+
+        character.onTakeDamageEvent.AddListener(OnTakeHit);
     }
     public abstract void EnterState();
     public abstract void ProcessState();
     public virtual void ExitToState(BotStateEnum newState)
     {
-        fpsBot.TransitToState(newState);
+        fpsBotBrain.TransitToState(newState);
     }
 
     public virtual void OnTeammateKilled(Vector3 deathPos, DamageInfo damageInfo)

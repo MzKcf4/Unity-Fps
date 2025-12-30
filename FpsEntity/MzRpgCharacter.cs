@@ -6,8 +6,9 @@ using Pathfinding;
 using Mirror;
 
 // RpgCharacter doesn't have fps weapon slots
-// Instead they use raycast for attacks.
-// Usually should be controlled by bots
+//		- No FpsWeapon slots
+//		- Use raycast for attacks
+//		- Controlled by bots
 public class MzRpgCharacter : FpsCharacter
 {
 	public RaycastHelper MeleeRangeDetector { get { return meleeRangeDetector; } }
@@ -19,18 +20,25 @@ public class MzRpgCharacter : FpsCharacter
 
 	protected RaycastHelper meleeRangeDetector;
 	private AIBase ai;
+	private MzRpgBotBrain botBrain;
 	[SyncVar] private int meleeDamage = 10;
+
+	private Transform muzzleMarker;
 
     protected override void Awake()
     {
         base.Awake();
 		ai = GetComponent<AIBase>();
-	}
+        botBrain = GetComponent<MzRpgBotBrain>();
+
+    }
 
     protected override void Start()
     {
         base.Start();
-		InitializeMeleeRangeDetector();
+		muzzleMarker = GetComponent<MuzzleMarker>()?.transform;
+
+        InitializeMeleeRangeDetector();
 		
 		// ecmAStarCharacter = (MzEcmAStarCharacter)ecmCharacter;
 		
@@ -70,9 +78,14 @@ public class MzRpgCharacter : FpsCharacter
 
 	// Triggered by AniEvent or from RpcCalls
 	public void ShootProjectile()
-	{ 
-		
-	}
+	{
+		if (characterResources == null || characterResources.projectilePrefab == null || botBrain.TargetCharacter == null) return;
+
+		Vector3 projtileStartPos = muzzleMarker == null ? transform.position : muzzleMarker.position;
+		FpsProjectile projectile = Instantiate(characterResources.projectilePrefab , projtileStartPos , Quaternion.identity).GetComponent<FpsProjectile>();
+		Vector3 direction =  Utils.GetDirection(projtileStartPos, botBrain.TargetCharacter.transform.position + new Vector3(0,0.5f));
+        projectile.Setup(direction);
+    }
 
     public override void SetMaxSpeed(float maxSpeed)
     {
