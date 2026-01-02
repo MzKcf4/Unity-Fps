@@ -148,6 +148,7 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 	private Transform[] armBones;
 	private Transform[] targetBones;
 	public GameObject debugTarget;
+	private SkinnedMeshRenderer[] skinnedMeshRenderers;
 
 	private Vector3[] armBoneOriginalPos;
 	private Quaternion[] armBoneOriginalRot;
@@ -160,7 +161,8 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 		{
 			targetBones = FindBones(debugTarget);
 		}
-	}
+		skinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+    }
 
 	private void saveOriginalBone()
 	{
@@ -242,4 +244,11 @@ public class ArmBoneToWeaponBone : MonoBehaviour
 	{
 		targetBones = FindBones(newWeaponObj);
 	}
+	public void ToggleRenderer(bool isOn)
+	{
+		for(int i = 0 ; i < skinnedMeshRenderers.Length ; i++)
+		{
+			skinnedMeshRenderers[i].enabled = isOn;
+        }
+    }
 }

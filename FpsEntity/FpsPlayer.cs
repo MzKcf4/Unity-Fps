@@ -19,7 +19,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
 	
     public GameObject viewCamera;
     // The anti-clipping camera 
-    [SerializeField] Camera weaponViewCamera;
+    // [SerializeField] Camera weaponViewCamera;
 
     // ToDo: Add upper force to cameraInput
     private CharacterLook ecmCameraController;
@@ -199,7 +199,7 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         {
             if (UiDamageIndicatorManager.Instance != null && damageInfo.attackerNetIdentity != null)
             {
-                UiDamageIndicatorManager.Instance.CreateIndicator(weaponViewCamera.transform, damageInfo.attackerNetIdentity.transform);
+                UiDamageIndicatorManager.Instance.CreateIndicator(viewCamera.transform, damageInfo.attackerNetIdentity.transform);
             }
             LocalPlayerContext.Instance.ShakeCamera();
         }

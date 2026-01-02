@@ -152,7 +152,7 @@ public class LocalPlayerContext : MonoBehaviour
         
     public void ToggleScope(bool scoped)
     {
-        virtualCamera.m_Lens.FieldOfView = scoped ? 15f : 60f;
+        virtualCamera.m_Lens.FieldOfView = scoped ? 15f : 90f;
     }
 	
 	public void OnWeaponPrimaryActionInput(InputAction.CallbackContext value)

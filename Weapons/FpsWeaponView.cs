@@ -87,4 +87,10 @@ public class FpsWeaponView : MonoBehaviour
         else
             transform.localScale = new Vector3(1f, 1f, 1f);
     }
+
+    public void ToggleModel(bool isOn)
+    {
+        activeWeaponViewModel.ToggleRenderer(isOn);
+        activeArm.ToggleRenderer(isOn);
+    }
 }

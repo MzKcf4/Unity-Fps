@@ -13,6 +13,8 @@ public class FpsWeaponViewModel : MonoBehaviour
     private AnimancerComponent animancer;
     private AudioSource audioSource;
 
+    private SkinnedMeshRenderer[] skinnedMeshRenderers;
+
     [HideInInspector] public bool isFlip = false;
     [HideInInspector] public bool isFromL4D = false;
 
@@ -20,6 +22,12 @@ public class FpsWeaponViewModel : MonoBehaviour
     {
         animancer = GetComponent<AnimancerComponent>();
         muzzleFeedbacks = GetComponentInChildren<MMFeedbacks>();
+        skinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+
+        for (int i = 0; i < skinnedMeshRenderers.Length; i++)
+        {
+            skinnedMeshRenderers[i].updateWhenOffscreen = true;
+        }
     }
     
     // Start is called before the first frame update
@@ -149,6 +157,14 @@ public class FpsWeaponViewModel : MonoBehaviour
     public void AniEvent_PlayWeaponSound(string name)
     {
         PlayWeaponSound(name);
+    }
+
+    public void ToggleRenderer(bool isOn) 
+    { 
+        for(int i = 0; i < skinnedMeshRenderers.Length; i++) 
+        { 
+            skinnedMeshRenderers[i].enabled = isOn;
+        }
     }
 
     private void OnEnable()

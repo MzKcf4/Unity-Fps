@@ -71,7 +71,7 @@ public partial class FpsPlayer
         LocalPlayerContext.Instance.ToggleScope(true);
         ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
         ecmCameraController.mouseVerticalSensitivity = LocalPlayerSettingManager.Instance.GetMouseZoomedSpeed();
-        weaponViewCamera.enabled = false;
+        fpsWeaponView.ToggleModel(false);
     }
     
     private void OnWeaponUnScopeEvent()
@@ -86,7 +86,7 @@ public partial class FpsPlayer
         LocalPlayerContext.Instance.ToggleScope(false);
         ecmCameraController.mouseHorizontalSensitivity = LocalPlayerSettingManager.Instance.GetMouseSpeed();
         ecmCameraController.mouseVerticalSensitivity = LocalPlayerSettingManager.Instance.GetMouseSpeed();
-        weaponViewCamera.enabled = true;
+        fpsWeaponView.ToggleModel(true);
     }
     
     // Subscribe to weapon fire event, so when weapon is fired ( in fps view ) , 

@@ -49,6 +49,7 @@ public partial class E_weapon_info : BGEntity
 		public const string monster_level = "monster_level";
 		public const string view_info = "view_info";
 		public const string view_type = "view_type";
+		public const string knife_info = "knife_info";
 		public const string idx_name = "idx_name";
 	}
 	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
@@ -205,6 +206,7 @@ public partial class E_weapon_info : BGEntity
 		get => (WeaponViewType) _f_view_type.GetStoredValue(Index);
 		set => _f_view_type.SetStoredValue(Index, (System.Int32) value);
 	}
+	public List<E_melee_info> f_knife_info => BGCodeGenUtils.GetNested<E_melee_info>(_f_knife_info, Index);
 	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
 	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5074220435775288759UL, 6103681286880476341UL), () => _ufle12jhs77_f_name = null));
 	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
@@ -263,6 +265,8 @@ public partial class E_weapon_info : BGEntity
 	public static BansheeGz.BGDatabase.BGFieldNested _f_view_info => _ufle12jhs77_f_view_info ?? (_ufle12jhs77_f_view_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5029350643763652596UL, 5893109032088481152UL), () => _ufle12jhs77_f_view_info = null));
 	private static BansheeGz.BGDatabase.BGFieldEnum _ufle12jhs77_f_view_type;
 	public static BansheeGz.BGDatabase.BGFieldEnum _f_view_type => _ufle12jhs77_f_view_type ?? (_ufle12jhs77_f_view_type = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEnum>(MetaDefault, new BGId(4806337161845951164UL, 5365227428672428180UL), () => _ufle12jhs77_f_view_type = null));
+	private static BansheeGz.BGDatabase.BGFieldNested _ufle12jhs77_f_knife_info;
+	public static BansheeGz.BGDatabase.BGFieldNested _f_knife_info => _ufle12jhs77_f_knife_info ?? (_ufle12jhs77_f_knife_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5455492459457995620UL, 3888723694265823405UL), () => _ufle12jhs77_f_knife_info = null));
 	private static BansheeGz.BGDatabase.BGIndex _edeht3sdad33_idx_name;
 	public static BansheeGz.BGDatabase.BGIndex _idx_name => _edeht3sdad33_idx_name ?? (_edeht3sdad33_idx_name = BGCodeGenUtils.GetIndex(MetaDefault, new BGId(5617466070727969905UL, 2491195634053680003UL), () => _edeht3sdad33_idx_name = null));
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
@@ -270,6 +274,7 @@ public partial class E_weapon_info : BGEntity
 	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
 	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
 	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
 	private E_weapon_info() : base(MetaDefault) {}
 	private E_weapon_info(BGId id) : base(MetaDefault, id) {}
 	private E_weapon_info(BGMetaEntity meta) : base(meta) {}
@@ -394,6 +399,7 @@ public partial class E_monster_info : BGEntity
 	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
 	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
 	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
 	private E_monster_info() : base(MetaDefault) {}
 	private E_monster_info(BGId id) : base(MetaDefault, id) {}
 	private E_monster_info(BGMetaEntity meta) : base(meta) {}
@@ -463,6 +469,7 @@ public partial class E_view_info : BGEntity
 	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
 	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
 	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
 	private E_view_info() : base(MetaDefault) {}
 	private E_view_info(BGId id) : base(MetaDefault, id) {}
 	private E_view_info(BGMetaEntity meta) : base(meta) {}
@@ -535,6 +542,7 @@ public partial class E_weapon_view_preset : BGEntity
 	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
 	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
 	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
 	private E_weapon_view_preset() : base(MetaDefault) {}
 	private E_weapon_view_preset(BGId id) : base(MetaDefault, id) {}
 	private E_weapon_view_preset(BGMetaEntity meta) : base(meta) {}
@@ -588,6 +596,7 @@ public partial class E_trait_info : BGEntity
 	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
 	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
 	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
 	private E_trait_info() : base(MetaDefault) {}
 	private E_trait_info(BGId id) : base(MetaDefault, id) {}
 	private E_trait_info(BGMetaEntity meta) : base(meta) {}
@@ -601,5 +610,142 @@ public partial class E_trait_info : BGEntity
 	public static E_trait_info NewEntity() => (E_trait_info) MetaDefault.NewEntity();
 	public static E_trait_info NewEntity(BGId entityId) => (E_trait_info) MetaDefault.NewEntity(entityId);
 	public static E_trait_info NewEntity(Action<E_trait_info> callback) => (E_trait_info) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((E_trait_info)entity)));
+}
+
+public partial class E_melee_info : BGEntity
+{
+
+	public class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new E_melee_info(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new E_melee_info(meta, id);
+	}
+
+	public static class __Names
+	{
+		public const string Meta = "melee_info";
+		public const string name = "name";
+		public const string weapon_info = "weapon_info";
+		public const string primary_damage = "primary_damage";
+		public const string secondary_damage = "secondary_damage";
+		public const string primary_range = "primary_range";
+		public const string secondary_range = "secondary_range";
+		public const string primary_arc = "primary_arc";
+		public const string secondary_arc = "secondary_arc";
+		public const string primary_interval = "primary_interval";
+		public const string secondary_interval = "secondary_interval";
+		public const string primary_multi_target = "primary_multi_target";
+		public const string secondary_multi_target = "secondary_multi_target";
+	}
+	private static BansheeGz.BGDatabase.BGMetaNested _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaNested MetaDefault => _metaDefault ?? (_metaDefault = BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaNested>(new BGId(5282301670233891070UL,842145262303613880UL), () => _metaDefault = null));
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String f_name
+	{
+		get => _f_name[Index];
+		set => _f_name[Index] = value;
+	}
+	public E_weapon_info f_weapon_info
+	{
+		get => (E_weapon_info) _f_weapon_info[Index];
+		set => _f_weapon_info[Index] = value;
+	}
+	public System.Int32 f_primary_damage
+	{
+		get => _f_primary_damage[Index];
+		set => _f_primary_damage[Index] = value;
+	}
+	public System.Int32 f_secondary_damage
+	{
+		get => _f_secondary_damage[Index];
+		set => _f_secondary_damage[Index] = value;
+	}
+	public System.Single f_primary_range
+	{
+		get => _f_primary_range[Index];
+		set => _f_primary_range[Index] = value;
+	}
+	public System.Single f_secondary_range
+	{
+		get => _f_secondary_range[Index];
+		set => _f_secondary_range[Index] = value;
+	}
+	public System.Single f_primary_arc
+	{
+		get => _f_primary_arc[Index];
+		set => _f_primary_arc[Index] = value;
+	}
+	public System.Single f_secondary_arc
+	{
+		get => _f_secondary_arc[Index];
+		set => _f_secondary_arc[Index] = value;
+	}
+	public System.Single f_primary_interval
+	{
+		get => _f_primary_interval[Index];
+		set => _f_primary_interval[Index] = value;
+	}
+	public System.Single f_secondary_interval
+	{
+		get => _f_secondary_interval[Index];
+		set => _f_secondary_interval[Index] = value;
+	}
+	public System.Boolean f_primary_multi_target
+	{
+		get => _f_primary_multi_target[Index];
+		set => _f_primary_multi_target[Index] = value;
+	}
+	public System.Boolean f_secondary_multi_target
+	{
+		get => _f_secondary_multi_target[Index];
+		set => _f_secondary_multi_target[Index] = value;
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5644311435020668056UL, 9210915533140636550UL), () => _ufle12jhs77_f_name = null));
+	private static BansheeGz.BGDatabase.BGFieldRelationSingle _ufle12jhs77_f_weapon_info;
+	public static BansheeGz.BGDatabase.BGFieldRelationSingle _f_weapon_info => _ufle12jhs77_f_weapon_info ?? (_ufle12jhs77_f_weapon_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldRelationSingle>(MetaDefault, new BGId(5759210609515852102UL, 15551534783157646995UL), () => _ufle12jhs77_f_weapon_info = null));
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_primary_damage;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_primary_damage => _ufle12jhs77_f_primary_damage ?? (_ufle12jhs77_f_primary_damage = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5212355396522224538UL, 7876354653777758853UL), () => _ufle12jhs77_f_primary_damage = null));
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_f_secondary_damage;
+	public static BansheeGz.BGDatabase.BGFieldInt _f_secondary_damage => _ufle12jhs77_f_secondary_damage ?? (_ufle12jhs77_f_secondary_damage = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(4699969413242125358UL, 12180046377274931862UL), () => _ufle12jhs77_f_secondary_damage = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_primary_range;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_primary_range => _ufle12jhs77_f_primary_range ?? (_ufle12jhs77_f_primary_range = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(4614137349731031282UL, 6810243965003206066UL), () => _ufle12jhs77_f_primary_range = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_secondary_range;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_secondary_range => _ufle12jhs77_f_secondary_range ?? (_ufle12jhs77_f_secondary_range = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5494898285550512161UL, 18036666982830062486UL), () => _ufle12jhs77_f_secondary_range = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_primary_arc;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_primary_arc => _ufle12jhs77_f_primary_arc ?? (_ufle12jhs77_f_primary_arc = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5398005117745290980UL, 2459641244053445771UL), () => _ufle12jhs77_f_primary_arc = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_secondary_arc;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_secondary_arc => _ufle12jhs77_f_secondary_arc ?? (_ufle12jhs77_f_secondary_arc = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(4824447102416980719UL, 13057749299354622641UL), () => _ufle12jhs77_f_secondary_arc = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_primary_interval;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_primary_interval => _ufle12jhs77_f_primary_interval ?? (_ufle12jhs77_f_primary_interval = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5473785806416642733UL, 9865424636751415729UL), () => _ufle12jhs77_f_primary_interval = null));
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_f_secondary_interval;
+	public static BansheeGz.BGDatabase.BGFieldFloat _f_secondary_interval => _ufle12jhs77_f_secondary_interval ?? (_ufle12jhs77_f_secondary_interval = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(4756427695957551021UL, 6389990336389038765UL), () => _ufle12jhs77_f_secondary_interval = null));
+	private static BansheeGz.BGDatabase.BGFieldBool _ufle12jhs77_f_primary_multi_target;
+	public static BansheeGz.BGDatabase.BGFieldBool _f_primary_multi_target => _ufle12jhs77_f_primary_multi_target ?? (_ufle12jhs77_f_primary_multi_target = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldBool>(MetaDefault, new BGId(4795963405408919127UL, 599570695070341543UL), () => _ufle12jhs77_f_primary_multi_target = null));
+	private static BansheeGz.BGDatabase.BGFieldBool _ufle12jhs77_f_secondary_multi_target;
+	public static BansheeGz.BGDatabase.BGFieldBool _f_secondary_multi_target => _ufle12jhs77_f_secondary_multi_target ?? (_ufle12jhs77_f_secondary_multi_target = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldBool>(MetaDefault, new BGId(4931741444404683220UL, 2479262262573418168UL), () => _ufle12jhs77_f_secondary_multi_target = null));
+	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();
+	private static readonly E_monster_info.Factory _factory1_PFS = new E_monster_info.Factory();
+	private static readonly E_view_info.Factory _factory2_PFS = new E_view_info.Factory();
+	private static readonly E_weapon_view_preset.Factory _factory3_PFS = new E_weapon_view_preset.Factory();
+	private static readonly E_trait_info.Factory _factory4_PFS = new E_trait_info.Factory();
+	private static readonly E_melee_info.Factory _factory5_PFS = new E_melee_info.Factory();
+	private E_melee_info() : base(MetaDefault) {}
+	private E_melee_info(BGId id) : base(MetaDefault, id) {}
+	private E_melee_info(BGMetaEntity meta) : base(meta) {}
+	private E_melee_info(BGMetaEntity meta, BGId id) : base(meta, id) {}
+	public static E_melee_info FindEntity(Predicate<E_melee_info> filter) => BGCodeGenUtils.FindEntity(MetaDefault, filter);
+	public static List<E_melee_info> FindEntities(Predicate<E_melee_info> filter, List<E_melee_info> result=null, Comparison<E_melee_info> sort=null) => BGCodeGenUtils.FindEntities(MetaDefault, filter, result, sort);
+	public static void ForEachEntity(Action<E_melee_info> action, Predicate<E_melee_info> filter=null, Comparison<E_melee_info> sort=null) => BGCodeGenUtils.ForEachEntity(MetaDefault, action, filter, sort);
+	public static E_melee_info GetEntity(BGId entityId) => (E_melee_info) MetaDefault.GetEntity(entityId);
+	public static E_melee_info GetEntity(int index) => (E_melee_info) MetaDefault[index];
+	public static E_melee_info GetEntity(string entityName) => (E_melee_info) MetaDefault.GetEntity(entityName);
+	public static E_melee_info NewEntity() => (E_melee_info) MetaDefault.NewEntity();
+	public static E_melee_info NewEntity(BGId entityId) => (E_melee_info) MetaDefault.NewEntity(entityId);
+	public static E_melee_info NewEntity(Action<E_melee_info> callback) => (E_melee_info) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((E_melee_info)entity)));
+	public static E_melee_info NewEntity(E_weapon_info owner) => (E_melee_info) MetaDefault.NewEntity(owner);
+	public static E_melee_info NewEntity(E_weapon_info owner, BGId entityId) => (E_melee_info) MetaDefault.NewEntity(owner, entityId);
+	public static E_melee_info NewEntity(E_weapon_info owner, Action<E_melee_info> callback) => (E_melee_info) MetaDefault.NewEntity(owner, new BGMetaEntity.NewEntityContext(entity => callback((E_melee_info)entity)));
 }
 #pragma warning restore 414
