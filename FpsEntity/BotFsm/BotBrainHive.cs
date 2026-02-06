@@ -68,19 +68,25 @@ public class BotBrainHive : MonoBehaviour
     {
         AstarPath.active.AddWorkItem(() => {
             // Safe to update graphs here
-            var node = AstarPath.active.GetNearest(killedPosition, NearestNodeConstraint.Walkable).node;
-            node.Penalty += 3100;
+            int graphIndex = GetGraphIndexForTeam(team);
+
+            // var node = AstarPath.active.GetNearest(killedPosition, NearestNodeConstraint.Walkable).node;
+            var node = AstarPath.active.data.graphs[graphIndex].GetNearest(killedPosition, NearestNodeConstraint.Walkable).node;
+            node.Penalty += 5100;
             node.GetConnections((otherNode =>
             {
-                otherNode.Penalty += 3100;
+                otherNode.Penalty += 5100;
             }));
             dictTeamKilledNodes[team].Add(node);
             List<GraphNode> reachableNodes = PathUtilities.GetReachableNodes(node);
             // Or you could set a tag
             // node.Tag = 3;
-            Debug.Log($"{killedPosition} : Registered killed node at {(Vector3)node.position} for team {team}");
+            // Debug.Log($"{killedPosition} : Registered killed node at {(Vector3)node.position} for team {team} , graph #{graphIndex}");
         });
+    }
 
-        // var astarNode = AstarPath.active.GetNearest(killedPosition).node;
+    private int GetGraphIndexForTeam(TeamEnum team)
+    {
+        return team == TeamEnum.Blue ? 1 : 0;
     }
 }

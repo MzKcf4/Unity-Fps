@@ -50,10 +50,18 @@ public class DamageInfo
         if(fromWeapon != null)
         {
             damageInfo.damageWeaponName = fromWeapon.weaponName;
-            damageInfo.damage = isPrimary
-                ? fromWeapon.damage
-                : fromWeapon.damageSecondary;
-
+            if (fromWeapon.isMelee)
+            {
+                damageInfo.damage = isPrimary
+                    ? fromWeapon.meleeInfo.f_primary_damage
+                    : fromWeapon.meleeInfo.f_secondary_damage;
+            }
+            else
+            {
+                damageInfo.damage = isPrimary
+                    ? fromWeapon.damage
+                    : fromWeapon.damageSecondary;
+            }
             damageInfo.damage = (int)(damageInfo.damage * Mathf.Pow(0.5f, wallsPenetrated));
             damageInfo.damageSource = fromWeapon.owner.characterName;
             damageInfo.damageSourcePosition = fromWeapon.owner.transform.position + Vector3.up;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Mirror;
+using Enviro;
 
 public class DeathMatchManager : NetworkBehaviour
 {
@@ -100,10 +101,10 @@ public class DeathMatchManager : NetworkBehaviour
         RestorePlayerHealth();
         TeleportPlayersToSpawn();
         AssignWeaponsToPlayer();
+        CoreGameManager.Instance.ChangeWeather();
+
     }
 
-
-            
     [Server]
     public void OnCharacterKilled(FpsCharacter victim, DamageInfo dmgInfo)
     {

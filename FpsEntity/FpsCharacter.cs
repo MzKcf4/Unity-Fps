@@ -164,6 +164,7 @@ public class FpsCharacter : FpsEntity
         if (attachToModel != null)
         {
             attachToModel.SetParent(modelObject.transform);
+            attachToModel.localPosition = Vector3.zero;
         }
 
         characterAnimator.SetAttachedModel(fpsModel);

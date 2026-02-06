@@ -20,9 +20,6 @@ public class WeaponResources : SerializedScriptableObject
 	public ClipTransition shootClip = new ClipTransition();
 	public ClipTransition reloadClip = new ClipTransition();
 
-    public List<ClipTransition> drawClips = new List<ClipTransition>();
-
-
     [FoldoutGroup("Shotgun")]
     public ClipTransition palletReload_StartClip;
     [FoldoutGroup("Shotgun")]
@@ -39,4 +36,18 @@ public class WeaponResources : SerializedScriptableObject
     public ClipTransition meleeHeavyAttackClip;
     [FoldoutGroup("Knife")]
     public ClipTransition meleeHeavyAttackMissClip;
+
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeLightAttackHitSound;
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeLightAttackHitWallSound;
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeLightAttackMissSound;
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeHeavyAttackHitSound;
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeHeavyAttackHitWallSound;
+    [FoldoutGroup("Knife")]
+    public AudioClip meleeHeavyAttackMissSound;
+
 }

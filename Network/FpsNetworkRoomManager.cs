@@ -9,6 +9,7 @@ using UnityEngine;
 
 public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
 {
+
     public GameModeEnum GameMode { get { return gameMode; } }
     public static FpsNetworkRoomManager Instance;
     private GameModeEnum gameMode = GameModeEnum.Debug;
@@ -114,29 +115,16 @@ public class FpsNetworkRoomManager : Mirror.NetworkRoomManager
         if(CoreGameManager.Instance)
             CoreGameManager.Instance.SpawnGameModeManager(gameMode);
 
-        if(EnviroManager.instance)
-        {
-            var randomWeather = Utils.GetRandomElement(EnviroManager.instance.Weather.Settings.weatherTypes);
-            // Debug.Log("Setting weather to: " + randomWeather.name);
+        if (!isServer)
+            return;
 
-            EnviroManager.instance.Weather.ChangeWeather(randomWeather);
-            EnviroManager.instance.Audio.Settings.ambientMasterVolume = 0.2f;
-            EnviroManager.instance.Audio.Settings.weatherMasterVolume = 0.3f;
-            EnviroManager.instance.Audio.Settings.thunderMasterVolume = 0.2f;
-
-            var latitude = UnityEngine.Random.Range(-35f, 35f);
-            var longitude = UnityEngine.Random.Range(-35f, 35f);
-            EnviroManager.instance.Time.SetTimeOfDay(8f);
-            EnviroManager.instance.Time.Settings.latitude = latitude;
-            EnviroManager.instance.Time.Settings.longitude = longitude;
-        }
     }
 
     public override void OnClientSceneChanged()
     {
         base.OnClientSceneChanged();
 
-        if(SharedContext.Instance)
+        if (SharedContext.Instance)
             SharedContext.Instance.ClearList();
 
         if (FpsUiManager.Instance != null)

@@ -229,7 +229,8 @@ public partial class FpsPlayer : FpsHumanoidCharacter
         audioSourceWeapon.PlayOneShot(GetActiveWeapon().GetShootSound());
 
         HitInfoDto hitInfoDto = GetActiveWeapon().isMelee
-             ? CoreGameManager.Instance.DoLocalMeleeWeaponRaycast(this, GetActiveWeapon(), isPrimary) 
+             // ? CoreGameManager.Instance.DoLocalMeleeWeaponRaycast(this, GetActiveWeapon(), isPrimary) 
+             ? WeaponRaycastUtils.DoLocalMeleeWeaponRaycast(this, GetActiveWeapon(), fromPos, isPrimary)
              : CoreGameManager.Instance.DoLocalWeaponRaycast(this, GetActiveWeapon(), fromPos, forwardVec);
 
         if (hitInfoDto == null || hitInfoDto.IsHitNothing()) 

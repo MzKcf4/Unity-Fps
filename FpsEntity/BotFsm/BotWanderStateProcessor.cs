@@ -1,4 +1,5 @@
 ﻿using Org.BouncyCastle.Utilities;
+using Pathfinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,12 +58,18 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
 
     private void SetNewDestWaypoint()
     {
-        // Transform newDest = Utils.GetRandomElement<Transform>(WaypointManager.Instance.mapGoalList);
-        // List<Transform> waypointsByDistance = new List<Transform>();
         var waypointList = new List<Transform>(WaypointManager.Instance.mapGoalList);
+
         Transform newDest = waypointList.OrderByDescending(obj => Vector3.Distance(fpsBotBrain.transform.position, obj.position)).First();
-        fpsBotBrain.SetDestination(newDest);
-        botFsmDto.targetWaypoint = newDest.position;
+        float randomOffset = UnityEngine.Random.Range(0.4f, 1f);
+
+        // Find a position between current position and newDest
+        Vector3 offsetPosition = Vector3.Lerp(fpsBotBrain.transform.position, newDest.position, randomOffset);
+        var node = AstarPath.active.GetNearest(offsetPosition, NearestNodeConstraint.Walkable).node;
+        var walkablePos = (Vector3)node.position;
+
+        fpsBotBrain.SetDestination(walkablePos);
+        botFsmDto.targetWaypoint = walkablePos;
     }
 
     public override void OnTeammateKilled(Vector3 deathPos, DamageInfo damageInfo)

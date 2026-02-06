@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Micosmo.SensorToolkit;
+using Pathfinding;
 
 public class MzFpsBotBrain : MzBotBrainBase
 {
@@ -52,6 +53,14 @@ public class MzFpsBotBrain : MzBotBrainBase
             SyncSignalsWithContext();
 
             fpsCharacter.onKilledEvent.AddListener(OnKilled);
+
+            if (ai is FollowerEntity)
+            { 
+                var follower = ai as FollowerEntity;
+                follower.pathfindingSettings.graphMask = fpsCharacter.team == TeamEnum.Blue 
+                                                        ? GraphMask.FromGraphIndex(1) 
+                                                        : GraphMask.FromGraphIndex(0);
+            }
         }
     }
 

@@ -5,7 +5,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Utils
-{    
+{
+    public static bool IsInLayerMask(GameObject obj, LayerMask mask) => (mask.value & (1 << obj.layer)) != 0;
+    public static bool IsInLayerMask(int layer, LayerMask mask) => (mask.value & (1 << layer)) != 0;
+
     public static List<RayHitInfo> CastRayAndGetHitInfo(FpsCharacter shooter, Vector3 fromPos, Vector3 direction, int mask , float spread)
     {
         Vector3 directionWithSpread = GetRandomizedSpreadDirection(fromPos , direction , spread);

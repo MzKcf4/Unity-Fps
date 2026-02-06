@@ -69,7 +69,7 @@ public class MaterialCreator
             mat.SetTexture("_BumpMap", normalMapTexture);
             mat.SetFloat("_BumpScale", 0.8f);
             mat.SetFloat("_Metallic", 0.2f);
-            mat.SetFloat("_Smoothness", 0.5f);
+            mat.SetFloat("_Smoothness", 0.1f);
         }
 
         if (materialSetting.isTransparent)

@@ -161,7 +161,10 @@ public class FpsWeaponViewModel : MonoBehaviour
 
     public void ToggleRenderer(bool isOn) 
     { 
-        for(int i = 0; i < skinnedMeshRenderers.Length; i++) 
+        if(skinnedMeshRenderers == null || skinnedMeshRenderers.Length == 0) 
+            return;
+
+        for (int i = 0; i < skinnedMeshRenderers.Length; i++) 
         { 
             skinnedMeshRenderers[i].enabled = isOn;
         }

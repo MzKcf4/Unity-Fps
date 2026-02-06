@@ -21,6 +21,8 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
             return;
         }
 
+        fpsBotBrain.StopMoving();
+
         reactionTime.interval = fpsBotBrain.reactionTime;
         reactionTime.StartCooldown();
 
@@ -43,15 +45,18 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
             return;
         }
 
+        // Set points for bot to strafe
+        if (CanStrafe() && fpsBotBrain.IsReachedDesination())
+        {
+            fpsBotBrain.SetDestination(PickRandomStrafePoint());
+        }
+
         // Still in reaction time
         if (!reactionTime.CanExecuteAfterDeltaTime())
         {
-            fpsBotBrain.StopMoving();
+            // fpsBotBrain.StopMoving();
             return;
         } 
-
-        // Can shoot now
-        // if (!weaponShotCooldown.CanExecuteAfterDeltaTime(true)) return;
 
         FpsModel shootTarget = botFsmDto.shootTargetModel;
 
@@ -63,13 +68,12 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
             return;
         }
 
-        /*
-        // Set points for bot to strafe
-        if (CanStrafe() && fpsBot.IsReachedDesination())
+        if(fpsCharacter.GetActiveWeapon().weaponCategory == WeaponCategory.Sniper || 
+            fpsCharacter.GetActiveWeapon().weaponCategory == WeaponCategory.Rifle)
         {
-            fpsBot.SetDestination(PickRandomStrafePoint());
+            // For sniper , stop moving when shooting
+            fpsBotBrain.StopMoving();
         }
-        */
 
         // Otherwise , find a visible body part to shoot
         Transform shootAtHitBox = fpsBotBrain.GetVisibleHitBoxFromAimTarget(shootTarget.gameObject);

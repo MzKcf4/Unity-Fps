@@ -72,6 +72,7 @@ public class FpsWeapon
     private bool useBackAmmo = false;
 
     public bool isMelee;
+    public E_melee_info meleeInfo;
 
     public FpsWeapon(){}
     
@@ -130,6 +131,10 @@ public class FpsWeapon
 
         useBackAmmo = weaponCategory != WeaponCategory.Melee && CoreGameManager.Instance.GameMode == GameModeEnum.Monster;
         isMelee = dbWeaponInfo.f_category == WeaponCategory.Melee;
+
+        if (isMelee)
+            meleeInfo = dbWeaponInfo.f_melee_info[0];
+        
     }
     
     public void Reset()

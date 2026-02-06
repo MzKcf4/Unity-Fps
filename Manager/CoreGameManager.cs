@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using BansheeGz.BGDatabase;
 using Kit.Physic;
+using Enviro;
 
 public class CoreGameManager : NetworkBehaviour
 {
@@ -293,6 +294,46 @@ public class CoreGameManager : NetworkBehaviour
     public void RpcReloadDatabase()
     {
         BGRepo.I.Addons.Get<BGAddonLiveUpdate>().Load(false);
+    }
+
+    [Server]
+    public void ChangeWeather()
+    {
+        if (EnviroManager.instance)
+        {
+            var randomWeather = Utils.GetRandomElement(EnviroManager.instance.Weather.Settings.weatherTypes);
+            var weatherIndex = EnviroManager.instance.Weather.Settings.weatherTypes.IndexOf(randomWeather);
+
+            EnviroManager.instance.Weather.ChangeWeather(weatherIndex);
+            EnviroManager.instance.Audio.Settings.ambientMasterVolume = 0.2f;
+            EnviroManager.instance.Audio.Settings.weatherMasterVolume = 0.3f;
+            EnviroManager.instance.Audio.Settings.thunderMasterVolume = 0.2f;
+
+            var latitude = UnityEngine.Random.Range(-35f, 35f);
+            var longitude = UnityEngine.Random.Range(-35f, 35f);
+            var time = UnityEngine.Random.Range(8f, 16f);
+
+            EnviroManager.instance.Time.SetTimeOfDay(time);
+            EnviroManager.instance.Time.Settings.simulate = false;
+            EnviroManager.instance.Time.Settings.latitude = latitude;
+            EnviroManager.instance.Time.Settings.longitude = longitude;
+
+            CoreGameManager.Instance.RpcSyncWeatherInfo(time, latitude, longitude, EnviroManager.instance.Weather.Settings.weatherTypes.IndexOf(randomWeather));
+        }
+    }
+
+    [ClientRpc]
+    public void RpcSyncWeatherInfo(float timeOfDay, float latitude, float longitude, int weather)
+    {
+        EnviroManager.instance.Audio.Settings.ambientMasterVolume = 0.2f;
+        EnviroManager.instance.Audio.Settings.weatherMasterVolume = 0.3f;
+        EnviroManager.instance.Audio.Settings.thunderMasterVolume = 0.2f;
+
+        EnviroManager.instance.Time.Settings.simulate = false;
+        EnviroManager.instance.Time.SetTimeOfDay(timeOfDay);
+        EnviroManager.instance.Time.Settings.latitude = latitude;
+        EnviroManager.instance.Time.Settings.longitude = longitude;
+        EnviroManager.instance.Weather.ChangeWeather(weather);
     }
 
 }

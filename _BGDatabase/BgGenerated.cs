@@ -49,7 +49,7 @@ public partial class E_weapon_info : BGEntity
 		public const string monster_level = "monster_level";
 		public const string view_info = "view_info";
 		public const string view_type = "view_type";
-		public const string knife_info = "knife_info";
+		public const string melee_info = "melee_info";
 		public const string idx_name = "idx_name";
 	}
 	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
@@ -206,7 +206,7 @@ public partial class E_weapon_info : BGEntity
 		get => (WeaponViewType) _f_view_type.GetStoredValue(Index);
 		set => _f_view_type.SetStoredValue(Index, (System.Int32) value);
 	}
-	public List<E_melee_info> f_knife_info => BGCodeGenUtils.GetNested<E_melee_info>(_f_knife_info, Index);
+	public List<E_melee_info> f_melee_info => BGCodeGenUtils.GetNested<E_melee_info>(_f_melee_info, Index);
 	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_f_name;
 	public static BansheeGz.BGDatabase.BGFieldEntityName _f_name => _ufle12jhs77_f_name ?? (_ufle12jhs77_f_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5074220435775288759UL, 6103681286880476341UL), () => _ufle12jhs77_f_name = null));
 	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_f_display_name;
@@ -265,8 +265,8 @@ public partial class E_weapon_info : BGEntity
 	public static BansheeGz.BGDatabase.BGFieldNested _f_view_info => _ufle12jhs77_f_view_info ?? (_ufle12jhs77_f_view_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5029350643763652596UL, 5893109032088481152UL), () => _ufle12jhs77_f_view_info = null));
 	private static BansheeGz.BGDatabase.BGFieldEnum _ufle12jhs77_f_view_type;
 	public static BansheeGz.BGDatabase.BGFieldEnum _f_view_type => _ufle12jhs77_f_view_type ?? (_ufle12jhs77_f_view_type = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEnum>(MetaDefault, new BGId(4806337161845951164UL, 5365227428672428180UL), () => _ufle12jhs77_f_view_type = null));
-	private static BansheeGz.BGDatabase.BGFieldNested _ufle12jhs77_f_knife_info;
-	public static BansheeGz.BGDatabase.BGFieldNested _f_knife_info => _ufle12jhs77_f_knife_info ?? (_ufle12jhs77_f_knife_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5455492459457995620UL, 3888723694265823405UL), () => _ufle12jhs77_f_knife_info = null));
+	private static BansheeGz.BGDatabase.BGFieldNested _ufle12jhs77_f_melee_info;
+	public static BansheeGz.BGDatabase.BGFieldNested _f_melee_info => _ufle12jhs77_f_melee_info ?? (_ufle12jhs77_f_melee_info = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldNested>(MetaDefault, new BGId(5455492459457995620UL, 3888723694265823405UL), () => _ufle12jhs77_f_melee_info = null));
 	private static BansheeGz.BGDatabase.BGIndex _edeht3sdad33_idx_name;
 	public static BansheeGz.BGDatabase.BGIndex _idx_name => _edeht3sdad33_idx_name ?? (_edeht3sdad33_idx_name = BGCodeGenUtils.GetIndex(MetaDefault, new BGId(5617466070727969905UL, 2491195634053680003UL), () => _edeht3sdad33_idx_name = null));
 	private static readonly E_weapon_info.Factory _factory0_PFS = new E_weapon_info.Factory();

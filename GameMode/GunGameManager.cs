@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Enviro;
 using Mirror;
 using UnityEngine;
 
@@ -86,7 +87,9 @@ public class GunGameManager : NetworkBehaviour
         TeleportPlayersToSpawn();
         AssignWeapons(TeamEnum.Blue, 0);
         AssignWeapons(TeamEnum.Red, 0);
+        CoreGameManager.Instance.ChangeWeather();
     }
+
 
     private void RandomizeWeapon()
     {

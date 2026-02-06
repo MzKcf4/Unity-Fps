@@ -23,9 +23,9 @@ public class WeaponImportHelper
     private static Dictionary<WeaponAnimType, List<string>> dictStandardWeaponAnimTypeToAnimationClipNameList = new Dictionary<WeaponAnimType, List<string>>()
     {
         { WeaponAnimType.ANIM_IDLE , new List<string>(){ "idle" , "idle1" , "idle_raw" , "a_idle_1"} },
-        { WeaponAnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot" , "shoot1" , "awm_fire"} },
-        { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload1" , "awm_reload"} },
-        { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy", "awm_draw" } },
+        { WeaponAnimType.ANIM_FIRE , new List<string>(){ "fire" , "shoot" , "shoot1" , "awm_fire", "sniper_shoot1"} },
+        { WeaponAnimType.ANIM_RELOAD , new List<string>(){ "reload" , "reload1" , "awm_reload", "sniper_reload1"} },
+        { WeaponAnimType.ANIM_DRAW , new List<string>(){ "draw" , "deploy", "awm_draw", "sniper_draw" } },
         { WeaponAnimType.ANIM_RELOAD_PALLET_START , new List<string>(){ "reload_start"} },
         { WeaponAnimType.ANIM_RELOAD_PALLET_INSERT , new List<string>(){ "reload_insert" , "reload_loop" } },
         { WeaponAnimType.ANIM_RELOAD_PALLET_END , new List<string>(){ "reload_end"} },
@@ -165,8 +165,9 @@ public class WeaponImportHelper
 
                 int frame = int.Parse(eventParts[3]);
                 string soundName = eventParts[4].Replace("\"", "").Split('.')[1].ToLower();
+                Debug.Log("Adding " + frame + " : " + soundName);
                 dictFrameToSoundName.Add(frame, soundName);
-                Debug.Log("Added " + frame + " : " + soundName);
+
             }
             else if (line.Contains("AE_CL_PLAYSOUND"))
             {
@@ -176,8 +177,9 @@ public class WeaponImportHelper
 
                 int frame = int.Parse(eventParts[3]);
                 string soundName = eventParts[4].Replace("\"", "");
+                Debug.Log("Adding " + frame + " : " + soundName);
                 dictFrameToSoundName.Add(frame, soundName);
-                Debug.Log("Added " + frame + " : " + soundName);
+
             }
             else if (line.Contains("}"))
             {
@@ -203,8 +205,8 @@ public class WeaponImportHelper
 
     private static bool MapQcSequenceToStandardAnimation(WeaponImportContext context, QcSequenceEventInfo sequenceEventInfo) 
     {
-        string seqName = sequenceEventInfo.sequenceName;
-        // If the name is "_layer" , it's supplementory info 
+        string seqName = sequenceEventInfo.sequenceName.ToLower();
+        // If the name is "_layer" , it's supplementory info , usually sound events
         if ("idle".Equals(seqName) || "idle1".Equals(seqName) || "idle_raw".Equals(seqName) 
             || "a_idle_1".Equals(seqName) || "idle_layer".Equals(seqName))
         {
@@ -213,21 +215,21 @@ public class WeaponImportHelper
             return true;
         }
         else if ("shoot1".Equals(seqName) || "shoot_layer".Equals(seqName)|| "shoot1_layer".Equals(seqName) || "fire".Equals(seqName) || "fire_layer".Equals(seqName)
-            || "awm_fire".Equals(seqName) || "awm_fire_layer".Equals(seqName))
+            || "awm_fire".Equals(seqName) || "awm_fire_layer".Equals(seqName) || "sniper_shoot1".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_FIRE].WeaponAnimType = WeaponAnimType.ANIM_FIRE;
             return true;
         }
         else if ("draw".Equals(seqName) || "draw_layer".Equals(seqName) || "deploy".Equals(seqName) || "deploy_layer".Equals(seqName)
-            || "awm_draw".Equals(seqName) || "awm_draw_layer".Equals(seqName))
+            || "awm_draw".Equals(seqName) || "awm_draw_layer".Equals(seqName) || "sniper_draw".Equals(seqName) || "sniper_deploy_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_DRAW].WeaponAnimType = WeaponAnimType.ANIM_DRAW;
             return true;
         }
         else if ("reload".Equals(seqName) || "reload1".Equals(seqName) || "reload_layer".Equals(seqName)
-            || "awm_reload".Equals(seqName) || "awm_reload_layer".Equals(seqName))
+            || "awm_reload".Equals(seqName) || "awm_reload_layer".Equals(seqName) || "sniper_reload1".Equals(seqName) || "sniper_reload_layer".Equals(seqName))
         {
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].CopyFrom(sequenceEventInfo);
             context.dictStandardAnimTypeInfo[WeaponAnimType.ANIM_RELOAD].WeaponAnimType = WeaponAnimType.ANIM_RELOAD;

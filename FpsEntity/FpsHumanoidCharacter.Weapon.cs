@@ -2,6 +2,7 @@
 using UnityEngine;
 using Kit.Physic;
 using System.Collections.Generic;
+using Micosmo.SensorToolkit;
 
 public partial class FpsHumanoidCharacter
 {
@@ -19,6 +20,9 @@ public partial class FpsHumanoidCharacter
     public FpsWeaponView fpsWeaponView;
     public FpsWeaponWorldModel[] fpsWeaponWorldSlot = new FpsWeaponWorldModel[Constants.WEAPON_SLOT_MAX];
     [SerializeField] public RaycastHelper meleeRaycastHelper;
+
+    [SerializeField] public RaySensor meleeArcSensor;
+    [SerializeField] public RaySensor meleeRaySensor;
 
     private void Start_Weapon()
     {
