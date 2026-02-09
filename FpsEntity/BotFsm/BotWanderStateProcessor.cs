@@ -36,6 +36,21 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
 
         if (fpsBotBrain.aiEnableWander && fpsBotBrain.IsReachedDesination())
         {
+            // Chance to camp
+            float campChance = 0.3f;
+            var weapon = fpsCharacter.GetActiveWeapon();
+            if (weapon != null)
+            {
+                if (weapon.weaponCategory == WeaponCategory.Sniper) campChance = 0.7f;
+                else if (weapon.weaponCategory == WeaponCategory.Smg) campChance = 0.1f;
+            }
+
+            if (CampingManager.Instance != null && CampingManager.Instance.campingSpots.Count > 0 && Utils.WithinChance(campChance))
+            {
+                ExitToState(BotStateEnum.Camping);
+                return;
+            }
+
             SetNewDestWaypoint();
         }
 
@@ -58,9 +73,33 @@ public class BotWanderStateProcessor : AbstractBotStateProcessor
 
     private void SetNewDestWaypoint()
     {
-        var waypointList = new List<Transform>(WaypointManager.Instance.mapGoalList);
+        TeamEnum myTeam = fpsCharacter.team;
+        TeamEnum enemyTeam = myTeam == TeamEnum.Blue ? TeamEnum.Red : TeamEnum.Blue;
 
-        Transform newDest = waypointList.OrderByDescending(obj => Vector3.Distance(fpsBotBrain.transform.position, obj.position)).First();
+        List<Transform> mySpawns = WaypointManager.Instance.GetSpawnPoints(myTeam);
+        List<Transform> enemySpawns = WaypointManager.Instance.GetSpawnPoints(enemyTeam);
+
+        // Fallback for modes without clear teams
+        if (mySpawns.Count == 0 || enemySpawns.Count == 0)
+        {
+            mySpawns = WaypointManager.Instance.mapGoalList;
+            enemySpawns = WaypointManager.Instance.mapGoalList;
+        }
+
+        bool isAtEnemyBase = false;
+        foreach (Transform t in enemySpawns)
+        {
+            if (Vector3.Distance(fpsBotBrain.transform.position, t.position) < 15.0f)
+            {
+                isAtEnemyBase = true;
+                break;
+            }
+        }
+
+        // If at enemy base, return home. Otherwise, attack enemy base.
+        List<Transform> targetList = isAtEnemyBase ? mySpawns : enemySpawns;
+
+        Transform newDest = Utils.GetRandomElement(targetList);
         float randomOffset = UnityEngine.Random.Range(0.4f, 1f);
 
         // Find a position between current position and newDest

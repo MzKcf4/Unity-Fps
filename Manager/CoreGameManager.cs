@@ -26,6 +26,20 @@ public class CoreGameManager : NetworkBehaviour
         MASK_HITBOX = LayerMask.GetMask(Constants.LAYER_HITBOX);
         MASK_WALL = LayerMask.GetMask(Constants.LAYER_GROUND);
         MASK_HITBOX_AND_WALL = (1 << MASK_HITBOX.value) | (1 << MASK_WALL.value);
+
+        if (isServer)
+        {
+            gameObject.AddComponent<CampingManager>();
+            ServerContext.Instance.characterKilledEventServer.AddListener(OnCharacterKilled);
+        }
+    }
+
+    private void OnCharacterKilled(FpsCharacter victim, DamageInfo damageInfo)
+    {
+        if (damageInfo.attacker != null && damageInfo.attacker is FpsCharacter attackerChar)
+        {
+            CampingManager.Instance.RegisterKill(damageInfo.damageSourcePosition, victim.transform.position, attackerChar.team);
+        }
     }
 
     public void SpawnGameModeManager(GameModeEnum gameMode)

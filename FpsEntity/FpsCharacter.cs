@@ -497,10 +497,13 @@ public class FpsCharacter : FpsEntity
 
     public void AimAtMovementDirection()
     {
-        Vector3 moveVec = GetMovementVelocity().normalized * 2f;
+        Vector3 velocity = GetMovementVelocity();
         
-        if (moveVec != Vector3.zero)
-            weaponAimAt.localPosition = new Vector3(moveVec.x, 1.3f + moveVec.y, moveVec.z);
+        if (velocity.sqrMagnitude > 0.1f)
+        {
+             Vector3 lookTarget = transform.position + Vector3.up * 1.5f + velocity.normalized * 5f;
+             AimAtPosition(lookTarget);
+        }
     }
 
     public void AimAtPosition(Vector3 pos)

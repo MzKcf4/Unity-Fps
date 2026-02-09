@@ -46,7 +46,16 @@ public class BotEngageStateProcessor : AbstractBotStateProcessor
         }
 
         // Set points for bot to strafe
-        if (CanStrafe() && fpsBotBrain.IsReachedDesination())
+        var weapon = fpsCharacter.GetActiveWeapon();
+        if (weapon != null && weapon.weaponCategory == WeaponCategory.Smg)
+        {
+             // Charge!
+             if(botFsmDto.shootTargetModel != null)
+             {
+                 fpsBotBrain.SetDestination(botFsmDto.shootTargetModel.transform.position);
+             }
+        }
+        else if (CanStrafe() && fpsBotBrain.IsReachedDesination())
         {
             fpsBotBrain.SetDestination(PickRandomStrafePoint());
         }

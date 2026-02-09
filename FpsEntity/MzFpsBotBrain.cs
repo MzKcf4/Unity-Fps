@@ -40,6 +40,7 @@ public class MzFpsBotBrain : MzBotBrainBase
             dictStateToProcessor.Add(BotStateEnum.Engage, new BotEngageStateProcessor(this, fpsCharacter, botFsmDto));
             dictStateToProcessor.Add(BotStateEnum.Chasing, new BotChaseStateProcessor(this, fpsCharacter, botFsmDto));
             dictStateToProcessor.Add(BotStateEnum.ReactToUnknownDamage, new BotReactToUnknownDamageStateProcessor(this, fpsCharacter, botFsmDto));
+            dictStateToProcessor.Add(BotStateEnum.Camping, new BotCampStateProcessor(this, fpsCharacter, botFsmDto));
             TransitToState(BotStateEnum.Wandering);
 
             // Parent no need rotation , it is handled in FpsModel with weaponAimAt 
@@ -187,6 +188,8 @@ public class MzFpsBotBrain : MzBotBrainBase
         // Disable to prevent spawning at death position
         TogglePathingFindingAI(false);
         TogglePathingFindingAI(true);
+        
+        TransitToState(BotStateEnum.Wandering);
     }
 
     public void OnTakeHit(DamageInfo damageInfo)

@@ -7,5 +7,6 @@ public enum BotStateEnum
     Wandering,
     Engage,
     Chasing,
-    ReactToUnknownDamage
+    ReactToUnknownDamage,
+    Camping
 }
